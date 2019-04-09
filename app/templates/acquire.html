@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block app_content %}
+    <h1>{{ '数据采集' }}</h1>
+    <div class="alert alert-success" role="alert">
+        采集进度
+        <span id="acquisition-progress"></span>
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            {{ wtf.quick_form(form) }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block app_scripts %}
+    <script>
+        function set_require_progress(progress) {
+            if(progress<0){
+                $('#acquisition-progress').text("设备未连接");
+            }else{
+                $('#acquisition-progress').text(Math.floor(progress/({{form.Frequency.data}}*{{form.Duration.data}})*100));
+            }
+        }
+        {% if current_user.is_authenticated %}
+        $(function() {
+            var since = 0;
+            setInterval(function() {
+                $.ajax('{{ url_for('main.get_device_status') }}?since=' + since).done(              
+                    function(notifications) {
+                        for (var i = 0; i < notifications.length; i++) {
+                            switch (notifications[i].name) {
+                                case 'acquire_progress':
+                                    set_require_progress(notifications[i].data);
+                                    break;
+                            }
+                            since = notifications[i].timestamp;
+                        }
+                    }
+                );
+            }, 1000);
+        });
+        {% endif %}
+    </script>
+{% endblock %}
