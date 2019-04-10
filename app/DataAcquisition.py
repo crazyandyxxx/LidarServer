@@ -1,5 +1,5 @@
 import clr
-clr.AddReference('D:/Project/Lidar/LidarServer/lib/AcquisitionCardLib.dll')
+clr.AddReference('C:/Server/LidarServer/lib/AcquisitionCardLib.dll')
 from AcquisitionCardLib import AcquisitionCard
 import threading
 import time

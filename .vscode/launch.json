@@ -56,6 +56,7 @@
                 "run",
                 "--no-debugger",
                 "--no-reload",
+                "--host=0.0.0.0",
                 "--port=5015"
             ],
             "jinja": true

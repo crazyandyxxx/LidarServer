@@ -16,11 +16,17 @@
 
 {% block app_scripts %}
     <script>
+        var frequency = {{form.Frequency.data}};
+        var duration = {{form.Duration.data}};
         function set_require_progress(progress) {
             if(progress<0){
-                $('#acquisition-progress').text("设备未连接");
+                $('#acquisition-progress').text("采集卡未连接");
             }else{
-                $('#acquisition-progress').text(Math.floor(progress/({{form.Frequency.data}}*{{form.Duration.data}})*100));
+                if（frequency === null){
+                    $('#acquisition-progress').text("采集卡已连接");
+                }esle{
+                $('#acquisition-progress').text(Math.floor(progress/frequency*duration)*100));
+                }
             }
         }
         {% if current_user.is_authenticated %}
