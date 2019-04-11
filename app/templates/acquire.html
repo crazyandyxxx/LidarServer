@@ -16,16 +16,15 @@
 
 {% block app_scripts %}
     <script>
-        var frequency = {{form.Frequency.data}};
-        var duration = {{form.Duration.data}};
+        var inTask = Boolean({{inTask}});
         function set_require_progress(progress) {
             if(progress<0){
                 $('#acquisition-progress').text("采集卡未连接");
             }else{
-                if（frequency === null){
+                if(inTask){     
+                    $('#acquisition-progress').text(Math.floor(progress/({{form.Frequency.data}}*{{form.Duration.data}})*100)+"%");
+                }else{
                     $('#acquisition-progress').text("采集卡已连接");
-                }esle{
-                $('#acquisition-progress').text(Math.floor(progress/frequency*duration)*100));
                 }
             }
         }
@@ -39,7 +38,7 @@
                             switch (notifications[i].name) {
                                 case 'acquire_progress':
                                     set_require_progress(notifications[i].data);
-                                    break;
+                                    break;                                   
                             }
                             since = notifications[i].timestamp;
                         }

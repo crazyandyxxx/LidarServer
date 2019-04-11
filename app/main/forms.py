@@ -18,11 +18,11 @@ class AcquireForm(FlaskForm):
     BinLen = IntegerField(('采集长度'),
                              validators=[NumberRange(3,10000)])
     Resolution = SelectField(label='空间分辨率',
-                        choices=[('5', 5),
+                        choices=[('5.0', 5.0),
                                  ('7.5', 7.5),
-                                 ('15', 15),
-                                 ('30', 30)],
-                        default='15') 
+                                 ('15.0', 15.0),
+                                 ('30.0', 30.0)],
+                        default='15.0') 
     VerStartAngle= FloatField(('垂直起始角'), validators=[NumberRange(0,360)])
     VerEndAngle= FloatField(('垂直终止角'), validators=[NumberRange(0,360)])
     VerAngleStep= FloatField(('垂直步进角'), validators=[NumberRange(0,360)])
@@ -33,3 +33,12 @@ class AcquireForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         super(AcquireForm, self).__init__(*args, **kwargs)
+        # self.Frequency.data = 2500
+        # self.Duration.data = 30
+        # self.BinLen.data = 2000
+        # self.VerStartAngle.data = 90
+        # self.VerEndAngle.data = 90
+        # self.VerAngleStep.data = 5
+        # self.HorStartAngle.data = 0
+        # self.HorEndAngle.data = 360
+        # self.HorAngleStep.data = 5

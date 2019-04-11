@@ -9,7 +9,7 @@ from app import create_app, db
 from System import Array, Byte
 
 app = create_app()
-app.app_context().push()
+# app.app_context().push()
 
 acCard = AcquisitionCard()
 stopAcq = False
@@ -24,6 +24,9 @@ def Stop_acquisition():
 def check_acquisition_times():
     return acCard.CheckAcquisitionTimes()
 
+def check_acquisition_running():
+    return acCard.CheckAcquisitionRunning()
+
 def acquisition_loop(taskId, accumTimes, binNum, resolution, verStartAng, verEndAng, verAngStep, horStartAng, horEndAng, horAngStep):
     while True:
         acCard.StartAcquisition(accumTimes, binNum, resolution, 680, 680, 680, 680)
@@ -31,10 +34,7 @@ def acquisition_loop(taskId, accumTimes, binNum, resolution, verStartAng, verEnd
             time.sleep(0.05)
             global stopAcq
             if stopAcq:
-                with app.app_context():
-                    task = Task.query.get(taskId)
-                    task.complete = True
-                    return
+                return
         with app.app_context():
             task = Task.query.get(taskId)
             task.end_time = datetime.now()

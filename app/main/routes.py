@@ -5,7 +5,7 @@ from flask_login import current_user, login_required
 from app import db
 from app.main.forms import AcquireForm
 from app.main import bp
-from app.DataAcquisition import start_acquisition, Stop_acquisition, check_acquisition_times
+from app.DataAcquisition import start_acquisition, Stop_acquisition, check_acquisition_times, check_acquisition_running
 from app.models import Task
 import uuid
 
@@ -21,7 +21,7 @@ def before_request():
 @bp.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():
-    return redirect(url_for('main.acquire'))
+    return render_template('system.html')
 
 
 @bp.route('/acquire', methods=['GET', 'POST'])
@@ -44,6 +44,8 @@ def acquire():
         task = Task.query.filter_by(complete=False).first()
         if task:
             Stop_acquisition()
+            task.complete = True
+            db.session.commit()
         else:    
             task_id = str(uuid.uuid4())
             task = Task(id=task_id, mode=mode, laser_freq=freq, duration=dura, resolution=resolution, bin_length=binN, 
@@ -52,15 +54,18 @@ def acquire():
             db.session.add(task)
             db.session.commit()
             start_acquisition(task_id, freq*dura, binN, resolution, verSt, verEd, verStep, horSt, horEd, horStep)         
-
         return redirect(url_for('main.acquire'))
+        
     elif request.method == 'GET':
         task = Task.query.filter_by(complete=False).first()
+        running = check_acquisition_running()
+        inTask = 0
         if task:
+            inTask = 1
             form.Mode.data = task.mode
             form.Frequency.data = task.laser_freq
             form.Duration.data = task.duration
-            form.Resolution.data = task.resolution
+            form.Resolution.data = str(task.resolution)
             form.BinLen.data = task.bin_length
             form.VerStartAngle.data = task.ver_start_angle
             form.VerEndAngle.data = task.ver_end_angle
@@ -68,9 +73,23 @@ def acquire():
             form.HorStartAngle.data = task.hor_start_angle
             form.HorEndAngle.data = task.hor_end_angle
             form.HorAngleStep.data = task.hor_step
-            form.submit.label = '停止'
-    return render_template('acquire.html', title=('数据采集'),
-                           form=form)
+            if running:
+                form.submit.label.text = '停止'
+            else:
+                task.complete = True
+                db.session.commit()
+        else:
+            form.Frequency.data = 2500
+            form.Duration.data = 30
+            form.BinLen.data = 2000
+            form.VerStartAngle.data = 90
+            form.VerEndAngle.data = 180
+            form.VerAngleStep.data = 5
+            form.HorStartAngle.data = 0
+            form.HorEndAngle.data = 360
+            form.HorAngleStep.data = 5
+        return render_template('acquire.html', title=('数据采集'),
+                                form=form, inTask=inTask)
 
 @bp.route('/browse', methods=['GET', 'POST'])
 @login_required
@@ -94,12 +113,9 @@ def browse():
 @bp.route('/getDeviceStatus')
 @login_required
 def get_device_status():
-    # since = request.args.get('since', 0.0, type=float)
-    # notifications = current_user.notifications.filter(
-    #     Notification.timestamp > since).order_by(Notification.timestamp.asc())
     progress = check_acquisition_times()
-    return jsonify([{
-        'name': 'acquire_progress',
-        'data': progress,
-        'timestamp': None
-    }])
+    return jsonify([
+        {
+            'name': 'acquire_progress',
+            'data': progress
+        }])
