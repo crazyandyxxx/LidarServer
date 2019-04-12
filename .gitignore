@@ -38,4 +38,4 @@ venv
 venv36
 venv37
 app.db
-microblog.log*
+logs
