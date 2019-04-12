@@ -9,7 +9,7 @@
             <div class="panel-heading">检索结果</div>
           
             <!-- Table -->
-            <table class="table table-hover">
+            <table class="table table-hover" id="task-table">
                 <thead>
                   <tr>
                     <th>起止时间</th>
@@ -78,5 +78,15 @@
             };  
           });
         };
+
+        $(function () {
+	$('#task-table').on('click-row.bs.table', function (e, row, element) 
+	{
+		//$(element).css({"color":"blue","font-size":"16px;"});
+		console.log(row);
+		
+	});
+})
+
     </script>
 {% endblock %}
