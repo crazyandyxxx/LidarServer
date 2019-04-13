@@ -1,61 +1,66 @@
-import clr
-clr.AddReference('C:/Server/LidarServer/lib/AcquisitionCardLib.dll')
-from AcquisitionCardLib import AcquisitionCard
-import threading
+import socket               # 导入 socket 模块
+import json 
 import time
-from datetime import datetime
-from app.models import Task, TaskData
-from app import create_app, db
-from System import Array, Byte
+        
+host = '192.168.31.135' # 获取本地主机名
+port = 6016                # 设置端口号
+ 
 
-app = create_app()
-# app.app_context().push()
+def start_acquisition(taskId, mode, accumTimes, binNum, resolution, verStartAng, verEndAng, verAngStep, horStartAng, horEndAng, horAngStep):   
+    s = socket.socket() # 创建 socket 对象
+    s.connect((host, port))
+    acq_params = {}
+    acq_params['taskId'] = taskId
+    acq_params['mode'] = mode
+    acq_params['accumTimes'] = accumTimes
+    acq_params['binNum'] = binNum
+    acq_params['resolution'] = resolution
+    acq_params['verStartAng'] = verStartAng
+    acq_params['verEndAng'] = verEndAng
+    acq_params['verAngStep'] = verAngStep
+    acq_params['horStartAng'] = horStartAng
+    acq_params['horEndAng'] = horEndAng
+    acq_params['horAngStep'] = horAngStep
+    start_cmd={'cmdType':'acqStart', 'cmdParams':acq_params}
 
-acCard = AcquisitionCard()
-stopAcq = False
-def start_acquisition(taskId, accumTimes, binNum, resolution, verStartAng, verEndAng, verAngStep, horStartAng, horEndAng, horAngStep):   
-    thread = threading.Thread(target=acquisition_loop, args=(taskId, accumTimes, binNum, resolution, verStartAng, verEndAng, verAngStep, horStartAng, horEndAng, horAngStep))
-    thread.start()
+    s.sendall(json.dumps(start_cmd).encode())
+    r = (json.loads(s.recv(1024).decode()))
+    s.close()
 
 def Stop_acquisition():
-    acCard.StopAcquisition()
-    stopAcq = True
+    s = socket.socket()
+    s.connect((host, port))
+    acq_params = {}
+    start_cmd={'cmdType':'acqStop', 'cmdParams':acq_params}
+
+    s.sendall(json.dumps(start_cmd).encode())
+    r = (json.loads(s.recv(1024).decode()))
+    s.close()
 
 def check_acquisition_times():
-    return acCard.CheckAcquisitionTimes()
+    s = socket.socket()
+    s.connect((host, port))
+    acq_params = {}
+    start_cmd={'cmdType':'acqProgress', 'cmdParams':acq_params}
+
+    s.sendall(json.dumps(start_cmd).encode())
+    r = (json.loads(s.recv(1024).decode()))
+    s.close()
+    return r['result']
 
 def check_acquisition_running():
-    return acCard.CheckAcquisitionRunning()
+    s = socket.socket()
+    s.connect((host, port))
+    acq_params = {}
+    start_cmd={'cmdType':'acqRunning', 'cmdParams':acq_params}
 
-def acquisition_loop(taskId, accumTimes, binNum, resolution, verStartAng, verEndAng, verAngStep, horStartAng, horEndAng, horAngStep):
-    while True:
-        acCard.StartAcquisition(accumTimes, binNum, resolution, 680, 680, 680, 680)
-        while acCard.CheckAcquisitionTimes()<accumTimes:
-            time.sleep(0.05)
-            global stopAcq
-            if stopAcq:
-                return
-        with app.app_context():
-            task = Task.query.get(taskId)
-            task.end_time = datetime.now()
-            task.data_num = task.data_num + 1
-            ChA= Array.CreateInstance(Byte, binNum*4)
-            ChB= Array.CreateInstance(Byte, binNum*4)
-            acCard.CheckAcquisitionChannelData(binNum*4, ChA, ChB)
-            ChA = bytes(ChA)
-            ChB = bytes(ChB)
-            task_data = TaskData(task_id=taskId, raw_A=ChA, raw_B=ChB)
-            db.session.add(task_data)
-            db.session.commit()
+    s.sendall(json.dumps(start_cmd).encode())
+    r = (json.loads(s.recv(1024).decode()))
+    s.close()
+    return r['result']    
+
+# for i in range(1,300):
+#     start_acquisition(10,'los',25000,2000,15,90,90,5,0,360,5)  
+#     time.sleep(0.05)  
 
 
-
-
-# if __name__ == '__main__':
-#     start_acquisition(25000, 2000, 15, 680, 680, 680, 680)
-#     times = 0
-#     while times < 25000:
-#         times = check_acquistion_times()
-#         print(times)
-#         time.sleep(0.5)
-    
