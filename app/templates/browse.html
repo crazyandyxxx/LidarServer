@@ -29,8 +29,8 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
     <script>
-      var startTime = moment().startOf('minute').subtract(3, 'days');
-      var endTime = moment().startOf('minute');
+      var startTime = moment().startOf('second').subtract(3, 'days');
+      var endTime = moment().startOf('second');
         $(function() {
             $('input[name="datetimes"]').daterangepicker({
                 timePicker: true,
