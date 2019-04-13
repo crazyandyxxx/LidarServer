@@ -53,7 +53,7 @@ def acquire():
                         hor_start_angle=horSt, hor_end_angle=horEd,hor_step=horStep)
             db.session.add(task)
             db.session.commit()
-            start_acquisition(task_id, freq*dura, binN, resolution, verSt, verEd, verStep, horSt, horEd, horStep)         
+            start_acquisition(task_id, mode, freq*dura, binN, resolution, verSt, verEd, verStep, horSt, horEd, horStep)         
         return redirect(url_for('main.acquire'))
         
     elif request.method == 'GET':
