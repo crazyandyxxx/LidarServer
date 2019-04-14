@@ -1,0 +1,11 @@
+C:\Server\AcquistionCard\AcquisitionCardTest\TestView\bin\Release\TestView.exe
+C:\Server\AcquistionCard\AcquisitionCardTest\TestView\bin\Release\TestView.pdb
+C:\Server\AcquistionCard\AcquisitionCardTest\TestView\obj\Release\TestView.Form1.resources
+C:\Server\AcquistionCard\AcquisitionCardTest\TestView\obj\Release\TestView.Properties.Resources.resources
+C:\Server\AcquistionCard\AcquisitionCardTest\TestView\obj\Release\TestView.csproj.GenerateResource.Cache
+C:\Server\AcquistionCard\AcquisitionCardTest\TestView\obj\Release\TestView.exe
+C:\Server\AcquistionCard\AcquisitionCardTest\TestView\obj\Release\TestView.pdb
+C:\Server\AcquistionCard\AcquisitionCardTest\TestView\bin\Release\EVRadarView.Algorithm.dll
+C:\Server\AcquistionCard\AcquisitionCardTest\TestView\bin\Release\System.Data.SQLite.dll
+C:\Server\AcquistionCard\AcquisitionCardTest\TestView\bin\Release\EVRadarView.Algorithm.pdb
+C:\Server\AcquistionCard\AcquisitionCardTest\TestView\obj\Release\TestView.csprojResolveAssemblyReference.cache

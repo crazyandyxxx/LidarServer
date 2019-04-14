@@ -1,0 +1,10 @@
+C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionCardTest\obj\Release\AcquisitionCardTest.csprojResolveAssemblyReference.cache
+C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionCardTest\obj\Release\AcquisitionCardTest.Form1.resources
+C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionCardTest\obj\Release\AcquisitionCardTest.Properties.Resources.resources
+C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionCardTest\obj\Release\AcquisitionCardTest.csproj.GenerateResource.Cache
+C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionCardTest\bin\Release\AcquisitionCardTest.exe.config
+C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionCardTest\bin\Release\AcquisitionCardTest.exe
+C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionCardTest\bin\Release\AcquisitionCardTest.pdb
+C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionCardTest\bin\Release\CyUSB.dll
+C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionCardTest\obj\Release\AcquisitionCardTest.exe
+C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionCardTest\obj\Release\AcquisitionCardTest.pdb

@@ -1,0 +1,6 @@
+C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\bin\Release\AcquisitionSocketServer.exe
+C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\bin\Release\AcquisitionSocketServer.pdb
+C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\obj\Release\AcquisitionSocketServer.csprojResolveAssemblyReference.cache
+C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\obj\Release\AcquisitionSocketServer.exe
+C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\obj\Release\AcquisitionSocketServer.pdb
+C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\bin\Release\CyUSB.dll
