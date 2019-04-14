@@ -37,7 +37,7 @@ class Task(db.Model):
     resolution = db.Column(db.Float)
     bin_length = db.Column(db.Integer)
     start_time = db.Column(db.DateTime, default=datetime.now)
-    end_time = db.Column(db.DateTime)
+    end_time = db.Column(db.DateTime, default=datetime.now)
     data_num = db.Column(db.Integer)
     ver_start_angle = db.Column(db.Float)
     ver_end_angle = db.Column(db.Float)

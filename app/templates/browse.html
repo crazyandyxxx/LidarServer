@@ -12,9 +12,10 @@
             <table class="table table-hover" id="task-table">
                 <thead>
                   <tr>
-                    <th>起止时间</th>
-                    <th>扫描类型</th>
-                    <th>数据量</th>
+                    <th data-field="serialN">序号</th>
+                    <th data-field="timespan">起止时间</th>
+                    <th data-field="mode">扫描类型</th>
+                    <th data-field="datanum">数据量</th>
                   </tr>
                 </thead>
                 <tbody id = task-rows>
@@ -28,6 +29,8 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.14.2/dist/bootstrap-table.min.css">
+    <script src="https://unpkg.com/bootstrap-table@1.14.2/dist/bootstrap-table.min.js"></script>
     <script>
       var startTime = moment().startOf('second').subtract(3, 'days');
       var endTime = moment().startOf('second');
@@ -61,6 +64,7 @@
                     "MOV":'走航扫描',
                     'PPI':'水平切面',
                     'RHI':'垂直切面'}
+        var srId={};
         function checkTask(){
           var tbody = $('#task-rows');     
           $.post('{{ url_for('main.browse') }}',
@@ -69,24 +73,38 @@
            function(data,status){
             tbody.empty();
             if(status == "success"){
+              // for(let i=0; i<data.result.length;i++){
+              //   $('<tr>').append(
+              //     $('<td>').text(data.result[i].start_time+' - '+data.result[i].end_time),
+              //     $('<td>').text(mode[data.result[i].mode]),
+              //     $('<td>').text(data.result[i].data_num)).appendTo(tbody);
+              // };
+              var taskdata=[];
+              srId = {};
               for(let i=0; i<data.result.length;i++){
-                $('<tr>').append(
-                  $('<td>').text(data.result[i].start_time+' - '+data.result[i].end_time),
-                  $('<td>').text(mode[data.result[i].mode]),
-                  $('<td>').text(data.result[i].data_num)).appendTo(tbody);
+                var obj = {};
+                obj.serialN = i+1;
+                obj.timespan = data.result[i].start_time+' - '+data.result[i].end_time;
+                obj.mode = mode[data.result[i].mode];
+                obj.datanum = data.result[i].data_num;
+                taskdata.push(obj);
+                srId[obj.serialN] = data.result[i].id;
               };
+              $('#task-table').bootstrapTable({
+                    data: taskdata,
+                  });
+              $('#task-table').bootstrapTable('load', taskdata);
             };  
           });
         };
 
-        $(function () {
-	$('#task-table').on('click-row.bs.table', function (e, row, element) 
-	{
-		//$(element).css({"color":"blue","font-size":"16px;"});
-		console.log(row);
-		
-	});
-})
+        $('#task-table').on('click-cell.bs.table', function (field, value, row, $el) {
+ 	  if (value !="type"){
+   	  // alert($el.timespan+"-"+$el.mode+"-"+$el.datanum);
+      //  window.open("https://www.stackoverflow.com")
+      alert(srId[$el.serialN]);
+    }
+  });
 
     </script>
 {% endblock %}
