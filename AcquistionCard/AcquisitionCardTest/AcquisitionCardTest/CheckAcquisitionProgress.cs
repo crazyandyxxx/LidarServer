@@ -49,11 +49,12 @@ namespace AcquisitionCardTest
 
                     if (currentAccumNum >= accumTimes) break;
                 }
-                Thread.Sleep(20);
+                Thread.Sleep(80);
             }
-            CheckAcquisitionChannelData(binNum, chA, chB);
+            CheckAcquisitionChannelData(chA, chB);
             count++;
             UpdateAcquisitionCount(count);
+            UpdateChannelDataList(chA, chB);
             if (continued)
                 StartAcquisition();
             else

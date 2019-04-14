@@ -47,6 +47,14 @@ namespace AcquisitionCardTest
             }
 
             resolutionCombo.SelectedIndex = 2;
+
+            listView1.View = View.Details;
+            listView1.GridLines = true;
+
+            listView1.Columns.Add("SN");
+            listView1.Columns.Add("CH_A");
+            listView1.Columns.Add("CH_B");
+
         }
 
         private void buttonStart_Click(object sender, EventArgs e)
@@ -95,7 +103,7 @@ namespace AcquisitionCardTest
             CheckAcquistionProgress();
         }
 
-        private int CheckAcquisitionChannelData(int readLength, byte[] ChA, byte[] ChB)
+        private int CheckAcquisitionChannelData(byte[] ChA, byte[] ChB)
         {
             if (MyDevice != null)
             {
@@ -106,6 +114,7 @@ namespace AcquisitionCardTest
                 CtrlEndPt.Value = 0x00ba;
                 CtrlEndPt.Index = 0x0000;
 
+                var readLength = chA.Length;
                 var readTimes = (int)Math.Ceiling(readLength / 512.0);
                 byte readLen = (byte)(readTimes / 2);
 
@@ -162,6 +171,16 @@ namespace AcquisitionCardTest
                 labelCount.Text = count.ToString();            
             });
 
+        }
+
+        private void UpdateChannelDataList(byte[] chA, byte[] chB)
+        {
+            labelCount.BeginInvoke((MethodInvoker)delegate
+            {
+                listView1.Items.Clear();
+                for(int i=0; i<chA.Length/4;i++)
+                    listView1.Items.Add(new ListViewItem(new string[] { (i+1).ToString(),BitConverter.ToInt32(chA, i * 4).ToString(), BitConverter.ToInt32(chB, i * 4).ToString() }));
+            });
         }
 
         private void InitBtnStart()

@@ -1,9 +1,0 @@
-C:\Server\AcquistionCard\TestView\TestView\bin\Debug\TestView.exe
-C:\Server\AcquistionCard\TestView\TestView\bin\Debug\TestView.pdb
-C:\Server\AcquistionCard\TestView\TestView\bin\Debug\System.Data.SQLite.dll
-C:\Server\AcquistionCard\TestView\TestView\obj\Debug\TestView.csprojResolveAssemblyReference.cache
-C:\Server\AcquistionCard\TestView\TestView\obj\Debug\TestView.Form1.resources
-C:\Server\AcquistionCard\TestView\TestView\obj\Debug\TestView.Properties.Resources.resources
-C:\Server\AcquistionCard\TestView\TestView\obj\Debug\TestView.csproj.GenerateResource.Cache
-C:\Server\AcquistionCard\TestView\TestView\obj\Debug\TestView.exe
-C:\Server\AcquistionCard\TestView\TestView\obj\Debug\TestView.pdb
