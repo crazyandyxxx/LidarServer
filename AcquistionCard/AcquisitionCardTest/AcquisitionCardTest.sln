@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AcquisitionSocketServer", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestView", "TestView\TestView.csproj", "{4FB700BE-9556-4062-82E6-C6899DC8EE14}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EVRadarView.Algorithm", "..\..\LidarBrowse\EVRadarView.Algorithm\EVRadarView.Algorithm.csproj", "{71987A2E-822E-4DFF-928A-D6F541CF068E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EVRadarView.Algorithm", "..\..\..\LidarBrowse\EVRadarView.Algorithm\EVRadarView.Algorithm.csproj", "{71987A2E-822E-4DFF-928A-D6F541CF068E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -57,6 +57,7 @@
             this.labelCardStatus = new System.Windows.Forms.Label();
             this.labelCount = new System.Windows.Forms.Label();
             this.listView1 = new System.Windows.Forms.ListView();
+            this.buttonSave = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // acquisitonProgressBar
@@ -339,10 +340,21 @@
             this.listView1.TabIndex = 31;
             this.listView1.UseCompatibleStateImageBehavior = false;
             // 
+            // buttonSave
+            // 
+            this.buttonSave.Location = new System.Drawing.Point(523, 187);
+            this.buttonSave.Name = "buttonSave";
+            this.buttonSave.Size = new System.Drawing.Size(75, 23);
+            this.buttonSave.TabIndex = 32;
+            this.buttonSave.Text = "保存";
+            this.buttonSave.UseVisualStyleBackColor = true;
+            this.buttonSave.Click += new System.EventHandler(this.buttonSave_Click);
+            // 
             // Form1
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.ClientSize = new System.Drawing.Size(637, 601);
+            this.Controls.Add(this.buttonSave);
             this.Controls.Add(this.listView1);
             this.Controls.Add(this.labelCount);
             this.Controls.Add(this.labelCardStatus);
@@ -411,6 +423,7 @@
         private System.Windows.Forms.Label labelCardStatus;
         private System.Windows.Forms.Label labelCount;
         private System.Windows.Forms.ListView listView1;
+        private System.Windows.Forms.Button buttonSave;
     }
 }
 

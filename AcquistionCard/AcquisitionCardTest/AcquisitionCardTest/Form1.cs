@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -220,6 +221,56 @@ namespace AcquisitionCardTest
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
             continued = checkBox1.Checked;
+        }
+
+        private void buttonSave_Click(object sender, EventArgs e)
+        {
+            
+            var saveThr = new Thread(() => SaveData());
+            saveThr.Start(); 
+        }
+
+        private void SaveData()
+        {
+            string path = @"C:\Server\Test\AqData.txt";
+            var dataL = chA.Length/4;
+            var lchA = new float[dataL];
+            var lchB = new float[dataL]; 
+            var chACutBgnR = new float[dataL];
+            var chBCutBgnR = new float[dataL];
+            var chACutBgn = new float[dataL];
+            var chBCutBgn = new float[dataL];
+            var chAPRR = new float[dataL];
+            var chBPRR = new float[dataL];
+            float noise = 0, aod = 0;
+            int pbl0 = 0, pbl1 = 0;
+            var snr = new float[dataL];
+            var tpb = new float[dataL];
+            var cldB = new float[4];
+            var cldT = new float[4];
+            var sa = new float[dataL];
+            for (int i = 0; i < dataL; i++)
+            {
+                sa[i] = 40;
+                lchA[i] = BitConverter.ToInt32(chA, i * 4);
+                lchB[i] = BitConverter.ToInt32(chB, i * 4);
+            }
+            var ext = new float[dataL];
+            var bac = new float[dataL];
+            var aeroExt = new float[dataL];
+            var aeroBac = new float[dataL];
+            float snrt = 1;
+            EVRadarView.Algorithm.Algorithm algo = new EVRadarView.Algorithm.Algorithm();
+            algo.SignalProcess(lchA, lchB, 1, null, null, 1, 1, chACutBgnR, chBCutBgnR, out noise);
+            algo.SignalAnalysis(chACutBgnR, chBCutBgnR, null, null, noise, 15, 15,snrt, 0.3f, chACutBgn, chBCutBgn, chAPRR, chBPRR, snr, tpb, out pbl0, out pbl1, cldB, cldT);
+            algo.Calculate(15, 90, 532, 0, 20000, 18000, sa,snrt, chACutBgn, chBCutBgn, snr, ext, aeroExt, bac, aeroBac, out aod);
+            using (var sw = new StreamWriter(path))
+            {
+                for(int i = 0;i<chA.Length/4;i++)
+                {
+                    sw.WriteLine(chAPRR[i]+" "+chBPRR[i]+ " "+snr[i] +" " + ext[i]);
+                }
+            }
         }
     }
 }
