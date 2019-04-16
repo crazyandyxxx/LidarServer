@@ -39,3 +39,7 @@ venv36
 venv37
 app.db
 logs
+*.pdb
+*.cache
+*.force
+*.pdb

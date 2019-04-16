@@ -23,11 +23,10 @@ def before_request():
 def index():
     return render_template('system.html')
 
-
 @bp.route('/acquire', methods=['GET', 'POST'])
 @login_required
 def acquire():
-    form = AcquireForm()
+    form = AcquireForm()   
     if form.validate_on_submit():
         mode = form.Mode.data
         freq = form.Frequency.data
@@ -46,22 +45,20 @@ def acquire():
             Stop_acquisition()
             task.complete = True
             db.session.commit()
-        else:    
+            startAcq = 0
+        else: 
             task_id = str(uuid.uuid4())
+            start_acquisition(task_id, mode, freq*dura, binN, resolution, verSt, verEd, verStep, horSt, horEd, horStep)              
             task = Task(id=task_id, mode=mode, laser_freq=freq, duration=dura, resolution=resolution, bin_length=binN, 
                         data_num = 0, ver_start_angle=verSt, ver_end_angle=verEd, ver_step=verStep, 
                         hor_start_angle=horSt, hor_end_angle=horEd,hor_step=horStep)
             db.session.add(task)
-            db.session.commit()
-            start_acquisition(task_id, mode, freq*dura, binN, resolution, verSt, verEd, verStep, horSt, horEd, horStep)         
+            db.session.commit()                    
         return redirect(url_for('main.acquire'))
         
     elif request.method == 'GET':
         task = Task.query.filter_by(complete=False).first()
-        running = check_acquisition_running()
-        inTask = 0
         if task:
-            inTask = 1
             form.Mode.data = task.mode
             form.Frequency.data = task.laser_freq
             form.Duration.data = task.duration
@@ -73,11 +70,7 @@ def acquire():
             form.HorStartAngle.data = task.hor_start_angle
             form.HorEndAngle.data = task.hor_end_angle
             form.HorAngleStep.data = task.hor_step
-            if running:
-                form.submit.label.text = '停止'
-            else:
-                task.complete = True
-                db.session.commit()
+            form.submit.label.text = '停止'
         else:
             form.Frequency.data = 2500
             form.Duration.data = 30
@@ -88,8 +81,7 @@ def acquire():
             form.HorStartAngle.data = 0
             form.HorEndAngle.data = 360
             form.HorAngleStep.data = 5
-        return render_template('acquire.html', title=('数据采集'),
-                                form=form, inTask=inTask)
+        return render_template('acquire.html', title=('数据采集'), form=form)
 
 @bp.route('/browse', methods=['GET', 'POST'])
 @login_required

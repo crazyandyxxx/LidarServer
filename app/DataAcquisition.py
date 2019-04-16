@@ -27,6 +27,8 @@ def start_acquisition(taskId, mode, accumTimes, binNum, resolution, verStartAng,
     r = (json.loads(s.recv(1024).decode()))
     s.close()
 
+    return r['result']
+
 def Stop_acquisition():
     s = socket.socket()
     s.connect((host, port))

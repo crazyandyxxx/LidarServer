@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using CyUSB;
 using System.Data.SQLite;
 using System.Data;
+using System.Runtime.InteropServices;
 
 namespace AcquisitionSocketServer
 {
@@ -18,6 +19,7 @@ namespace AcquisitionSocketServer
         static Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         private static byte[] result = new byte[1024];
 
+        static USBDeviceList usbDevices = null;
         static CyControlEndPoint CtrlEndPt = null;
         static CyUSBDevice MyDevice = null;
         static Thread checkProgressThr;
@@ -29,7 +31,9 @@ namespace AcquisitionSocketServer
         static ushort binNum = 2000;
         static float resolution = 15;
         static string taskId;
-        private static Object acLock = new Object();
+        static Object acLock = new Object();
+        static int currentAccumNum = 0;
+        static int running = 0;
 
         static string path = @"C:\Server\LidarServer\app.db";
 
@@ -43,20 +47,31 @@ namespace AcquisitionSocketServer
             string host = "0.0.0.0";//IP地址
             int port = 6016;//端口
             socket.Bind(new IPEndPoint(IPAddress.Parse(host), port));
-            socket.Listen(100);//设定最多100个排队连接请求   
-            USBDeviceList usbDevices = new USBDeviceList(CyConst.DEVICES_CYUSB);//连接采集卡
+            socket.Listen(100);//设定最多100个排队连接请求             
+
+            usbDevices = new USBDeviceList(CyConst.DEVICES_CYUSB);//连接采集卡
             MyDevice = usbDevices[0] as CyUSBDevice;
             if (MyDevice != null)
+            {
                 CtrlEndPt = MyDevice.ControlEndPt;
+                if (CtrlEndPt != null)
+                {
+                    CtrlEndPt.Target = CyConst.TGT_DEVICE;
+                    CtrlEndPt.ReqType = 0x40;
+                    CtrlEndPt.ReqCode = 0xb8;
+                    CtrlEndPt.Value = 0x00ba;
+                    CtrlEndPt.Index = 0x0000;
+                }
+            }
             else
             {
                 Console.WriteLine("采集卡未连接");
             }
+
             Thread myThread = new Thread(ListenClientConnect);//通过多线程监听客户端连接  
             myThread.Start();
             Console.ReadLine();
         }
-
         /// <summary>  
         /// 监听客户端连接  
         /// </summary>  
@@ -92,15 +107,14 @@ namespace AcquisitionSocketServer
                     switch ((string)cmd.cmdType)
                     {
                         case "acqStart":
-                            taskId = cmd.cmdParams.taskId;
-                            accumTimes = cmd.cmdParams.accumTimes;
-                            binNum = cmd.cmdParams.binNum;
-                            resolution = cmd.cmdParams.resolution;
+                            taskId = (string)cmd.cmdParams.taskId;
+                            accumTimes = (uint)cmd.cmdParams.accumTimes;
+                            binNum = (ushort)cmd.cmdParams.binNum;
+                            resolution = (float)cmd.cmdParams.resolution;
                             ConstructAcquisitionStartCmd();
                             chA = new byte[binNum * 4];
                             chB = new byte[binNum * 4];
-                            StartAcquisition();
-                            resultCode = 1;
+                            resultCode = StartAcquisition();
                             break;
 
                         case "acqStop":
@@ -118,7 +132,7 @@ namespace AcquisitionSocketServer
                     }
                     
                     //给Client端返回信息
-                    string sendStr = "{\"cmdType\":\"" + cmd.cmdType + "\",\"result\":" + resultCode + "}";
+                    string sendStr = "{\"cmdType\":\"" + (string)cmd.cmdType + "\",\"result\":" + resultCode + "}";
                     byte[] bs = Encoding.UTF8.GetBytes(sendStr);//Encoding.UTF8.GetBytes()不然中文会乱码
                     myClientSocket.Send(bs, bs.Length, 0);  //返回信息给客户端
                     myClientSocket.Close(); //发送完数据关闭Socket并释放资源
@@ -134,6 +148,53 @@ namespace AcquisitionSocketServer
             }
         }
 
+        private static int StartAcquisition()
+        {
+            if (CtrlEndPt != null)
+            {
+                int len = acquisitionStartCmd.Length;
+
+                CtrlEndPt.Write(ref acquisitionStartCmd, ref len);
+                //查询采集进度
+                CheckAcquistionProgress();
+                return 1;
+            }
+            else
+                return -1;
+        }
+
+        private static void StopAcquisition()
+        {
+            if (CtrlEndPt != null)
+            {
+                int len = 2;
+                byte[] buf = new byte[] { 0xC4, 0xa0 };
+                CtrlEndPt.Write(ref buf, ref len);
+            }
+            if (checkProgressThr != null)
+                checkProgressThr.Abort();
+        }
+
+        private static int CheckAcquisitionTimes()
+        {
+            return currentAccumNum;
+        }
+
+        private static int CheckAcquisitionRunning()
+        {
+            int rN = 2;
+            var currentR = new int[rN];
+            for (int i = 0; i < rN; i++)
+            {
+                currentR[i] = CheckAcquisitionTimes();
+                System.Threading.Thread.Sleep(50);
+            }
+            if (currentR[1] != currentR[0])
+                return 1;
+            else
+                return 0;
+        }
+
         private static void CheckAcquistionProgress()
         {
             checkProgressThr = new Thread(() => CheckProgressLoop());
@@ -142,49 +203,35 @@ namespace AcquisitionSocketServer
 
         private static void CheckProgressLoop()
         {
-            int currentAccumNum = 0;
-            while (true)
+            if (CtrlEndPt != null)
             {
-                //if (CtrlEndPt != null)
-                //{
-                //    CtrlEndPt.Target = CyConst.TGT_DEVICE;
+                try
+                {
+                    while (true)
+                    {
+                        int len = 2;
+                        byte[] buf = new byte[] { 0xC1, 0x01 };
+                        CtrlEndPt.Write(ref buf, ref len);
 
-                //    CtrlEndPt.ReqType = 0x40;
+                        len = 512;
+                        buf = new byte[len];
 
-                //    CtrlEndPt.ReqCode = 0xb8;
-
-                //    CtrlEndPt.Value = 0x00ba;
-
-                //    CtrlEndPt.Index = 0x0000;
-
-                //    int len = 2;
-
-                //    byte[] buf = new byte[] { 0xC1, 0x01 };
-
-                //    CtrlEndPt.Write(ref buf, ref len);
-                //}
-
-                //if (MyDevice.BulkInEndPt != null)
-                //{
-                //    int len = 512;
-
-                //    byte[] buf = new byte[len];
-
-                //    MyDevice.BulkInEndPt.XferData(ref buf, ref len);
-
-                //    currentAccumNum = BitConverter.ToUInt32(buf, 1);
-
-                //    if (currentAccumNum >= accumTimes) break;
-                //}
-                currentAccumNum = CheckAcquisitionTimes();
-                if (currentAccumNum >= accumTimes) break;
-                Thread.Sleep(20);
+                        MyDevice.BulkInEndPt.XferData(ref buf, ref len);
+                        currentAccumNum = (int)BitConverter.ToUInt32(buf, 1);
+                        if (currentAccumNum >= accumTimes) break;
+                        Thread.Sleep(40);
+                    }
+                    CheckAcquisitionChannelData(chA, chB);
+                    Console.WriteLine(DateTime.Now + "   " + currentAccumNum);
+                    Thread receiveThread = new Thread(UpdateAcquisitionDB);
+                    receiveThread.Start();
+                    StartAcquisition();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
             }
-            CheckAcquisitionChannelData(binNum, chA, chB);
-            Console.WriteLine(DateTime.Now + "   " + currentAccumNum);
-            Thread receiveThread = new Thread(UpdateAcquisitionDB);
-            receiveThread.Start();
-            StartAcquisition();
         }
 
         private static void UpdateAcquisitionDB()
@@ -223,19 +270,13 @@ namespace AcquisitionSocketServer
             cn.Close();
         }
 
-        private static int CheckAcquisitionChannelData(int readLength, byte[] ChA, byte[] ChB)
+        private static int CheckAcquisitionChannelData(byte[] ChA, byte[] ChB)
         {
-            if (MyDevice != null)
+            if (CtrlEndPt != null)
             {
-                CtrlEndPt.Target = CyConst.TGT_DEVICE;
-                CtrlEndPt.ReqType = 0x40;
-                CtrlEndPt.ReqCode = 0xb8;
-                CtrlEndPt.Value = 0x00ba;
-                CtrlEndPt.Index = 0x0000;
-
-                byte readLen = 8;
-                var readTimes = (int)readLen * 2;
-                var readbytes = new byte[readLen * 1024];
+                var readLength = chA.Length;
+                var readTimes = (int)Math.Ceiling(readLength / 512.0);
+                byte readLen = (byte)(readTimes / 2);
 
                 int len = 3;
                 byte[] bufA = new byte[] { 0xC2, 0xca, readLen };
@@ -243,12 +284,13 @@ namespace AcquisitionSocketServer
 
                 len = 512;
                 bufA = new byte[len];
-                for (int i = 0; i < readTimes; i++)
+                for (int i = 0; i < readTimes - 1; i++)
                 {
                     MyDevice.BulkInEndPt.XferData(ref bufA, ref len);
-                    Array.Copy(bufA, 0, readbytes, 512 * i, 512);
+                    Array.Copy(bufA, 0, ChA, 512 * i, 512);
                 }
-                Array.Copy(readbytes, 0, ChA, 0, ChA.Length);
+                MyDevice.BulkInEndPt.XferData(ref bufA, ref len);
+                Array.Copy(bufA, 0, ChA, 512 * (readTimes - 1), readLength % 512);
 
                 len = 3;
                 byte[] bufB = new byte[] { 0xC2, 0xcb, readLen };
@@ -256,64 +298,19 @@ namespace AcquisitionSocketServer
 
                 len = 512;
                 bufB = new byte[len];
-                for (int i = 0; i < readTimes; i++)
+                for (int i = 0; i < readTimes - 1; i++)
                 {
                     MyDevice.BulkInEndPt.XferData(ref bufB, ref len);
-                    Array.Copy(bufB, 0, readbytes, 512 * i, 512);
+                    Array.Copy(bufB, 0, ChB, 512 * i, 512);
                 }
-                Array.Copy(readbytes, 0, ChB, 0, ChB.Length);
+                MyDevice.BulkInEndPt.XferData(ref bufB, ref len);
+                Array.Copy(bufB, 0, ChB, 512 * (readTimes - 1), readLength % 512);
 
                 return 0;
             }
             else
                 return -1;
-        }
-
-        private static void StartAcquisition()
-        {
-            if (CtrlEndPt != null)
-            {
-                CtrlEndPt.Target = CyConst.TGT_DEVICE;
-
-                CtrlEndPt.ReqType = 0x40;
-
-                CtrlEndPt.ReqCode = 0xb8;
-
-                CtrlEndPt.Value = 0x00ba;
-
-                CtrlEndPt.Index = 0x0000;
-
-                int len = acquisitionStartCmd.Length;
-
-                CtrlEndPt.Write(ref acquisitionStartCmd, ref len);
-            }
-
-            //查询采集进度
-            CheckAcquistionProgress();
-        }
-
-        private static void StopAcquisition()
-        {
-            if (CtrlEndPt != null)
-            {
-                CtrlEndPt.Target = CyConst.TGT_DEVICE;
-
-                CtrlEndPt.ReqType = 0x40;
-
-                CtrlEndPt.ReqCode = 0xb8;
-
-                CtrlEndPt.Value = 0x00ba;
-
-                CtrlEndPt.Index = 0x0000;
-
-                int len = 2;
-
-                byte[] buf = new byte[] { 0xC4, 0xa0 };
-
-                CtrlEndPt.Write(ref buf, ref len);
-            }
-
-            checkProgressThr.Abort();
+         
         }
 
         private static void ConstructAcquisitionStartCmd()
@@ -345,65 +342,6 @@ namespace AcquisitionSocketServer
             Array.Copy(chBThBytes, 0, acquisitionStartCmd, 12, 2);
             Array.Copy(chCThBytes, 0, acquisitionStartCmd, 14, 2);
             acquisitionStartCmd[16] = 0xff;
-        }
-
-        private static int CheckAcquisitionTimes()
-        {
-            lock (acLock)
-            {
-                if (MyDevice != null)
-                {
-                    CtrlEndPt.Target = CyConst.TGT_DEVICE;
-                    CtrlEndPt.ReqType = 0x40;
-                    CtrlEndPt.ReqCode = 0xb8;
-                    CtrlEndPt.Value = 0x00ba;
-                    CtrlEndPt.Index = 0x0000;
-
-                    int len = 2;
-                    byte[] buf = new byte[] { 0xC1, 0x01 };
-                    CtrlEndPt.Write(ref buf, ref len);
-
-                    len = 512;
-                    buf = new byte[len];
-                    MyDevice.BulkInEndPt.XferData(ref buf, ref len);
-
-                    uint currentAccumNum = BitConverter.ToUInt32(buf, 1);
-
-                    return (int)currentAccumNum;
-                }
-                else
-                    return -1;
-            }
-        }
-
-        private static int CheckAcquisitionRunning()
-        {
-            if (MyDevice != null)
-            {
-                CtrlEndPt.Target = CyConst.TGT_DEVICE;
-                CtrlEndPt.ReqType = 0x40;
-                CtrlEndPt.ReqCode = 0xb8;
-                CtrlEndPt.Value = 0x00ba;
-                CtrlEndPt.Index = 0x0000;
-
-                int currentR = 0;
-                for (int i = 0; i < 10; i++)
-                {
-                    int len = 2;
-                    byte[] buf = new byte[] { 0xC1, 0x01 };
-                    CtrlEndPt.Write(ref buf, ref len);
-
-                    len = 512;
-                    buf = new byte[len];
-                    MyDevice.BulkInEndPt.XferData(ref buf, ref len);
-                    currentR = buf[0];
-                    System.Threading.Thread.Sleep(1);
-                }
-
-                return currentR;
-            }
-            else
-                return -1;
         }
     }
 }

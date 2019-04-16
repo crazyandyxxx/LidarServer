@@ -104,7 +104,8 @@ namespace TestView
 
                 for (int j = dataL / 2-1; j >= 0; j--)
                 {
-                    Color c = Color.FromArgb((int)(chAPRR[j] / 100000 * 255), (int)(chAPRR[j] / 100000 * 255), (int)(chAPRR[j] / 100000 * 255));
+                    var cln = (int)(chAPRR[j] / 100000 * 255) > 255 ? 255 : (int)(chAPRR[j] / 100000 * 255);
+                    Color c = Color.FromArgb(cln, cln, cln);
                     bmpPRR.SetPixel(i, j, c);
                 }
             }

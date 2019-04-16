@@ -101,8 +101,8 @@
         $('#task-table').on('click-cell.bs.table', function (field, value, row, $el) {
  	  if (value !="type"){
    	  // alert($el.timespan+"-"+$el.mode+"-"+$el.datanum);
-      //  window.open("https://www.stackoverflow.com")
-      alert(srId[$el.serialN]);
+       window.open("{{ url_for('main.index') }}")
+      // alert(srId[$el.serialN]);
     }
   });
 
