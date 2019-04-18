@@ -115,7 +115,19 @@ def get_device_status():
 @bp.route('/task/<task_id>', methods=['GET', 'POST'])
 @login_required
 def browse_task(task_id):
-    mode = Task.query.filter_by(task_id = task_id).first().mode
-    if(mode=='PPI'):
-        task_dat = TaskData.query.filter_by(task_id=task_id).all()
-        return render_template('task_PPI.html', title=('数据浏览'), task_id=task_id)
+    if request.method == 'GET':
+        mode = Task.query.filter_by(id = task_id).first().mode
+        if mode=='PPI':
+            task_dat = TaskData.query.filter_by(task_id=task_id).all()
+            return render_template('task_PPI.html', title=('水平切面浏览'), task_id=task_id)
+        elif mode=='RHI':
+            task_dat = TaskData.query.filter_by(task_id=task_id).all()
+            return render_template('task_RHI.html', title=('垂直切面浏览'), task_id=task_id)
+        elif mode=='LOS':
+            task_dat = TaskData.query.filter_by(task_id=task_id).all()
+            return render_template('task_LOS.html', title=('定点扫描浏览'), task_id=task_id)
+        elif mode=='MOV':
+            task_dat = TaskData.query.filter_by(task_id=task_id).all()
+            return render_template('task_MOV.html', title=('走航扫描浏览'), task_id=task_id)
+    if request.method == 'POST':
+        pass
