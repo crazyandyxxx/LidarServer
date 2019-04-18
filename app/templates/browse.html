@@ -98,10 +98,11 @@
           });
         };
 
-        $('#task-table').on('click-cell.bs.table', function (field, value, row, $el) {
+  $('#task-table').on('click-cell.bs.table', function (field, value, row, $el) {
  	  if (value !="type"){
-   	  // alert($el.timespan+"-"+$el.mode+"-"+$el.datanum);
-       window.open("{{ url_for('main.index') }}")
+       // alert($el.timespan+"-"+$el.mode+"-"+$el.datanum);
+       task_id = srId[$el.serialN];
+       window.open("{{ url_for('main.browse_task', task_id=task_id) }}"+task_id);
       // alert(srId[$el.serialN]);
     }
   });

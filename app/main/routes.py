@@ -6,7 +6,7 @@ from app import db
 from app.main.forms import AcquireForm
 from app.main import bp
 from app.DataAcquisition import start_acquisition, Stop_acquisition, check_acquisition_times, check_acquisition_running
-from app.models import Task
+from app.models import Task, TaskData
 import uuid
 
 
@@ -111,3 +111,11 @@ def get_device_status():
             'name': 'acquire_progress',
             'data': progress
         }])
+
+@bp.route('/task/<task_id>', methods=['GET', 'POST'])
+@login_required
+def browse_task(task_id):
+    mode = Task.query.filter_by(task_id = task_id).first().mode
+    if(mode=='PPI'):
+        task_dat = TaskData.query.filter_by(task_id=task_id).all()
+        return render_template('task_PPI.html', title=('数据浏览'), task_id=task_id)

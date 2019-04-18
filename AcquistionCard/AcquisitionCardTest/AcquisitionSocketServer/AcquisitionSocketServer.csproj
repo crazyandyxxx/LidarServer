@@ -51,11 +51,28 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AcquisitionControl.cs" />
+    <Compile Include="AcquisitionParameters.cs" />
+    <Compile Include="DBAccess.cs" />
+    <Compile Include="GetAcquistionCard.cs" />
+    <Compile Include="GPSControl.cs" />
+    <Compile Include="PanControl.cs" />
+    <Compile Include="Properties\AcquisitionServerSetting.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>AcquisitionServerSetting.settings</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReceiveRequest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <WCFMetadata Include="Service References\" />
+    <None Include="app.config" />
+    <None Include="Properties\app.config" />
+    <None Include="Properties\AcquisitionServerSetting.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>AcquisitionServerSetting.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
