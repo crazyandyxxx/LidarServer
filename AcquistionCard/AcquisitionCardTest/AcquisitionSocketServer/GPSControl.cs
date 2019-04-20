@@ -10,6 +10,11 @@ namespace AcquisitionSocketServer
     {
         static SerialPort gpsPort = new SerialPort();
 
+        private static string CheckLonLatAlt()
+        {
+            return "{\"longitude\":" + longitude + ",\"latitude\":" + latitude + ",\"altitude\":" + altitude + "}";
+        }
+
         private static void SetGPSPort()
         {
             gpsPort.BaudRate = 9600;

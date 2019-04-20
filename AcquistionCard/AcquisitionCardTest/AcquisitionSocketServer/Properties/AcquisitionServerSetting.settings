@@ -3,13 +3,13 @@
   <Profiles />
   <Settings>
     <Setting Name="DBPath" Type="System.String" Scope="User">
-      <Value Profile="(Default)">C:\Server\LidarServer\app.db</Value>
+      <Value Profile="(Default)">C:\Server\LidarProject\LidarServer\app.db</Value>
     </Setting>
     <Setting Name="GPSPort" Type="System.String" Scope="User">
       <Value Profile="(Default)">COM1</Value>
     </Setting>
     <Setting Name="PanPort" Type="System.String" Scope="User">
-      <Value Profile="(Default)">COM3</Value>
+      <Value Profile="(Default)">COM2</Value>
     </Setting>
   </Settings>
 </SettingsFile>

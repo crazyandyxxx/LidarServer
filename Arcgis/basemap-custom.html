@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <title>Custom Basemap - 4.11</title>
+
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+
+    <link
+      href="https://js.arcgis.com/4.11/esri/themes/light/main.css"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <script src="https://js.arcgis.com/4.11/"></script>
+
+    <script>
+      require([
+        "esri/layers/WebTileLayer",
+        "esri/Map",
+        "esri/Basemap",
+        "esri/widgets/BasemapGallery",
+        "esri/views/SceneView",
+        "esri/views/MapView",
+        "esri/layers/MapImageLayer",
+        "esri/layers/support/MapImage",
+        "esri/layers/GraphicsLayer",
+        "esri/Graphic"
+      ], function(WebTileLayer, Map, Basemap, BasemapGallery, SceneView, MapView, MapImageLayer, MapImage, GraphicsLayer, Graphic) {
+        // Create a WebTileLayer with a third-party cached service
+        var aMapVecBaseLayer = new WebTileLayer({
+          urlTemplate:
+            //"https://stamen-tiles-{subDomain}.a.ssl.fastly.net/terrain/{level}/{col}/{row}.png",
+            "http://wprd03.is.autonavi.com/appmaptile?x={col}&y={row}&z={level}&lang=zh_cn&size=1&scl=1&style=7",
+        });
+        var aMapImgBaseLayer = new WebTileLayer({
+          urlTemplate:
+            //"https://stamen-tiles-{subDomain}.a.ssl.fastly.net/terrain/{level}/{col}/{row}.png",
+            "http://wprd03.is.autonavi.com/appmaptile?x={col}&y={row}&z={level}&lang=zh_cn&size=1&scl=1&style=8",
+            //"http://webst02.is.autonavi.com/appmaptile?style=8&x={col}&y={row}&z={level}"
+        });
+        var gMapImgBaseLayer = new WebTileLayer({
+          urlTemplate:
+            //"https://stamen-tiles-{subDomain}.a.ssl.fastly.net/terrain/{level}/{col}/{row}.png",
+            "http://mt0.google.cn/vt/lyrs=y@126&hl=zh-CN&gl=cn&src=app&s=G&x={col}&y={row}&z={level}",
+            //"http://webst02.is.autonavi.com/appmaptile?style=8&x={col}&y={row}&z={level}"
+        });
+        // Create a Basemap with the WebTileLayer. The thumbnailUrl will be used for
+        // the image in the BasemapToggle widget.
+        var aMapVec = new Basemap({
+          baseLayers: [aMapVecBaseLayer],
+          title: "高德矢量图",
+          id: "g Map Vector",
+          thumbnailUrl:
+            "http://wprd03.is.autonavi.com/appmaptile?x=10&y=10&z=5&lang=zh_cn&size=1&scl=1&style=7"
+        });
+        var aMapImg = new Basemap({
+          baseLayers: [aMapImgBaseLayer],
+          title: "高德影像图",
+          id: "g Map Img",
+          thumbnailUrl:
+            "http://wprd03.is.autonavi.com/appmaptile?x=10&y=10&z=5&lang=zh_cn&size=1&scl=1&style=8"
+        });
+        var gMapImg = new Basemap({
+          baseLayers: [gMapImgBaseLayer],
+          title: "谷歌影像图",
+          id: "a Map Img",
+          thumbnailUrl:
+            "http://mt0.google.cn/vt/lyrs=y@126&hl=zh-CN&gl=cn&src=app&s=G&x=0&y=0&z=0"
+        });
+
+        var map = new Map({
+          basemap: aMapVec
+        });
+        
+        /*********************
+         * Add graphics layer
+         *********************/
+
+         var graphicsLayer = new GraphicsLayer();
+        map.add(graphicsLayer);
+
+        /*************************
+         * Add a 3D point graphic
+         *************************/
+
+        // London
+        var point = {
+          type: "point", // autocasts as new Point()
+          x: -0.178,
+          y: 51.48791,
+          z: 1010
+        };
+
+        markerSymbol = {
+          type: "simple-marker", // autocasts as new SimpleMarkerSymbol()
+          color: [226, 119, 40],
+          outline: {
+            // autocasts as new SimpleLineSymbol()
+            color: [255, 255, 255],
+            width: 2
+          }
+        };
+
+        var pointGraphic = new Graphic({
+          geometry: point,
+          symbol: markerSymbol
+        });
+
+        graphicsLayer.add(pointGraphic);
+
+        /****************************
+         * Add a 3D polyline graphic
+         ****************************/
+
+        var polyline = {
+          type: "polyline", // autocasts as new Polyline()
+          paths: [[-0.178, 51.48791, 0], [-0.178, 51.48791, 1000]]
+        };
+
+        lineSymbol = {
+          type: "simple-line", // autocasts as SimpleLineSymbol()
+          color: [226, 119, 40],
+          width: 4
+        };
+
+        var polylineGraphic = new Graphic({
+          geometry: polyline,
+          symbol: lineSymbol
+        });
+
+        graphicsLayer.add(polylineGraphic);
+
+        /***************************
+         * Add a 3D polygon graphic
+         ***************************/
+
+        var polygon = {
+          type: "polygon", // autocasts as new Polygon()
+          rings: [
+            [-0.186, 51.48391, 0],
+            [-0.186, 51.49191, 0],
+            [-0.172, 51.49191, 0],
+            [-0.172, 51.48391, 0],
+            [-0.186, 51.48391, 0]
+          ]
+        };
+
+        var fillSymbol = {
+          type: "simple-fill", // autocasts as new SimpleFillSymbol()
+          color: [227, 139, 79, 0.8],
+          outline: {
+            // autocasts as new SimpleLineSymbol()
+            color: [255, 255, 255],
+            width: 1
+          }
+        };
+
+        var polygonGraphic = new Graphic({
+          geometry: polygon,
+          symbol: fillSymbol
+        });
+
+        graphicsLayer.add(polygonGraphic);
+
+        var view = new MapView({
+          container: "viewDiv",
+          map: map,
+          // center: [116.68, 39.68],
+          zoom: 9
+        });
+
+        var basemapGallery = new BasemapGallery({
+          view: view,
+          source:[aMapVec, aMapImg, gMapImg]
+        });
+
+        // Add the widget to the top-right corner of the view
+        view.ui.add(basemapGallery, {
+          position: "top-right"
+        });
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv"></div>
+  </body>
+</html>

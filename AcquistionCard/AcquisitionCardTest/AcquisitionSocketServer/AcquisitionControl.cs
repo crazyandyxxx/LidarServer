@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
+//using System.Threading.Tasks;
 
 namespace AcquisitionSocketServer
 {
@@ -15,9 +15,9 @@ namespace AcquisitionSocketServer
 
         private static void StartAcquisitionProgress()
         {
-            //AcquisitionProgressThr = new Thread(() => AcquisitionProgressLoop());
-            //AcquisitionProgressThr.Start();
-            Task.Factory.StartNew(() => AcquisitionProgressLoop(),cts.Token);
+            AcquisitionProgressThr = new Thread(() => AcquisitionProgressLoop());
+            AcquisitionProgressThr.Start();
+            //Task.Factory.StartNew(() => AcquisitionProgressLoop(),cts.Token);
         }
 
         private static void StopAcquisitionProgress()
@@ -28,9 +28,9 @@ namespace AcquisitionSocketServer
                 byte[] buf = new byte[] { 0xC4, 0xa0 };
                 CtrlEndPt.Write(ref buf, ref len);
             }
-            //if (AcquisitionProgressThr != null)
-            //    AcquisitionProgressThr.Abort();
-            cts.Cancel();
+            if (AcquisitionProgressThr != null)
+                AcquisitionProgressThr.Abort();
+            //cts.Cancel();
 
             acquisitionCount = 0;
         }
@@ -69,9 +69,9 @@ namespace AcquisitionSocketServer
                         CheckAcquisitionChannelData(chA, chB);//读取通道数据
                         acquisitionCount++;//采集组数递增
                         Console.WriteLine(DateTime.Now + "   " + acquisitionCount+"   "+ currentAccumNum);
-                        //dbThread = new Thread(UpdateAcquisitionDB);//数据入库
-                        //dbThread.Start();                      
-                        Task.Factory.StartNew(() => UpdateAcquisitionDB());
+                        dbThread = new Thread(UpdateAcquisitionDB);//数据入库
+                        dbThread.Start();                      
+                        //Task.Factory.StartNew(() => UpdateAcquisitionDB());
                     }
                     catch (Exception ex)
                     {

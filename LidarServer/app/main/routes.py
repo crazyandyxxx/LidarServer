@@ -5,7 +5,8 @@ from flask_login import current_user, login_required
 from app import db
 from app.main.forms import AcquireForm
 from app.main import bp
-from app.DataAcquisition import start_acquisition, Stop_acquisition, check_acquisition_times, check_acquisition_running
+# from app.DataAcquisition import start_acquisition, Stop_acquisition, check_acquisition_times, check_acquisition_running
+from app.DataAcquisition import *
 from app.models import Task, TaskData
 import uuid
 
@@ -75,8 +76,8 @@ def acquire():
             form.Frequency.data = 2500
             form.Duration.data = 30
             form.BinLen.data = 2000
-            form.VerStartAngle.data = 90
-            form.VerEndAngle.data = 180
+            form.VerStartAngle.data = 0
+            form.VerEndAngle.data = 90
             form.VerAngleStep.data = 5
             form.HorStartAngle.data = 0
             form.HorEndAngle.data = 360
@@ -106,10 +107,20 @@ def browse():
 @login_required
 def get_device_status():
     progress = check_acquisition_times()
+    gps = check_gps()
+    heading = check_heading()
     return jsonify([
         {
             'name': 'acquire_progress',
             'data': progress
+        },
+        {
+            'name': 'acquire_gps',
+            'data': gps
+        },
+        {
+            'name': 'acquire_heading',
+            'data': heading
         }])
 
 @bp.route('/task/<task_id>', methods=['GET', 'POST'])

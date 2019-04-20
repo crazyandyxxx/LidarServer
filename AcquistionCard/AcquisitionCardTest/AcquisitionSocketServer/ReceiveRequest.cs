@@ -26,7 +26,7 @@ namespace AcquisitionSocketServer
                         return;
                     //Console.WriteLine("接收客户端{0} 的消息：{1}", myClientSocket.RemoteEndPoint.ToString(), Encoding.UTF8.GetString(result, 0, receiveNumber));
                     dynamic cmd = JsonConvert.DeserializeObject(Encoding.UTF8.GetString(result, 0, receiveNumber));
-                    int resultCode = 0;
+                    string resultCode="";
                     switch ((string)cmd.cmdType)
                     {
                         case "acqStart":
@@ -35,20 +35,28 @@ namespace AcquisitionSocketServer
                             chA = new byte[binNum * 4];
                             chB = new byte[binNum * 4];
                             StartAcquisitionProgress();
-                            resultCode = 1;
+                            resultCode = "1";
                             break;
 
                         case "acqStop":
                             StopAcquisitionProgress();
-                            resultCode = 1;
+                            resultCode = "1";
                             break;
 
                         case "acqProgress":
-                            resultCode = CheckAcquisitionTimes();
+                            resultCode = CheckAcquisitionTimes().ToString();
                             break;
 
                         case "acqRunning":
-                            resultCode = CheckAcquisitionRunning();
+                            resultCode = CheckAcquisitionRunning().ToString();
+                            break;
+
+                        case "acqGPS":
+                            resultCode = CheckLonLatAlt();
+                            break;
+
+                        case "headingpitch":
+                            resultCode = CheckHeadingPitch();
                             break;
                     }
 

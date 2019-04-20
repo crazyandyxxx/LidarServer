@@ -77,12 +77,6 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\LidarBrowse\EVRadarView.Algorithm\EVRadarView.Algorithm.csproj">
-      <Project>{71987a2e-822e-4dff-928a-d6f541cf068e}</Project>
-      <Name>EVRadarView.Algorithm</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

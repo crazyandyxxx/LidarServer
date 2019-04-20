@@ -34,7 +34,7 @@ namespace AcquisitionSocketServer
             socket.Bind(new IPEndPoint(IPAddress.Parse(host), port));
             socket.Listen(100);//设定最多100个排队连接请求             
             GetAcqCard();//连接采集卡
-            Task.Factory.StartNew(()=>ListenClientConnect(),TaskCreationOptions.LongRunning);//通过多线程监听客户端连接              
+            Task.Factory.StartNew(() => ListenClientConnect(), TaskCreationOptions.LongRunning);//通过多线程监听客户端连接              
             Console.ReadLine();
         }
         /// <summary>  
@@ -47,7 +47,7 @@ namespace AcquisitionSocketServer
                 Socket clientSocket = socket.Accept();
                 //Thread receiveThread = new Thread(ReceiveMessage);
                 //receiveThread.Start(clientSocket);
-                Task.Factory.StartNew(() => ReceiveMessage(clientSocket));
+                Task.Factory.StartNew(() => ReceiveMessage(clientSocket), TaskCreationOptions.LongRunning);
 
             }
         }

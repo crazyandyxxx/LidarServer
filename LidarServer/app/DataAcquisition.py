@@ -2,7 +2,7 @@ import socket               # 导入 socket 模块
 import json 
 import time
         
-host = '192.168.31.135' # 获取本地主机名
+host = '192.168.31.155' # 获取本地主机名
 port = 6016                # 设置端口号
  
 
@@ -60,6 +60,28 @@ def check_acquisition_running():
     r = (json.loads(s.recv(1024).decode()))
     s.close()
     return r['result']    
+
+def check_gps():
+    s = socket.socket()
+    s.connect((host, port))
+    acq_params = {}
+    start_cmd={'cmdType':'acqGPS', 'cmdParams':acq_params}
+
+    s.sendall(json.dumps(start_cmd).encode())
+    r = (json.loads(s.recv(1024).decode()))
+    s.close()
+    return r['result'] 
+
+def check_heading():
+    s = socket.socket()
+    s.connect((host, port))
+    acq_params = {}
+    start_cmd={'cmdType':'headingpitch', 'cmdParams':acq_params}
+
+    s.sendall(json.dumps(start_cmd).encode())
+    r = (json.loads(s.recv(1024).decode()))
+    s.close()
+    return r['result'] 
 
 # for i in range(1,300):
 #     start_acquisition(10,'los',25000,2000,15,90,90,5,0,360,5)  

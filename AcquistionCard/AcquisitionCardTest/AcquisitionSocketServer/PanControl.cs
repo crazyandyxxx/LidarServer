@@ -3,12 +3,18 @@ using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace AcquisitionSocketServer
 {
     partial class Program
     {
         static SerialPort panPort = new SerialPort();
+
+        private static string CheckHeadingPitch()
+        {
+            return "{\"heading\":" + currentHorAng + ",\"pitch\":" + currentVerAng + "}";
+        }
 
         private static void SetPanPort()
         {
@@ -24,42 +30,50 @@ namespace AcquisitionSocketServer
             catch (Exception ex)
             {
                 Console.WriteLine("转台串口打开失败!");
+                return;
             }
+            Thread.Sleep(200);
+            currentVerAng = VerPosition();
+            Thread.Sleep(200);
+            currentHorAng = HorPosition();
         }
 
         private static void WaitPanToAngle()
         {
-            var horN = (int)(((horEndAng - horStartAng)+360)%360 / horAngStep);
+            var horAngDiff = horEndAng - horStartAng > 0 ? horEndAng - horStartAng : ((horEndAng - horStartAng) + 360) % 360;
+            var horN = (int)(horAngDiff / horAngStep);
             var verN = (int)(((verEndAng - verStartAng)+360)%360 / verAngStep);
             if (mode == "PPI")
             {
                 var horTargetAng = horStartAng + acquisitionCount % (horN + 1) * horAngStep;
+                if (horTargetAng > 360) horTargetAng = horTargetAng % 360;
                 ToHorAngle(horTargetAng);
                 int iloop = 0;
-                while (iloop < 500)
+                while (iloop < 50)
                 {
+                    Thread.Sleep(500);
                     currentHorAng = HorPosition();
-                    if (Math.Abs(currentHorAng - horTargetAng) < 0.5)
+                    if (IsInPosition(currentHorAng,horTargetAng))
                     {
                         currentHorAng = horTargetAng;
                         break;
-                    }
-                    System.Threading.Thread.Sleep(50);
+                    }                  
                     iloop++;
                 }
                 currentHorAng = horTargetAng;
 
                 ToVerAngle(verStartAng);
                 iloop = 0;
-                while (iloop < 500)
+                while (iloop < 50)
                 {
+                    Thread.Sleep(500);
                     currentVerAng = VerPosition();
-                    if (Math.Abs(currentVerAng - verStartAng) < 0.5)
+                    if (IsInPosition(currentVerAng, verStartAng))
                     {
                         currentVerAng = verStartAng;
                         break;
                     }
-                    System.Threading.Thread.Sleep(50);
+                    
                     iloop++;
                 }
                 currentVerAng = verStartAng;
@@ -69,34 +83,48 @@ namespace AcquisitionSocketServer
                 var VerTargetAng = verStartAng + acquisitionCount % (verN + 1) * verAngStep;
                 ToHorAngle(horStartAng);
                 int iloop = 0;
-                while (iloop < 500)
+                while (iloop < 50)
                 {
+                    Thread.Sleep(500);
                     currentHorAng = HorPosition();
-                    if (Math.Abs(currentHorAng - horStartAng) < 0.5)
+                    if (IsInPosition(currentHorAng, horStartAng))
                     {
                         currentHorAng = horStartAng;
                         break;
                     }
-                    System.Threading.Thread.Sleep(50);
+                    
                     iloop++;
                 }
                 currentHorAng = horStartAng;
 
                 ToVerAngle(VerTargetAng);
                 iloop = 0;
-                while (iloop < 500)
+                while (iloop < 50)
                 {
+                    Thread.Sleep(500);
                     currentVerAng = VerPosition();
-                    if (Math.Abs(currentVerAng - VerTargetAng) < 0.5)
+                    if (IsInPosition(currentVerAng, VerTargetAng))
                     {
                         currentVerAng = VerTargetAng;
                         break;
                     }
-                    System.Threading.Thread.Sleep(50);
                     iloop++;
                 }
                 currentVerAng = VerTargetAng;
             }
+        }
+
+        private static bool IsInPosition(float currentAng, float targetAng)
+        {
+            if (Math.Abs(currentAng - targetAng) < 0.5)
+                return true;
+
+            if (targetAng < 1 || targetAng > 359)
+            {
+                if (currentAng < 1 || currentAng > 359)
+                    return true;
+            }
+            return false;
         }
 
         private static void ToHorAngle(float angle)
@@ -105,7 +133,7 @@ namespace AcquisitionSocketServer
             var bt = BitConverter.GetBytes((ushort)(angle * 100));
             PanPositionByte[4] = bt[1];
             PanPositionByte[5] = bt[0];
-            PanPositionByte[6] = (byte)(bt[1] + bt[2] + bt[3] + bt[4] + bt[5]);
+            PanPositionByte[6] = (byte)(PanPositionByte[1] + PanPositionByte[2] + PanPositionByte[3] + PanPositionByte[4] + PanPositionByte[5]);
             SerialPortCommunicate(PanPositionByte, null, panPort);
         }
 
@@ -115,7 +143,7 @@ namespace AcquisitionSocketServer
             var bt = BitConverter.GetBytes((ushort)(angle * 100));
             PanPositionByte[4] = bt[1];
             PanPositionByte[5] = bt[0];
-            PanPositionByte[6] = (byte)(bt[1] + bt[2] + bt[3] + bt[4] + bt[5]);
+            PanPositionByte[6] = (byte)(PanPositionByte[1] + PanPositionByte[2] + PanPositionByte[3] + PanPositionByte[4] + PanPositionByte[5]);
             SerialPortCommunicate(PanPositionByte, null, panPort);
         }
 

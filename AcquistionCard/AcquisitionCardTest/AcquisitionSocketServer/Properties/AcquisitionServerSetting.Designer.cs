@@ -25,7 +25,7 @@ namespace AcquisitionSocketServer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Server\\LidarServer\\app.db")]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Server\\LidarProject\\LidarServer\\app.db")]
         public string DBPath {
             get {
                 return ((string)(this["DBPath"]));
@@ -49,7 +49,7 @@ namespace AcquisitionSocketServer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("COM3")]
+        [global::System.Configuration.DefaultSettingValueAttribute("COM2")]
         public string PanPort {
             get {
                 return ((string)(this["PanPort"]));

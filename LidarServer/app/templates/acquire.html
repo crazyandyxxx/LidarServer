@@ -6,6 +6,10 @@
     <div class="alert alert-success" role="alert">
         采集进度
         <span id="acquisition-progress"></span>
+
+        <span id="lonlatpos"></span>
+
+        <span id="pithcrollang"></span>
     </div>
     <div class="row">
         <div class="col-md-4">
@@ -22,6 +26,14 @@
             }
         }
 
+        function set_require_gps(progress) {  
+                $('#lonlatpos').text("    经度"+progress.longitude+"    纬度"+progress.latitude+"    海拔"+progress.altitude);
+        }
+        
+        function set_require_heading(progress) {  
+                $('#pithcrollang').text("    方位角"+progress.heading+"    俯仰角"+progress.pitch);
+        }
+
         {% if current_user.is_authenticated %}
         $(function() {
             var since = 0;
@@ -32,7 +44,13 @@
                             switch (notifications[i].name) {
                                 case 'acquire_progress':
                                     set_require_progress(notifications[i].data);
-                                    break;                                   
+                                    break;
+                                case 'acquire_gps':
+                                    set_require_gps(notifications[i].data);
+                                    break;    
+                                case 'acquire_heading':
+                                    set_require_heading(notifications[i].data);
+                                    break;                                
                             }
                             since = notifications[i].timestamp;
                         }

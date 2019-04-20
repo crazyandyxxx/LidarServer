@@ -260,10 +260,10 @@ namespace AcquisitionCardTest
             var aeroExt = new float[dataL];
             var aeroBac = new float[dataL];
             float snrt = 1;
-            EVRadarView.Algorithm.Algorithm algo = new EVRadarView.Algorithm.Algorithm();
-            algo.SignalProcess(lchA, lchB, 1, null, null, 1, 1, chACutBgnR, chBCutBgnR, out noise);
-            algo.SignalAnalysis(chACutBgnR, chBCutBgnR, null, null, noise, 15, 15,snrt, 0.3f, chACutBgn, chBCutBgn, chAPRR, chBPRR, snr, tpb, out pbl0, out pbl1, cldB, cldT);
-            algo.Calculate(15, 90, 532, 0, 20000, 18000, sa,snrt, chACutBgn, chBCutBgn, snr, ext, aeroExt, bac, aeroBac, out aod);
+            //EVRadarView.Algorithm.Algorithm algo = new EVRadarView.Algorithm.Algorithm();
+            //algo.SignalProcess(lchA, lchB, 1, null, null, 1, 1, chACutBgnR, chBCutBgnR, out noise);
+            //algo.SignalAnalysis(chACutBgnR, chBCutBgnR, null, null, noise, 15, 15,snrt, 0.3f, chACutBgn, chBCutBgn, chAPRR, chBPRR, snr, tpb, out pbl0, out pbl1, cldB, cldT);
+            //algo.Calculate(15, 90, 532, 0, 20000, 18000, sa,snrt, chACutBgn, chBCutBgn, snr, ext, aeroExt, bac, aeroBac, out aod);
             using (var sw = new StreamWriter(path))
             {
                 for(int i = 0;i<chA.Length/4;i++)
