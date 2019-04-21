@@ -2,7 +2,7 @@ import socket               # 导入 socket 模块
 import json 
 import time
         
-host = '192.168.31.155' # 获取本地主机名
+host = '127.0.0.1' # 获取本地主机名
 port = 6016                # 设置端口号
  
 
