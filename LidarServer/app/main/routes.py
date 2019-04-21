@@ -9,6 +9,7 @@ from app.main import bp
 from app.DataAcquisition import *
 from app.models import Task, TaskData
 import uuid
+import numpy as np
 
 
 @bp.before_app_request
@@ -73,7 +74,7 @@ def acquire():
             form.HorAngleStep.data = task.hor_step
             form.submit.label.text = '停止'
         else:
-            form.Frequency.data = 2500
+            form.Frequency.data = 4000
             form.Duration.data = 30
             form.BinLen.data = 2000
             form.VerStartAngle.data = 0
@@ -135,10 +136,43 @@ def browse_task(task_id):
             task_dat = TaskData.query.filter_by(task_id=task_id).all()
             return render_template('task_RHI.html', title=('垂直切面浏览'), task_id=task_id)
         elif mode=='LOS':
-            task_dat = TaskData.query.filter_by(task_id=task_id).all()
             return render_template('task_LOS.html', title=('定点扫描浏览'), task_id=task_id)
         elif mode=='MOV':
             task_dat = TaskData.query.filter_by(task_id=task_id).all()
             return render_template('task_MOV.html', title=('走航扫描浏览'), task_id=task_id)
     if request.method == 'POST':
         pass
+
+@bp.route('/task/LOS', methods=['POST'])
+@login_required
+def get_Los_data():
+    results = []
+    if request.method == 'POST':
+        task_id = request.values.get('task id', 0)
+        task = Task.query.filter_by(id = task_id).first()
+        resolution = task.resolution
+        dataLength = task.bin_length
+        task_dat = TaskData.query.filter_by(task_id=task_id).all()
+        ri = np.arange(dataLength)+1
+        for i in range(len(task_dat)):
+            data = {}
+            ts = task_dat[i].timestamp
+            data['timestamp']="{}".format(ts.strftime('%Y/%m/%d %H:%M:%S'))
+            dt = np.dtype(int)
+            dt = dt.newbyteorder('<')
+            chA = np.frombuffer(task_dat[i].raw_A, dtype=dt)
+            chB = np.frombuffer(task_dat[i].raw_B, dtype=dt)
+            bgA = np.mean(chA[int(dataLength*5/6):])
+            bgB = np.mean(chB[int(dataLength*5/6):])
+            chACutBg = chA-bgA
+            chBCutBg = chB-bgB
+            chAPRR = chACutBg*ri*ri/1e6*resolution*resolution
+            chBPRR = chBCutBg*ri*ri/1e6*resolution*resolution
+            data['raw_A'] = chA
+            data['raw_B'] = chB
+            data['prr_A'] = chAPRR
+            data['prr_B'] = chBPRR
+            data['resolution'] = resolution
+            results.append(data)
+        return jsonify(result=results)
+

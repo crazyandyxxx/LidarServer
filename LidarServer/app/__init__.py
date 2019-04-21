@@ -9,6 +9,8 @@ from flask_mail import Mail
 from flask_bootstrap import Bootstrap
 from flask_moment import Moment
 from config import Config
+from flask.json import JSONEncoder
+import numpy
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -19,9 +21,21 @@ mail = Mail()
 bootstrap = Bootstrap()
 moment = Moment()
 
+class MyEncoder(JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, numpy.integer):
+            return int(obj)
+        elif isinstance(obj, numpy.floating):
+            return float(obj)
+        elif isinstance(obj, numpy.ndarray):
+            return obj.tolist()
+        else:
+            return super(MyEncoder, self).default(obj)
+
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+    app.json_encoder = MyEncoder
 
     db.init_app(app)
     migrate.init_app(app, db)

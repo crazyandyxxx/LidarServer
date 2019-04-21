@@ -27,11 +27,11 @@
         }
 
         function set_require_gps(progress) {  
-                $('#lonlatpos').text("    经度"+progress.longitude+"    纬度"+progress.latitude+"    海拔"+progress.altitude);
+                $('#lonlatpos').text("    经度"+progress.longitude.toFixed(4)+"    纬度"+progress.latitude.toFixed(4)+"    海拔"+progress.altitude.toFixed(0));
         }
         
         function set_require_heading(progress) {  
-                $('#pithcrollang').text("    方位角"+progress.heading+"    俯仰角"+progress.pitch);
+                $('#pithcrollang').text("    方位角"+progress.heading.toFixed(0)+"    俯仰角"+progress.pitch.toFixed(0));
         }
 
         {% if current_user.is_authenticated %}
