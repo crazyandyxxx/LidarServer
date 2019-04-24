@@ -1,7 +1,58 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-<h1>{{ task_id }}</h1>
+
+<canvas id="map" style="border:1px solid;display: block"></canvas>
+
+{% endblock %}
+
+{% block app_scripts %}
+  <style type="text/css">
+
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.css">
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.min.js"></script>
+
+  <script>
+    var map = new maptalks.Map('map', {
+      center: [-0.09270712, 51.50615],
+      zoom: 14,
+      baseLayer: new maptalks.TileLayer('base', {
+        urlTemplate: 'https://webst0{s}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}',
+        subdomains: ['1','2','3','4'],
+        attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
+      }),
+      // additional TileLayers in create options
+      layers : [
+        new maptalks.TileLayer('boudaries', {
+          urlTemplate: 'https://webst0{s}.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}',
+          subdomains: ['1','2','3','4']
+        })
+      ]
+    });
+
+    var imageLayer = new maptalks.ImageLayer('images',
+      [
+        {
+          url : '{{ url_for('main.get_image') }}',
+          extent: [-0.11854216406254636, 51.50043810048564, -0.09081885168461667, 51.50994770979011],
+          opacity : 1,
+          renderer: 'canvas'
+        },
+        {
+          url : '{{ url_for('main.get_image') }}',
+          extent: [-0.10343596289067136, 51.50797115663946, -0.07897421667485105, 51.51876102463089],
+          opacity : 1,
+          renderer: 'canvas'
+        }
+      ],
+      {
+          crossOrigin : 'anonymous'
+      });
+
+    map.addLayer(imageLayer);
+
+  </script>
 
 
 {% endblock %}

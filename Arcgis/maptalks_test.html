@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Layer - ImageLayer: an example</title>
+  <style type="text/css">
+    html,body{margin:0px;height:100%;width:100%}
+    .container{width:100%;height:100%}
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.css">
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/maptalks/dist/maptalks.min.js"></script>
+  <body>
+
+    <div id="map" class="container"></div>
+
+    <script>
+      var map = new maptalks.Map('map', {
+        center: [-0.09270712, 51.50615],
+        zoom: 14,
+        baseLayer: new maptalks.TileLayer('base', {
+          urlTemplate: 'https://webst0{s}.is.autonavi.com/appmaptile?style=6&x={x}&y={y}&z={z}',
+          subdomains: ['1','2','3','4'],
+          attribution: '&copy; <a href="http://osm.org">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/">CARTO</a>'
+        }),
+        // additional TileLayers in create options
+        layers : [
+          new maptalks.TileLayer('boudaries', {
+            urlTemplate: 'https://webst0{s}.is.autonavi.com/appmaptile?style=8&x={x}&y={y}&z={z}',
+            subdomains: ['1','2','3','4']
+          })
+        ]
+      });
+
+      var imageLayer = new maptalks.ImageLayer('images',
+        [
+          {
+            url : 'http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/14/6200/13485',
+            extent: [-0.11854216406254636, 51.50043810048564, -0.09081885168461667, 51.50994770979011],
+            opacity : 1
+          },
+          {
+            url : 'http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/14/6200/13485',
+            extent: [-0.10343596289067136, 51.50797115663946, -0.07897421667485105, 51.51876102463089],
+            opacity : 1
+          }
+        ],
+        {
+            crossOrigin : 'anonymous'
+        });
+
+      map.addLayer(imageLayer);
+
+    </script>
+  </body>
+</html>

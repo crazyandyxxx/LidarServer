@@ -1,6 +1,6 @@
 from datetime import datetime
 from flask import render_template, flash, redirect, url_for, request, g, \
-    jsonify, current_app
+    jsonify, current_app, send_file
 from flask_login import current_user, login_required
 from app import db
 from app.main.forms import AcquireForm
@@ -130,15 +130,12 @@ def browse_task(task_id):
     if request.method == 'GET':
         mode = Task.query.filter_by(id = task_id).first().mode
         if mode=='PPI':
-            task_dat = TaskData.query.filter_by(task_id=task_id).all()
             return render_template('task_PPI.html', title=('水平切面浏览'), task_id=task_id)
         elif mode=='RHI':
-            task_dat = TaskData.query.filter_by(task_id=task_id).all()
             return render_template('task_RHI.html', title=('垂直切面浏览'), task_id=task_id)
         elif mode=='LOS':
             return render_template('task_LOS.html', title=('定点扫描浏览'), task_id=task_id)
         elif mode=='MOV':
-            task_dat = TaskData.query.filter_by(task_id=task_id).all()
             return render_template('task_MOV.html', title=('走航扫描浏览'), task_id=task_id)
     if request.method == 'POST':
         pass
@@ -157,7 +154,7 @@ def get_Los_data():
         for i in range(len(task_dat)):
             data = {}
             ts = task_dat[i].timestamp
-            data['timestamp']="{}".format(ts.strftime('%Y/%m/%d %H:%M:%S'))
+            data['timestamp']="{}".format(ts.strftime('%Y-%m-%d %H:%M:%S'))
             dt = np.dtype(int)
             dt = dt.newbyteorder('<')
             chA = np.frombuffer(task_dat[i].raw_A, dtype=dt)
@@ -175,4 +172,10 @@ def get_Los_data():
             data['resolution'] = resolution
             results.append(data)
         return jsonify(result=results)
+
+@bp.route('/get_image')
+@login_required
+def get_image():
+    filename = 'cat1.jpg'#'appmaptile.png'
+    return send_file(filename, mimetype='image/jpeg')
 

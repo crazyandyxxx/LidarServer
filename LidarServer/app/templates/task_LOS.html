@@ -1,7 +1,31 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-<h1>{{ task_id }}</h1>
+<style type="text/css">
+.inputNum {
+  width: 6em;
+  text-align: right;
+}
+</style>
+
+<select  id="channels" onchange="SelectChannel()">
+  <option>平行通道距离校正信号</option>
+  <option>垂直通道距离校正信号</option>
+  <option>消光系数</option>
+  <option>退偏比</option>
+  <option>污染边界层</option>
+  <option>平行通道原始信号</option>
+  <option>垂直通道原始信号</option>
+</select>
+<span>
+  &nbsp;&nbsp;&nbsp;&nbsp;从<input type="number" id="Zmin" value="0" class="inputNum">
+  至<input type="number" id="Zmax" value="3000" class="inputNum">&nbsp;&nbsp;&nbsp;&nbsp;
+</span>
+<span>
+  色标最小值<input type="number" id="colorMin" value="0" class="inputNum">
+  色标最大值<input type="number" id="colorMax" value="10000" class="inputNum">
+</span>
+
 <div id="PRADiv"><!-- Plotly chart will be drawn inside this DIV --></div>
 <div id="PRBDiv"><!-- Plotly chart will be drawn inside this DIV --></div>
 {% endblock %}
@@ -11,76 +35,74 @@
 
 <script>
     var task_id = '{{task_id}}';
-    var taskdata = {};
-    $(function() {
-        $.post('{{ url_for('main.get_Los_data') }}',
-           { 'task id': task_id },
-           function(data,status){
-             linePRA=[];
-             linePRB=[];
-             timeat=[];
-             res = data.result[0].resolution;
-             leng = data.result[0].raw_A.length;
-             height = [];
-             for(let i = 0;i<leng;i++){
-               height.push((i+1)*res);
-             };
-            if(status == "success"){
-              for(let i=0; i<data.result.length;i++){
-                var obj = {};
-                timeat.push(data.result[i].timestamp);
-                obj.chA = data.result[i].raw_A;
-                obj.chB = data.result[i].raw_B;
-                linePRA.push(data.result[i].prr_A);
-                linePRB.push(data.result[i].prr_B);
-              };
+    var linePRA=[];
+    var linePRB=[];
+    var timeat=[];
+    var height = [];
+    var lineA = [];
+    var lineB = [];
+    
+    $.post('{{ url_for('main.get_Los_data') }}', { 'task id': task_id },
+        function(data,status){
+        if(status == "success"){
+          res = data.result[0].resolution;
+          leng = data.result[0].raw_A.length;        
+          for(let i = 0;i<leng;i++){
+            height.push((i+1)*res);
+          };
+          for(let i=0; i<data.result.length;i++){
+            timeat.push(data.result[i].timestamp);
+            lineA.push(data.result[i].raw_A);
+            lineB.push( data.result[i].raw_B);
+            linePRA.push(data.result[i].prr_A);
+            linePRB.push(data.result[i].prr_B);
+          };
 
-              var PRA_data = [
-                {
-                  z: linePRA,
-                  x: timeat,
-                  y: height,
-                  zmin: 0,
-                  zmax: 10000,
-                  type: 'heatmap',
-                  transpose: true,
-                  colorscale:'Jet'
-                }
-              ];
+          var PRA_data = [
+            {
+              z: linePRA,
+              x: timeat,
+              y: height,
+              zmin: 0,
+              zmax: 10000,
+              type: 'heatmap',
+              transpose: true,
+              colorscale:'Jet'
+            }
+          ];
 
-              var PRB_data = [
-                {
-                  z: linePRB,
-                  x: timeat,
-                  y: height,
-                  zmin:0,
-                  zmax: 10000,
-                  type: 'heatmap',
-                  transpose: true,
-                  colorscale:'Jet'
-                }
-              ];
-              
-              var layout = {
-                xaxis: {
-                  title: '时间',
-                  showline: true,
-                  tickmode:'auto',
-                  nticks: 6
-                },
-                yaxis: {
-                  title: '距离(m)',
-                  showline: true,
-                  range:[0,3000],
-                  // fixedrange:true
-                }
-              };
+          var PRB_data = [
+            {
+              z: linePRB,
+              x: timeat,
+              y: height,
+              zmin:0,
+              zmax: 10000,
+              type: 'heatmap',
+              transpose: true,
+              colorscale:'Jet'
+            }
+          ];
+          
+          var layout = {
+            xaxis: {
+              title: '时间',
+              showline: true,
+              tickmode:'auto'
+            },
+            yaxis: {
+              title: '距离(m)',
+              showline: true,
+              range:[0,3000],
+              // fixedrange:true
+            }
+          };
 
-              Plotly.newPlot('PRADiv', PRA_data, layout);
-              Plotly.newPlot('PRBDiv', PRB_data, layout);
-            };  
-          });
-    })
+          Plotly.newPlot('PRADiv', PRA_data, layout);
+          Plotly.newPlot('PRBDiv', PRB_data, layout);
+        };  
+      });
+  
 </script>
 
 {% endblock %}
