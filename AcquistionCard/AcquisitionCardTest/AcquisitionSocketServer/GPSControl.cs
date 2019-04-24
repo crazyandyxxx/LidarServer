@@ -42,30 +42,32 @@ namespace AcquisitionSocketServer
             {
                 string[] values = resp.Split(',');
                 bool isGPSValid;
-
-                if (string.Compare(values[6], "0") == 0)
+                if (values.Length == 15)
                 {
-                    isGPSValid = false;
-                    latitude = longitude = altitude = -99999;
-                }
-                else
-                {
-                    isGPSValid = true;
-                    latitude = float.Parse(values[2]);
-                    longitude = float.Parse(values[4]);
-                    altitude = float.Parse(values[9]);
+                    if (string.Compare(values[6], "0") == 0)
+                    {
+                        isGPSValid = false;
+                        latitude = longitude = altitude = -99999;
+                    }
+                    else
+                    {
+                        isGPSValid = true;
+                        latitude = float.Parse(values[2]);
+                        longitude = float.Parse(values[4]);
+                        altitude = float.Parse(values[9]);
 
-                    float d = (float)Math.Floor(latitude / 100.0);
-                    latitude = d + (latitude - d * 100.0f) / 60.0f;
+                        float d = (float)Math.Floor(latitude / 100.0);
+                        latitude = d + (latitude - d * 100.0f) / 60.0f;
 
-                    d = (float)Math.Floor(longitude / 100.0);
-                    longitude = d + (longitude - d * 100.0f) / 60.0f;
+                        d = (float)Math.Floor(longitude / 100.0);
+                        longitude = d + (longitude - d * 100.0f) / 60.0f;
 
-                    if (string.Compare(values[3], "S") == 0)
-                        latitude = -latitude;
+                        if (string.Compare(values[3], "S") == 0)
+                            latitude = -latitude;
 
-                    if (string.Compare(values[5], "W") == 0)
-                        longitude = -longitude;
+                        if (string.Compare(values[5], "W") == 0)
+                            longitude = -longitude;
+                    }
                 }
             }
         }
