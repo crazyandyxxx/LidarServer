@@ -48,6 +48,8 @@ namespace AcquisitionSocketServer
                 var horTargetAng = horStartAng + acquisitionCount % (horN + 1) * horAngStep;
                 if (horTargetAng > 360) horTargetAng = horTargetAng % 360;
                 ToHorAngle(horTargetAng);
+                Thread.Sleep(500);
+                ToHorAngle(horTargetAng);
                 int iloop = 0;
                 while (iloop < 50)
                 {
@@ -62,6 +64,8 @@ namespace AcquisitionSocketServer
                 }
                 currentHorAng = horTargetAng;
 
+                ToVerAngle(verStartAng);
+                Thread.Sleep(500);
                 ToVerAngle(verStartAng);
                 iloop = 0;
                 while (iloop < 50)
@@ -82,6 +86,8 @@ namespace AcquisitionSocketServer
             {
                 var VerTargetAng = verStartAng + acquisitionCount % (verN + 1) * verAngStep;
                 ToHorAngle(horStartAng);
+                Thread.Sleep(500);
+                ToHorAngle(horStartAng);
                 int iloop = 0;
                 while (iloop < 50)
                 {
@@ -97,6 +103,8 @@ namespace AcquisitionSocketServer
                 }
                 currentHorAng = horStartAng;
 
+                ToVerAngle(VerTargetAng);
+                Thread.Sleep(500);
                 ToVerAngle(VerTargetAng);
                 iloop = 0;
                 while (iloop < 50)
