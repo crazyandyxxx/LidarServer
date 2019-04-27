@@ -42,20 +42,43 @@
         // Create a WebTileLayer with a third-party cached service
         var aMapVecBaseLayer = new WebTileLayer({
           urlTemplate:
-            //"https://stamen-tiles-{subDomain}.a.ssl.fastly.net/terrain/{level}/{col}/{row}.png",
-            "http://wprd03.is.autonavi.com/appmaptile?x={col}&y={row}&z={level}&lang=zh_cn&size=1&scl=1&style=7",
+            "https://webrd0{subDomain}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={col}&y={row}&z={level}",
+            subDomains: ["1", "2", "3", "4"]
+        });
+        var aMapRoadBaseLayer = new WebTileLayer({
+          urlTemplate:
+            "http://wprd0{subDomain}.is.autonavi.com/appmaptile?x={col}&y={row}&z={level}&lang=zh_cn&size=1&scl=1&style=8",
+            subDomains: ["1", "2", "3", "4"]
         });
         var aMapImgBaseLayer = new WebTileLayer({
           urlTemplate:
-            //"https://stamen-tiles-{subDomain}.a.ssl.fastly.net/terrain/{level}/{col}/{row}.png",
-            "http://wprd03.is.autonavi.com/appmaptile?x={col}&y={row}&z={level}&lang=zh_cn&size=1&scl=1&style=8",
-            //"http://webst02.is.autonavi.com/appmaptile?style=8&x={col}&y={row}&z={level}"
+            "http://wprd0{subDomain}.is.autonavi.com/appmaptile?x={col}&y={row}&z={level}&lang=zh_cn&size=1&scl=1&style=6",
+            subDomains: ["1", "2", "3", "4"]
         });
         var gMapImgBaseLayer = new WebTileLayer({
           urlTemplate:
-            //"https://stamen-tiles-{subDomain}.a.ssl.fastly.net/terrain/{level}/{col}/{row}.png",
-            "http://mt0.google.cn/vt/lyrs=y@126&hl=zh-CN&gl=cn&src=app&s=G&x={col}&y={row}&z={level}",
-            //"http://webst02.is.autonavi.com/appmaptile?style=8&x={col}&y={row}&z={level}"
+            "http://mt{subDomain}.google.cn/vt/lyrs=y@126&hl=zh-CN&gl=cn&src=app&s=G&x={col}&y={row}&z={level}",
+            subDomains: ["0", "1", "2", "3"]
+        });
+        var gMapVecBaseLayer = new WebTileLayer({
+          urlTemplate:
+            "http://mt{subDomain}.google.cn/vt/lyrs=m@126&hl=zh-CN&gl=cn&src=app&s=G&x={col}&y={row}&z={level}",
+            subDomains: ["0", "1", "2", "3"]
+        });
+        var tMapImgBaseLayer = new WebTileLayer({
+          urlTemplate:
+            "https://t{subDomain}.tianditu.gov.cn/DataServer?T=img_w&X={col}&Y={row}&L={level}&tk=3cf2285447247c7191415c8725cc2e78",
+            subDomains: ["1", "2", "3", "4","5","6"]
+        });
+        var tMapRoadBaseLayer = new WebTileLayer({
+          urlTemplate:
+            "https://t{subDomain}.tianditu.gov.cn/DataServer?T=cta_w&X={col}&Y={row}&L={level}&tk=3cf2285447247c7191415c8725cc2e78",
+            subDomains: ["1", "2", "3", "4","5","6"]
+        });
+        var tMapVecBaseLayer = new WebTileLayer({
+          urlTemplate:
+          "https://t{subDomain}.tianditu.gov.cn/DataServer?T=vec_w&X={col}&Y={row}&L={level}&tk=3cf2285447247c7191415c8725cc2e78",
+            subDomains: ["1", "2", "3", "4","5","6"]
         });
         // Create a Basemap with the WebTileLayer. The thumbnailUrl will be used for
         // the image in the BasemapToggle widget.
@@ -64,117 +87,51 @@
           title: "高德矢量图",
           id: "g Map Vector",
           thumbnailUrl:
-            "http://wprd03.is.autonavi.com/appmaptile?x=10&y=10&z=5&lang=zh_cn&size=1&scl=1&style=7"
+            "https://webrd02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x=3369&y=1548&z=12"
         });
         var aMapImg = new Basemap({
-          baseLayers: [aMapImgBaseLayer],
+          baseLayers: [aMapImgBaseLayer,aMapRoadBaseLayer],
           title: "高德影像图",
           id: "g Map Img",
           thumbnailUrl:
-            "http://wprd03.is.autonavi.com/appmaptile?x=10&y=10&z=5&lang=zh_cn&size=1&scl=1&style=8"
+            "https://webst04.is.autonavi.com/appmaptile?style=6&x=3369&y=1550&z=12"
         });
+
+        var gMapVec = new Basemap({
+          baseLayers: [gMapVecBaseLayer],
+          title: "谷歌矢量图",
+          id: "a Map Img",
+          thumbnailUrl:
+            "https://mt0.google.cn/vt/lyrs=m@207000000&hl=zh-CN&gl=CN&src=app&x=3372&y=1548&z=12&s=Galile"
+        });
+
         var gMapImg = new Basemap({
           baseLayers: [gMapImgBaseLayer],
           title: "谷歌影像图",
           id: "a Map Img",
           thumbnailUrl:
-            "http://mt0.google.cn/vt/lyrs=y@126&hl=zh-CN&gl=cn&src=app&s=G&x=0&y=0&z=0"
+            "https://mt3.google.cn/maps/vt?lyrs=s%40781&hl=zh-CN&gl=CN&x=3372&y=1547&z=12"
+        });
+
+        var tMapVec = new Basemap({
+          baseLayers: [tMapVecBaseLayer,tMapRoadBaseLayer],
+          title: "天地图矢量图",
+          id: "g Map Vector",
+          thumbnailUrl:
+            "https://t1.tianditu.gov.cn/DataServer?T=vec_w&X=3370&Y=1550&L=12&tk=3cf2285447247c7191415c8725cc2e78"
+        });
+        var tMapImg = new Basemap({
+          baseLayers: [tMapImgBaseLayer,tMapRoadBaseLayer],
+          title: "天地图影像图",
+          id: "g Map Img",
+          thumbnailUrl:
+            "https://t2.tianditu.gov.cn/DataServer?T=img_w&X=3368&Y=1547&L=12&tk=3cf2285447247c7191415c8725cc2e78"
         });
 
         var map = new Map({
           basemap: aMapVec
         });
         
-        /*********************
-         * Add graphics layer
-         *********************/
-
-         var graphicsLayer = new GraphicsLayer();
-        map.add(graphicsLayer);
-
-        /*************************
-         * Add a 3D point graphic
-         *************************/
-
-        // London
-        var point = {
-          type: "point", // autocasts as new Point()
-          x: -0.178,
-          y: 51.48791,
-          z: 1010
-        };
-
-        markerSymbol = {
-          type: "simple-marker", // autocasts as new SimpleMarkerSymbol()
-          color: [226, 119, 40],
-          outline: {
-            // autocasts as new SimpleLineSymbol()
-            color: [255, 255, 255],
-            width: 2
-          }
-        };
-
-        var pointGraphic = new Graphic({
-          geometry: point,
-          symbol: markerSymbol
-        });
-
-        graphicsLayer.add(pointGraphic);
-
-        /****************************
-         * Add a 3D polyline graphic
-         ****************************/
-
-        var polyline = {
-          type: "polyline", // autocasts as new Polyline()
-          paths: [[-0.178, 51.48791, 0], [-0.178, 51.48791, 1000]]
-        };
-
-        lineSymbol = {
-          type: "simple-line", // autocasts as SimpleLineSymbol()
-          color: [226, 119, 40],
-          width: 4
-        };
-
-        var polylineGraphic = new Graphic({
-          geometry: polyline,
-          symbol: lineSymbol
-        });
-
-        graphicsLayer.add(polylineGraphic);
-
-        /***************************
-         * Add a 3D polygon graphic
-         ***************************/
-
-        var polygon = {
-          type: "polygon", // autocasts as new Polygon()
-          rings: [
-            [-0.186, 51.48391, 0],
-            [-0.186, 51.49191, 0],
-            [-0.172, 51.49191, 0],
-            [-0.172, 51.48391, 0],
-            [-0.186, 51.48391, 0]
-          ]
-        };
-
-        var fillSymbol = {
-          type: "simple-fill", // autocasts as new SimpleFillSymbol()
-          color: [227, 139, 79, 0.8],
-          outline: {
-            // autocasts as new SimpleLineSymbol()
-            color: [255, 255, 255],
-            width: 1
-          }
-        };
-
-        var polygonGraphic = new Graphic({
-          geometry: polygon,
-          symbol: fillSymbol
-        });
-
-        graphicsLayer.add(polygonGraphic);
-
         var view = new MapView({
           container: "viewDiv",
           map: map,
@@ -184,13 +141,17 @@
 
         var basemapGallery = new BasemapGallery({
           view: view,
-          source:[aMapVec, aMapImg, gMapImg]
+          source:[aMapVec, aMapImg, gMapVec, gMapImg,tMapVec,tMapImg]
         });
 
         // Add the widget to the top-right corner of the view
         view.ui.add(basemapGallery, {
           position: "top-right"
         });
+
+
+
+
       });
     </script>
   </head>

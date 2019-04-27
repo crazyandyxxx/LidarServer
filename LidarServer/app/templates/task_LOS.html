@@ -8,7 +8,7 @@
 }
 </style>
 
-<select  id="channels" onchange="SelectChannel()">
+<select  id="channelA" onchange="SelectChannel()">
   <option>平行通道距离校正信号</option>
   <option>垂直通道距离校正信号</option>
   <option>消光系数</option>
@@ -27,7 +27,27 @@
 </span>
 
 <div id="PRADiv"><!-- Plotly chart will be drawn inside this DIV --></div>
+
+<select  id="channelB" onchange="SelectChannel()">
+    <option>垂直通道距离校正信号</option>
+    <option>平行通道距离校正信号</option>
+    <option>消光系数</option>
+    <option>退偏比</option>
+    <option>污染边界层</option>
+    <option>平行通道原始信号</option>
+    <option>垂直通道原始信号</option>
+  </select>
+  <span>
+    &nbsp;&nbsp;&nbsp;&nbsp;从<input type="number" id="Zmin" value="0" class="inputNum">
+    至<input type="number" id="Zmax" value="3000" class="inputNum">&nbsp;&nbsp;&nbsp;&nbsp;
+  </span>
+  <span>
+    色标最小值<input type="number" id="colorMin" value="0" class="inputNum">
+    色标最大值<input type="number" id="colorMax" value="10000" class="inputNum">
+  </span>
+
 <div id="PRBDiv"><!-- Plotly chart will be drawn inside this DIV --></div>
+
 {% endblock %}
 
 {% block app_scripts %}
@@ -42,7 +62,7 @@
     var lineA = [];
     var lineB = [];
     
-    $.post('{{ url_for('main.get_Los_data') }}', { 'task id': task_id },
+    $.post('{{ url_for('main.get_los_data') }}', { 'task id': task_id },
         function(data,status){
         if(status == "success"){
           res = data.result[0].resolution;

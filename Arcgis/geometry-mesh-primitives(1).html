@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <title>Working with 3D mesh primitives - 4.11</title>
+
+    <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/4.11/esri/themes/light/main.css"
+    />
+    <script src="https://js.arcgis.com/4.11/"></script>
+
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+
+    <script>
+      var ii = 0;
+      require([
+        "esri/Map",
+        "esri/Graphic",
+        "esri/views/SceneView",
+        "esri/geometry/Mesh",
+        "esri/geometry/Point",
+        "esri/geometry/SpatialReference",
+        "esri/geometry/support/meshUtils"
+      ], function(
+        Map,
+        Graphic,
+        SceneView,
+        Mesh,
+        Point,
+        SpatialReference,
+        meshUtils
+      ) {
+        var map = new Map({
+          basemap: "satellite",
+          // ground: "world-elevation"
+        });
+
+        var view = new SceneView({
+          container: "viewDiv",
+          map: map,
+          environment: {
+            atmosphere: {
+              quality: "high"
+            },
+            // lighting: {
+            //   directShadowsEnabled: true,
+            //   ambientOcclusionEnabled: true
+            // }
+          },
+          camera: {
+            position: [7.8233347, 46.3409284, 5032.93599],
+            heading: 19.72,
+            tilt: 0
+          }
+        });
+
+        function createPyramid(pt, params) {
+          var height = params.size.height;
+          var halfWidth = params.size.width / 2;
+          var halfDepth = params.size.depth / 2;
+
+          var position = [
+            pt.x,
+            pt.y,
+            pt.z ,
+            pt.x - halfWidth,
+            pt.y - halfDepth,
+            pt.z+ height,
+            pt.x + halfWidth,
+            pt.y - halfDepth,
+            pt.z+ height,
+            pt.x + halfWidth,
+            pt.y + halfDepth,
+            pt.z+ height,
+            pt.x - halfWidth,
+            pt.y + halfDepth,
+            pt.z+ height
+          ];
+
+          var uv = [0.5, 0, 0, 1, 1, 1, 0, 1, 1, 1];
+
+          var pyramid = new Mesh({
+            vertexAttributes: {
+              position: position,
+              uv: uv
+            },
+            components: [
+              { faces: [0, 1, 2], material: params.material },
+              { faces: [0, 2, 3], material: params.material },
+              { faces: [0, 3, 4], material: params.material },
+              { faces: [0, 4, 1], material: params.material }
+            ],
+
+            spatialReference: pt.spatialReference
+          });
+
+          return pyramid;
+        }
+
+        function createTriangle(pt, r, theta, alpha0, alpha1, texture) {
+          var sinTheta = Math.sin(theta/180*Math.PI);
+          var cosTheta = Math.cos(theta/180*Math.PI);
+          var position = [
+            pt.x,
+            pt.y,
+            pt.z ,
+            pt.x + r*cosTheta*Math.sin(alpha0/180*Math.PI),
+            pt.y + r*cosTheta*Math.cos(alpha0/180*Math.PI),
+            pt.z + r*sinTheta,
+            pt.x + r*cosTheta*Math.sin(alpha1/180*Math.PI),
+            pt.y + r*cosTheta*Math.cos(alpha1/180*Math.PI),
+            pt.z + r*sinTheta,
+          ];
+
+          var uv = [0.5, 0, 0, 1, 1, 1];
+
+          var triagl = new Mesh({
+            vertexAttributes: {
+              position: position,
+              uv: uv
+            },
+            components: [
+              { faces: [0, 1, 2], material: texture }
+            ],
+
+            spatialReference: pt.spatialReference
+          });
+
+          return triagl;
+        }
+
+        function createLeafCanvas() {
+          var canvas = document.createElement("canvas");
+          canvas.width = 32;
+          canvas.height = 32;
+
+          var ctx = canvas.getContext("2d");
+          ctx.globalAlpha=0.5;
+
+          // Create the linear gradient with which to fill the canvas
+          var gradient = ctx.createLinearGradient(0, 0, 0, 32);
+          gradient.addColorStop(0, "#ffffff");
+          gradient.addColorStop(1, "#009900");
+
+          // Fill the canvas with the gradient pattern
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, 32, 32);
+
+          return canvas;
+        }
+
+        function createTriangleTexture(points, nmax) {
+          var canvas = document.createElement("canvas");
+          width = 64;
+          height = 64;
+          canvas.width = width;
+          canvas.height = height;
+
+          var ctx = canvas.getContext("2d");
+          ctx.globalAlpha=0.65;
+
+          // Create the linear gradient with which to fill the canvas
+          var gradient = ctx.createLinearGradient(0, 0, 0, height);
+          for(let i=0;i<nmax;i++){
+            gradient.addColorStop(i/nmax, getColor(i,0,nmax));
+          }
+          // Fill the canvas with the gradient pattern
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, width, height);
+
+          return canvas;
+        }
+        
+        function componentToHex(c) {
+            var hex = c.toString(16);
+            return hex.length == 1 ? "0" + hex : hex;
+        }
+
+        function rgbToHex(r, g, b) {
+            return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
+        function getColor(v, vmin, vmax){
+          var c = rgbToHex(255,255,255);
+          if (v < vmin){
+            v = vmin;
+          }          
+          if (v > vmax){
+            v = vmax;
+          }
+          var dv = vmax - vmin;
+
+          if (v < (vmin + 0.25 * dv)) {
+              var g = Math.floor( 4 * (v - vmin) / dv*255);
+              c = rgbToHex(0,g,255);
+          } else if (v < (vmin + 0.5 * dv)) {
+              var b = 1 + 4 * (vmin + 0.25 * dv - v) / dv;
+              b = Math.floor(b*255);
+              c = rgbToHex(0,255,b);
+          } else if (v < (vmin + 0.75 * dv)) {
+              var r = 4 * (v - vmin - 0.5 * dv) / dv;
+              r = Math.floor(r*255);
+              c = rgbToHex(r,255,0);
+          } else {
+              var g = 1 + 4 * (vmin + 0.75 * dv - v) / dv;
+              g = Math.floor(g*255);
+              c = rgbToHex(255,g,0);
+          }
+          return c;
+        }
+
+        function createTreeGeometry(pt) {
+          var treeMaterial = { colorTexture: createLeafCanvas() };
+          var trunkMaterial = { color: "orange" };
+
+          var bottom = createPyramid(pt, {
+            size: { width: 1000, depth: 1000, height: 500 },
+            material: treeMaterial
+          });
+
+          bottom.offset(0, 0, 4);
+
+          return meshUtils.merge([bottom]);
+        }
+
+        function createPie(pt,rdata,nmax,r,theta,startAlpha,endAlpha,dAlpha) {
+          var n =  Math.floor((endAlpha-startAlpha)/dAlpha);
+          var meshToMerge= [];
+          for(let i=0;i<n;i++){
+            var triMaterial = { colorTexture: createTriangleTexture(rdata[i],nmax) };
+            var tri = createTriangle(pt, r, theta, startAlpha+i*dAlpha, startAlpha+(i+1)*dAlpha,triMaterial);
+            meshToMerge.push(tri);
+          }         
+          return meshUtils.merge(meshToMerge);
+        }
+        // A basic 3d fill symbol. Here we will use the material colors that are set
+        // on the geometries. We use a white fill symbology (the symbology color
+        // is mixed into the intrinsic geometry materials and pure white will have no effect).
+        var symbol = {
+          type: "mesh-3d",
+          symbolLayers: [{ type: "fill" }]
+        };
+
+        // A couple of trees
+        var treeLocations = [
+          new Point({
+            x: 870948.1109645499,
+            y: 5835340.97953185,
+            z: 0,
+            spatialReference: SpatialReference.WebMercator
+          }),
+
+          new Point({
+            x: 870917.1665520248,
+            y: 5835321.648520845,
+            z: 2027.02,
+            spatialReference: SpatialReference.WebMercator
+          }),
+
+          new Point({
+            x: 871003.3214365735,
+            y: 5835349.059825734,
+            z: 2011.96,
+            spatialReference: SpatialReference.WebMercator
+          }),
+
+          new Point({
+            x: 870965.2794487729,
+            y: 5835289.441932107,
+            z: 2005.77,
+            spatialReference: SpatialReference.WebMercator
+          })
+        ];
+
+        // Create and add multiple tree geometries
+
+          // var treeGeometry = createTreeGeometry(treeLocations[ii]);
+          // view.graphics.add(new Graphic(treeGeometry, symbol));
+          var rdata = new Array(400);
+          var pieGeometry = createPie(treeLocations[ii], rdata,50,1000,30,0,180,10);
+          view.graphics.add(new Graphic(pieGeometry, symbol));
+
+          // Register events on the checkbox and create the callback function
+          document
+          .getElementById("landslideInput")
+          .addEventListener("change", function() {
+            ii++;
+            var treeGeometry = createTreeGeometry(treeLocations[ii]);
+          view.graphics.add(new Graphic(treeGeometry, symbol));
+            
+          });
+
+      });
+
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv"></div>
+    <div id="paneDiv">
+      <div>
+        <a
+          target="_blank"
+          href="https://en.wikipedia.org/wiki/2014_Oso_mudslide"
+          >The 2014 Oso Landslide</a
+        >
+      </div>
+      <input id="landslideInput" type="checkbox" /> Use elevation data from
+      after landslide
+    </div>
+  </body>
+</html>

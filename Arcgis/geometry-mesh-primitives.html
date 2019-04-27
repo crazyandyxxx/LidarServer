@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <title>Working with 3D mesh primitives - 4.11</title>
+
+    <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/4.11/esri/themes/light/main.css"
+    />
+    <script src="https://js.arcgis.com/4.11/"></script>
+
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+
+    <script>
+      var ii = 0;
+      require([
+        "esri/Map",
+        "esri/Graphic",
+        "esri/views/SceneView",
+        "esri/geometry/Mesh",
+        "esri/geometry/Point",
+        "esri/geometry/SpatialReference",
+        "esri/geometry/support/meshUtils"
+      ], function(
+        Map,
+        Graphic,
+        SceneView,
+        Mesh,
+        Point,
+        SpatialReference,
+        meshUtils
+      ) {
+        var map = new Map({
+          basemap: "satellite",
+          // ground: "world-elevation"
+        });
+
+        var view = new SceneView({
+          container: "viewDiv",
+          map: map,
+          environment: {
+            atmosphere: {
+              quality: "high"
+            },
+            // lighting: {
+            //   directShadowsEnabled: true,
+            //   ambientOcclusionEnabled: true
+            // }
+          },
+          camera: {
+            position: [7.8233347, 46.3409284, 1032.93599],
+            heading: 19.72,
+            tilt: 0
+          }
+        });
+
+        function createPyramid(pt, params) {
+          var height = params.size.height;
+          var halfWidth = params.size.width / 2;
+          var halfDepth = params.size.depth / 2;
+
+          // Vertex locations that make up the pyramid,
+          // the first triple represents the top of the pyramid,
+          // while the remaining 4 triples represent the base
+          // of the pyramid
+          var position = [
+            pt.x,
+            pt.y,
+            pt.z ,
+            pt.x - halfWidth,
+            pt.y - halfDepth,
+            pt.z+ height,
+            pt.x + halfWidth,
+            pt.y - halfDepth,
+            pt.z+ height,
+            pt.x + halfWidth,
+            pt.y + halfDepth,
+            pt.z+ height,
+            pt.x - halfWidth,
+            pt.y + halfDepth,
+            pt.z+ height
+          ];
+
+          // The UV coordinates will be used to map an
+          // image material to the mesh. The coordinates are
+          // setup such that the top of the pyramid has (0.5, 0),
+          // while the base of the pyramid alternates between
+          // (0, 1) and (1, 1). This is sufficient for the linear
+          // gradient image that we want to map to the pyramids.
+          var uv = [0.5, 0, 0, 1, 1, 1, 0, 1, 1, 1];
+
+          var pyramid = new Mesh({
+            // The vertex attributes of the mesh
+            vertexAttributes: {
+              position: position,
+              uv: uv
+            },
+
+            // The four triangles that make up the pyramid
+            components: [
+              { faces: [0, 1, 2], material: params.material },
+              { faces: [0, 2, 3], material: params.material },
+              { faces: [0, 3, 4], material: params.material },
+              { faces: [0, 4, 1], material: params.material }
+            ],
+
+            spatialReference: pt.spatialReference
+          });
+
+          return pyramid;
+        }
+
+        /**
+         * Creates a canvas that will be used to color the leaf
+         * geometry (the pyramids) of the tree. Here we generate
+         * a light-to-dark green gradient in a 32x32 px
+         * canvas.
+         */
+        function createLeafCanvas() {
+          var canvas = document.createElement("canvas");
+          canvas.width = 32;
+          canvas.height = 32;
+
+          var ctx = canvas.getContext("2d");
+          ctx.globalAlpha=0.5;
+
+          // Create the linear gradient with which to fill the canvas
+          var gradient = ctx.createLinearGradient(0, 0, 0, 32);
+          gradient.addColorStop(0, "#ffffff");
+          gradient.addColorStop(1, "#009900");
+
+          // Fill the canvas with the gradient pattern
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, 32, 32);
+
+          return canvas;
+        }
+
+        /**
+         * Creates a tree geometry at the specified location.
+         */
+        function createTreeGeometry(pt) {
+          var treeMaterial = { colorTexture: createLeafCanvas() };
+          var trunkMaterial = { color: "orange" };
+
+          // Create the different parts that make up the tree. In this case
+          // we use a number of pyramids to represent the leaves and a
+          // box to represent the trunk.
+          var bottom = createPyramid(pt, {
+            size: { width: 1000, depth: 1000, height: 500 },
+            material: treeMaterial
+          });
+          // var middle = createPyramid(pt, {
+          //   size: { width: 8, depth: 8, height: 3 },
+          //   material: treeMaterial
+          // });
+          // var top = createPyramid(pt, {
+          //   size: { width: 6, depth: 6, height: 3 },
+          //   material: treeMaterial
+          // });
+          // var trunk = Mesh.createBox(pt, {
+          //   size: { width: 1000, depth: 1000, height: 5 },
+          //   material: trunkMaterial
+          // });
+
+          // Offset the parts on the Z-axis to create the appearance of a tree
+          bottom.offset(0, 0, 4);
+          // middle.offset(0, 0, 7);
+          // top.offset(0, 0, 9);
+
+          // Finally, merge the separate parts into a single mesh geometry
+          return meshUtils.merge([bottom]);
+        }
+
+        // A basic 3d fill symbol. Here we will use the material colors that are set
+        // on the geometries. We use a white fill symbology (the symbology color
+        // is mixed into the intrinsic geometry materials and pure white will have no effect).
+        var symbol = {
+          type: "mesh-3d",
+          symbolLayers: [{ type: "fill" }]
+        };
+
+        // A couple of trees
+        var treeLocations = [
+          new Point({
+            x: 870948.1109645499,
+            y: 5835340.97953185,
+            z: 0,
+            spatialReference: SpatialReference.WebMercator
+          }),
+
+          new Point({
+            x: 870917.1665520248,
+            y: 5835321.648520845,
+            z: 2027.02,
+            spatialReference: SpatialReference.WebMercator
+          }),
+
+          new Point({
+            x: 871003.3214365735,
+            y: 5835349.059825734,
+            z: 2011.96,
+            spatialReference: SpatialReference.WebMercator
+          }),
+
+          new Point({
+            x: 870965.2794487729,
+            y: 5835289.441932107,
+            z: 2005.77,
+            spatialReference: SpatialReference.WebMercator
+          })
+        ];
+
+        // Create and add multiple tree geometries
+
+          var treeGeometry = createTreeGeometry(treeLocations[ii]);
+          view.graphics.add(new Graphic(treeGeometry, symbol));
+
+          // Register events on the checkbox and create the callback function
+          document
+          .getElementById("landslideInput")
+          .addEventListener("change", function() {
+            ii++;
+            var treeGeometry = createTreeGeometry(treeLocations[ii]);
+          view.graphics.add(new Graphic(treeGeometry, symbol));
+            
+          });
+
+      });
+
+    </script>
+  </head>
+
+  <body>
+    <div id="viewDiv"></div>
+    <div id="paneDiv">
+      <div>
+        <a
+          target="_blank"
+          href="https://en.wikipedia.org/wiki/2014_Oso_mudslide"
+          >The 2014 Oso Landslide</a
+        >
+      </div>
+      <input id="landslideInput" type="checkbox" /> Use elevation data from
+      after landslide
+    </div>
+  </body>
+</html>

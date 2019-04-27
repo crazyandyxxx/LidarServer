@@ -142,7 +142,7 @@ def browse_task(task_id):
 
 @bp.route('/task/LOS', methods=['POST'])
 @login_required
-def get_Los_data():
+def get_los_data():
     results = []
     if request.method == 'POST':
         task_id = request.values.get('task id', 0)
@@ -173,9 +173,57 @@ def get_Los_data():
             results.append(data)
         return jsonify(result=results)
 
-@bp.route('/get_image')
+@bp.route('/task/PPI', methods=['POST'])
 @login_required
-def get_image():
-    filename = 'cat1.jpg'#'appmaptile.png'
-    return send_file(filename, mimetype='image/jpeg')
+def get_ppi_data():
+    results = []
+    if request.method == 'POST':
+        task_id = request.values.get('task id', 0)
+        content = request.values.get('content', 0)
+        if(content=='list'):
+            task = Task.query.filter_by(id = task_id).first()
+            horStartAng = task.hor_start_angle
+            task_dat = TaskData.query.filter_by(task_id=task_id,hor_angle=horStartAng).all()
+            for i in range(len(task_dat)):
+                data = {}
+                ts = task_dat[i].timestamp
+                data['timestamp']="{}".format(ts.strftime('%Y-%m-%d %H:%M:%S'))
+                results.append(data)
+        if(content=='timedata'):
+            task = Task.query.filter_by(id = task_id).first()
+            horStartAng = task.hor_start_angle
+            horEndAng = task.hor_end_angle
+            horAngStep = task.hor_step
+            ln = int((horEndAng-horStartAng)/horAngStep)+1
+            timeat = request.values.get('time',0)
+            resolution = task.resolution
+            dataLength = task.bin_length
+            ri = np.arange(dataLength)+1
+            task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=timeat,TaskData.hor_angle<=horEndAng).order_by(TaskData.timestamp).limit(ln).all()
+            for i in range(len(task_dat)):
+                data = {}
+                ts = task_dat[i].timestamp
+                data['timestamp']="{}".format(ts.strftime('%Y-%m-%d %H:%M:%S'))
+                data['longitude'] = task_dat[i].longitude
+                data['latitude'] = task_dat[i].latitude
+                data['altitude'] = task_dat[i].altitude
+                data['verAngle'] = task_dat[i].ver_angle
+                data['horAngle'] = task_dat[i].hor_angle
+                dt = np.dtype(int)
+                dt = dt.newbyteorder('<')
+                chA = np.frombuffer(task_dat[i].raw_A, dtype=dt)
+                chB = np.frombuffer(task_dat[i].raw_B, dtype=dt)
+                bgA = np.mean(chA[int(dataLength*5/6):])
+                bgB = np.mean(chB[int(dataLength*5/6):])
+                chACutBg = chA-bgA
+                chBCutBg = chB-bgB
+                chAPRR = chACutBg*ri*ri/1e6*resolution*resolution
+                chBPRR = chBCutBg*ri*ri/1e6*resolution*resolution
+                data['raw_A'] = chA
+                data['raw_B'] = chB
+                data['prr_A'] = chAPRR
+                data['prr_B'] = chBPRR
+                data['resolution'] = resolution
+                results.append(data)
+        return jsonify(result=results)
 
