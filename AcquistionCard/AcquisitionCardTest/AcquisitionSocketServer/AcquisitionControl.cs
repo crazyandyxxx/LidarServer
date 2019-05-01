@@ -107,7 +107,7 @@ namespace AcquisitionSocketServer
                 MyDevice.BulkInEndPt.XferData(ref buf, ref len);
                 currentAccumNum = (int)BitConverter.ToUInt32(buf, 1);
                 if (currentAccumNum >= accumTimes) break;
-                Thread.Sleep(40);
+                Thread.Sleep(200);
             }
         }
 
