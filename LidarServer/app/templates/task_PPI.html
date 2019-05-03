@@ -23,7 +23,7 @@
         </select>
         <span>
           &nbsp;&nbsp;&nbsp;&nbsp;从<input type="number" id="Zmin" value="0" class="inputNum">
-          至<input type="number" id="Zmax" value="3000" class="inputNum">&nbsp;&nbsp;&nbsp;&nbsp;
+          至<input type="number" id="Zmax" value="6000" class="inputNum">&nbsp;&nbsp;&nbsp;&nbsp;
         </span>
         <span>
           色标最小值<input type="number" id="colorMin" value="0" class="inputNum">
@@ -304,50 +304,9 @@
         symbolLayers: [{ type: "fill" }]
       };
 
-      $.post('{{ url_for('main.get_ppi_data') }}', { 'task id': task_id, 'content':'list' },
-          function(data,status){
-            var sel1 = document.getElementById('timeSeries');
-            sel1.addEventListener("change", SelectTime);
-              for(let i=0; i<data.result.length;i++){
-                sel1.options.add(new Option(data.result[i].timestamp+""));
-              };
-              $.post('{{ url_for('main.get_ppi_data') }}', { 'task id': task_id, 'content':'timedata', 'time': sel1.options[0].text},
-        function(data,status){
-          rdata = [];
-          resolution = data.result[0].resolution;
-          verAngle = data.result[0].verAngle;
-          horStartAng = data.result[0].horAngle;
-          horEndAng = data.result[data.result.length-1].horAngle;
-          horAngStep = data.result[1].horAngle - data.result[0].horAngle;
-          var validI = 0;
-          for(let i=0; i<data.result.length;i++){
-            if(data.result[i].longitude>0){
-              validI = i;
-            };
-          };
-          longitude = data.result[validI].longitude<0?0:data.result[validI].longitude;
-          latitude = data.result[validI].latitude<0?0:data.result[validI].latitude;
-          altitude = data.result[validI].altitude<0?0:data.result[validI].altitude;
-          location = lonlataltToWebmercator(longitude,latitude,altitude);
-          for(let i=0; i<data.result.length;i++){
-            rdata.push(data.result[i].prr_A);
-          };
-          view.graphics.removeAll();
-          var pieGeometry = createPie(location,rdata,resolution,rangeMax,verAngle,horStartAng,horEndAng,horAngStep,vMin,vMax);
-          view.graphics.add(new Graphic(pieGeometry, symbol));
-          view.center = location;
-        });
-        });
-      
-      var location = new Point({
-                                  x: 13004714.13,
-                                  y: 4770624.97,
-                                  z: 0,
-                                  spatialReference: SpatialReference.WebMercator
-                                });
-      var rdata = [];
+      var rdata = {};
       var rangeMax = 6000;
-      var vMax = 1;
+      var vMax = 10000;
       var vMin = 0;
       var resolution = 15;
       var verAngle = 0;
@@ -357,6 +316,58 @@
       var longitude = 0;
       var latitude = 0;
       var altitude = 0;
+
+      $.post('{{ url_for('main.get_ppi_data') }}', { 'task id': task_id, 'content':'list' },
+          function(data,status){
+            var sel1 = document.getElementById('timeSeries');
+            sel1.addEventListener("change", SelectTime);
+            for(let i=0; i<data.result.length;i++){
+              sel1.options.add(new Option(data.result[i].timestamp+""));
+            };
+            $.post('{{ url_for('main.get_ppi_data') }}', { 'task id': task_id, 'content':'timedata', 'time': sel1.options[0].text},
+              function(data,status){
+                rdata.raw_A = [];
+                rdata.raw_B = [];
+                rdata.prr_A = [];
+                rdata.prr_B = [];
+                rdata.ext = [];
+                rdata.dep = [];
+                resolution = data.result[0].resolution;
+                verAngle = data.result[0].verAngle;
+                horStartAng = data.result[0].horAngle;
+                horEndAng = data.result[data.result.length-1].horAngle;
+                horAngStep = data.result[1].horAngle - data.result[0].horAngle;
+                var validI = 0;
+                for(let i=0; i<data.result.length;i++){
+                  if(data.result[i].longitude>0){
+                    validI = i;
+                  };
+                };
+                longitude = data.result[validI].longitude<0?0:data.result[validI].longitude;
+                latitude = data.result[validI].latitude<0?0:data.result[validI].latitude;
+                altitude = data.result[validI].altitude<0?0:data.result[validI].altitude;
+                location = lonlataltToWebmercator(longitude,latitude,altitude);
+                for(let i=0; i<data.result.length;i++){
+                  rdata.prr_A.push(data.result[i].prr_A);
+                  rdata.prr_B.push(data.result[i].prr_B);
+                  rdata.raw_A.push(data.result[i].raw_A);
+                  rdata.raw_B.push(data.result[i].raw_B);
+                  rdata.ext.push(data.result[i].ext);
+                  rdata.dep.push(data.result[i].dep);
+                };
+                view.graphics.removeAll();
+                var pieGeometry = createPie(location,rdata.prr_A,resolution,rangeMax,verAngle,horStartAng,horEndAng,horAngStep,vMin,vMax);
+                view.graphics.add(new Graphic(pieGeometry, symbol));
+                view.center = location;
+              });
+        });
+      
+      var location = new Point({
+                                  x: 13004714.13,
+                                  y: 4770624.97,
+                                  z: 0,
+                                  spatialReference: SpatialReference.WebMercator
+                                });
       
       function lonlataltToWebmercator(lon, lat, alt){
         var x = lon*20037508.34/180;
@@ -375,21 +386,59 @@
         var index = sel1.selectedIndex;
         $.post('{{ url_for('main.get_ppi_data') }}', { 'task id': task_id, 'content':'timedata', 'time': sel1.options[index].text},
         function(data,status){
-          rdata = [];
+          rdata.raw_A = [];
+          rdata.raw_B = [];
+          rdata.prr_A = [];
+          rdata.prr_B = [];
+          rdata.ext = [];
+          rdata.dep = [];
           resolution = data.result[0].resolution;
           verAngle = data.result[0].verAngle;
           horStartAng = data.result[0].horAngle;
           horEndAng = data.result[data.result.length-1].horAngle;
           horAngStep = data.result[1].horAngle - data.result[0].horAngle;
-          longitude = data.result[0].longitude<0?0:data.result[0].longitude;
-          latitude = data.result[0].latitude<0?0:data.result[0].latitude;
-          altitude = data.result[0].altitude<0?0:data.result[0].altitude;
+          var validI = 0;
+          for(let i=0; i<data.result.length;i++){
+            if(data.result[i].longitude>0){
+              validI = i;
+            };
+          };
+          longitude = data.result[validI].longitude<0?0:data.result[validI].longitude;
+          latitude = data.result[validI].latitude<0?0:data.result[validI].latitude;
+          altitude = data.result[validI].altitude<0?0:data.result[validI].altitude;
           location = lonlataltToWebmercator(longitude,latitude,altitude);
           for(let i=0; i<data.result.length;i++){
-            rdata.push(data.result[i].prr_A);
+            rdata.prr_A.push(data.result[i].prr_A);
+            rdata.prr_B.push(data.result[i].prr_B);
+            rdata.raw_A.push(data.result[i].raw_A);
+            rdata.raw_B.push(data.result[i].raw_B);
+            rdata.ext.push(data.result[i].ext);
+            rdata.dep.push(data.result[i].dep);
+          };
+          var drawData = rdata.prr_A;
+          var channel = document.getElementById('channel');
+          switch(channel.options[channel.selectedIndex].text){
+            case '平行通道距离校正信号':
+              drawData = rdata.prr_A;
+              break;
+            case '垂直通道距离校正信号':
+              drawData = rdata.prr_B;
+              break;
+            case '消光系数':
+              drawData = rdata.ext;
+              break;
+            case '退偏比':
+              drawData = rdata.dep;
+              break;
+            case '平行通道原始信号':
+              drawData = rdata.raw_A;
+              break;
+            case '垂直通道原始信号':
+              drawData = rdata.raw_B;
+              break;
           };
           view.graphics.removeAll();
-          var pieGeometry = createPie(location,rdata,resolution,rangeMax,verAngle,horStartAng,horEndAng,horAngStep,vMin,vMax);
+          var pieGeometry = createPie(location,drawData,resolution,rangeMax,verAngle,horStartAng,horEndAng,horAngStep,vMin,vMax);
           view.graphics.add(new Graphic(pieGeometry, symbol));
           view.center = location;
         });      

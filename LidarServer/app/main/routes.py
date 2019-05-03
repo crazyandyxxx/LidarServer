@@ -163,8 +163,11 @@ def get_los_data():
             chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chA, chB, overlapA, overlapB, resolution, snrT=1.5, rc=15000)
             data['raw_A'] = chA
             data['raw_B'] = chB
-            data['prr_A'] = ext_a
+            data['prr_A'] = chAPR2
             data['prr_B'] = chBPR2
+            data['pbl'] = pbl
+            data['ext'] = ext_a
+            data['dep'] = dePolar
             data['resolution'] = resolution
             results.append(data)
         return jsonify(result=results)
@@ -215,8 +218,11 @@ def get_ppi_data():
                 chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chA, chB, overlapA, overlapB, resolution, snrT=1.5, rc=15000)
                 data['raw_A'] = chA
                 data['raw_B'] = chB
-                data['prr_A'] = ext_a
+                data['prr_A'] = chAPR2
                 data['prr_B'] = chBPR2
+                data['pbl'] = pbl
+                data['ext'] = ext_a
+                data['dep'] = dePolar
                 data['resolution'] = resolution
                 results.append(data)
         return jsonify(result=results)
