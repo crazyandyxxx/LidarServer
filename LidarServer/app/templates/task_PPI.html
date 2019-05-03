@@ -22,8 +22,8 @@
           <option>垂直通道原始信号</option>
         </select>
         <span>
-          &nbsp;&nbsp;&nbsp;&nbsp;从<input type="number" id="Zmin" value="0" class="inputNum">
-          至<input type="number" id="Zmax" value="6000" class="inputNum">&nbsp;&nbsp;&nbsp;&nbsp;
+          &nbsp;&nbsp;&nbsp;&nbsp;从<input type="number" id="zMin" value="0" class="inputNum" max="30000" min="15">
+          至<input type="number" id="zMax" value="6000" class="inputNum" max="30000" min="15">&nbsp;&nbsp;&nbsp;&nbsp;
         </span>
         <span>
           色标最小值<input type="number" id="colorMin" value="0" class="inputNum">
@@ -270,18 +270,22 @@
 
         if (v < (vmin + 0.25 * dv)) {
             var g = Math.floor( 4 * (v - vmin) / dv*255);
+            g= g<0?0:g;
             c = rgbToHex(0,g,255);
         } else if (v < (vmin + 0.5 * dv)) {
             var b = 1 + 4 * (vmin + 0.25 * dv - v) / dv;
             b = Math.floor(b*255);
+            b = b<0?0:b;
             c = rgbToHex(0,255,b);
         } else if (v < (vmin + 0.75 * dv)) {
             var r = 4 * (v - vmin - 0.5 * dv) / dv;
             r = Math.floor(r*255);
+            r = r<0?0:r;
             c = rgbToHex(r,255,0);
         } else {
             var g = 1 + 4 * (vmin + 0.75 * dv - v) / dv;
             g = Math.floor(g*255);
+            g = g<0?0:g;
             c = rgbToHex(255,g,0);
         }
         return c;
@@ -324,6 +328,12 @@
             sel1.addEventListener("change", SelectTime);
             var channel = document.getElementById('channel');
             channel.addEventListener("change", SelectChannel);
+            var colorMax = document.getElementById('colorMax');
+            colorMax.addEventListener("change", ChangeMaxValue);
+            var colorMin = document.getElementById('colorMin');
+            colorMin.addEventListener("change", ChangeMinValue);
+            var zMax = document.getElementById('zMax');
+            zMax.addEventListener("change", ChangeRangeMax);
             for(let i=0; i<data.result.length;i++){
               sel1.options.add(new Option(data.result[i].timestamp+""));
             };
@@ -358,8 +368,9 @@
                   rdata.ext.push(data.result[i].ext);
                   rdata.dep.push(data.result[i].dep);
                 };
+                drawData = rdata.prr_A;
                 view.graphics.removeAll();
-                var pieGeometry = createPie(location,rdata.prr_A,resolution,rangeMax,verAngle,horStartAng,horEndAng,horAngStep,vMin,vMax);
+                var pieGeometry = createPie(location,drawData,resolution,rangeMax,verAngle,horStartAng,horEndAng,horAngStep,vMin,vMax);
                 view.graphics.add(new Graphic(pieGeometry, symbol));
                 view.center = location;
               });
@@ -474,6 +485,33 @@
         var pieGeometry = createPie(location,drawData,resolution,rangeMax,verAngle,horStartAng,horEndAng,horAngStep,vMin,vMax);
         view.graphics.add(new Graphic(pieGeometry, symbol));
         view.center = location;
+      }
+
+      function ChangeMaxValue(){
+        var colorMax = document.getElementById('colorMax');
+        vMax = colorMax.value;
+        view.graphics.removeAll();
+        var pieGeometry = createPie(location,drawData,resolution,rangeMax,verAngle,horStartAng,horEndAng,horAngStep,vMin,vMax);
+        view.graphics.add(new Graphic(pieGeometry, symbol));
+        view.center = location;
+      }
+
+      function ChangeMinValue(){
+        var colorMin = document.getElementById('colorMin'); 
+        vMin = colorMin.value;  
+        view.graphics.removeAll();
+        var pieGeometry = createPie(location,drawData,resolution,rangeMax,verAngle,horStartAng,horEndAng,horAngStep,vMin,vMax);
+        view.graphics.add(new Graphic(pieGeometry, symbol));
+        view.center = location;    
+      }
+
+      function ChangeRangeMax(){
+        var zMax = document.getElementById('zMax'); 
+        rangeMax = zMax.value;  
+        view.graphics.removeAll();
+        var pieGeometry = createPie(location,drawData,resolution,rangeMax,verAngle,horStartAng,horEndAng,horAngStep,vMin,vMax);
+        view.graphics.add(new Graphic(pieGeometry, symbol));
+        view.center = location;    
       }
 
     });
