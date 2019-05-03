@@ -316,11 +316,14 @@
       var longitude = 0;
       var latitude = 0;
       var altitude = 0;
+      var drawData = [];
 
       $.post('{{ url_for('main.get_ppi_data') }}', { 'task id': task_id, 'content':'list' },
           function(data,status){
             var sel1 = document.getElementById('timeSeries');
             sel1.addEventListener("change", SelectTime);
+            var channel = document.getElementById('channel');
+            channel.addEventListener("change", SelectChannel);
             for(let i=0; i<data.result.length;i++){
               sel1.options.add(new Option(data.result[i].timestamp+""));
             };
@@ -415,7 +418,7 @@
             rdata.ext.push(data.result[i].ext);
             rdata.dep.push(data.result[i].dep);
           };
-          var drawData = rdata.prr_A;
+          drawData = rdata.prr_A;
           var channel = document.getElementById('channel');
           switch(channel.options[channel.selectedIndex].text){
             case '平行通道距离校正信号':
@@ -442,6 +445,35 @@
           view.graphics.add(new Graphic(pieGeometry, symbol));
           view.center = location;
         });      
+      }
+
+      function SelectChannel(){
+        drawData = rdata.prr_A;
+        var channel = document.getElementById('channel');
+        switch(channel.options[channel.selectedIndex].text){
+          case '平行通道距离校正信号':
+            drawData = rdata.prr_A;
+            break;
+          case '垂直通道距离校正信号':
+            drawData = rdata.prr_B;
+            break;
+          case '消光系数':
+            drawData = rdata.ext;
+            break;
+          case '退偏比':
+            drawData = rdata.dep;
+            break;
+          case '平行通道原始信号':
+            drawData = rdata.raw_A;
+            break;
+          case '垂直通道原始信号':
+            drawData = rdata.raw_B;
+            break;
+        };
+        view.graphics.removeAll();
+        var pieGeometry = createPie(location,drawData,resolution,rangeMax,verAngle,horStartAng,horEndAng,horAngStep,vMin,vMax);
+        view.graphics.add(new Graphic(pieGeometry, symbol));
+        view.center = location;
       }
 
     });
