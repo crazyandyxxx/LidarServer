@@ -6,11 +6,10 @@ from app import db
 from app.main.forms import AcquireForm
 from app.main import bp
 # from app.DataAcquisition import start_acquisition, Stop_acquisition, check_acquisition_times, check_acquisition_running
-from app.DataAcquisition import *
+from app.dataAcquisition import *
 from app.models import Task, TaskData
 import uuid
-import numpy as np
-
+from app.algorithm import *
 
 @bp.before_app_request
 def before_request():
@@ -150,7 +149,9 @@ def get_los_data():
         resolution = task.resolution
         dataLength = task.bin_length
         task_dat = TaskData.query.filter_by(task_id=task_id).all()
-        ri = np.arange(dataLength)+1
+        ov = np.loadtxt(r'./overlap/19000101000000_15.ov')
+        overlapA = ov[:,0]
+        overlapB = ov[:,1]
         for i in range(len(task_dat)):
             data = {}
             ts = task_dat[i].timestamp
@@ -159,16 +160,11 @@ def get_los_data():
             dt = dt.newbyteorder('<')
             chA = np.frombuffer(task_dat[i].raw_A, dtype=dt)
             chB = np.frombuffer(task_dat[i].raw_B, dtype=dt)
-            bgA = np.mean(chA[int(dataLength*5/6):])
-            bgB = np.mean(chB[int(dataLength*5/6):])
-            chACutBg = chA-bgA
-            chBCutBg = chB-bgB
-            chAPRR = chACutBg*ri*ri/1e6*resolution*resolution
-            chBPRR = chBCutBg*ri*ri/1e6*resolution*resolution
+            chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chA, chB, overlapA, overlapB, resolution, snrT=1.5, rc=15000)
             data['raw_A'] = chA
             data['raw_B'] = chB
-            data['prr_A'] = chAPRR
-            data['prr_B'] = chBPRR
+            data['prr_A'] = ext_a
+            data['prr_B'] = chBPR2
             data['resolution'] = resolution
             results.append(data)
         return jsonify(result=results)
@@ -200,6 +196,9 @@ def get_ppi_data():
             dataLength = task.bin_length
             ri = np.arange(dataLength)+1
             task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=timeat,TaskData.hor_angle<=horEndAng).order_by(TaskData.timestamp).limit(ln).all()
+            ov = np.loadtxt(r'./overlap/19000101000000_15.ov')
+            overlapA = ov[:,0]
+            overlapB = ov[:,1]
             for i in range(len(task_dat)):
                 data = {}
                 ts = task_dat[i].timestamp
@@ -213,16 +212,11 @@ def get_ppi_data():
                 dt = dt.newbyteorder('<')
                 chA = np.frombuffer(task_dat[i].raw_A, dtype=dt)
                 chB = np.frombuffer(task_dat[i].raw_B, dtype=dt)
-                bgA = np.mean(chA[int(dataLength*5/6):])
-                bgB = np.mean(chB[int(dataLength*5/6):])
-                chACutBg = chA-bgA
-                chBCutBg = chB-bgB
-                chAPRR = chACutBg*ri*ri/1e6*resolution*resolution
-                chBPRR = chBCutBg*ri*ri/1e6*resolution*resolution
+                chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chA, chB, overlapA, overlapB, resolution, snrT=1.5, rc=15000)
                 data['raw_A'] = chA
                 data['raw_B'] = chB
-                data['prr_A'] = chAPRR
-                data['prr_B'] = chBPRR
+                data['prr_A'] = ext_a
+                data['prr_B'] = chBPR2
                 data['resolution'] = resolution
                 results.append(data)
         return jsonify(result=results)
