@@ -150,6 +150,7 @@
     function SelectChannelA(){
         var channel = document.getElementById('channelA');
         var drawData;
+        var line = {};
         switch(channel.options[channel.selectedIndex].text){
           case '平行通道距离校正信号':
             drawData = linePRA;
@@ -169,9 +170,18 @@
           case '垂直通道原始信号':
             drawData = lineB;
             break;
+          case '污染边界层':
+            drawData = linePRA;
+            line = {
+              x:timeat,
+              y:linePbl,
+              mode:'markers',
+              type:'scatter',
+              marker:{color:'black'}
+            };
+            break;
         };
-        var data = [
-            {
+        var heat = {
               z: drawData,
               x: timeat,
               y: height,
@@ -180,8 +190,9 @@
               type: 'heatmap',
               transpose: true,
               colorscale:'Jet'
-            }
-          ];
+            };
+        
+        var data = [heat,line];
         Plotly.react('PRADiv',data,layoutA);
       }
 

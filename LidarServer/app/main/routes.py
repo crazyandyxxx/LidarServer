@@ -172,6 +172,42 @@ def get_los_data():
             results.append(data)
         return jsonify(result=results)
 
+@bp.route('/task/MOV', methods=['POST'])
+@login_required
+def get_mov_data():
+    results = []
+    if request.method == 'POST':
+        task_id = request.values.get('task id', 0)
+        task = Task.query.filter_by(id = task_id).first()
+        resolution = task.resolution
+        dataLength = task.bin_length
+        task_dat = TaskData.query.filter_by(task_id=task_id).all()
+        ov = np.loadtxt(r'./overlap/19000101000000_15.ov')
+        overlapA = ov[:,0]
+        overlapB = ov[:,1]
+        for i in range(len(task_dat)):
+            data = {}
+            ts = task_dat[i].timestamp
+            data['timestamp']="{}".format(ts.strftime('%Y-%m-%d %H:%M:%S'))
+            dt = np.dtype(int)
+            dt = dt.newbyteorder('<')
+            chA = np.frombuffer(task_dat[i].raw_A, dtype=dt)
+            chB = np.frombuffer(task_dat[i].raw_B, dtype=dt)
+            chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chA, chB, overlapA, overlapB, resolution, snrT=1.5, rc=15000)
+            data['raw_A'] = chA
+            data['raw_B'] = chB
+            data['prr_A'] = chAPR2
+            data['prr_B'] = chBPR2
+            data['pbl'] = pbl
+            data['ext'] = ext_a
+            data['dep'] = dePolar
+            data['resolution'] = resolution
+            data['longitude'] = task_dat[i].longitude
+            data['latitude'] = task_dat[i].latitude
+            data['altitude'] = task_dat[i].altitude
+            results.append(data)
+        return jsonify(result=results)
+
 @bp.route('/task/PPI', methods=['POST'])
 @login_required
 def get_ppi_data():
