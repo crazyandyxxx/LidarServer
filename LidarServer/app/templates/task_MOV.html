@@ -29,7 +29,7 @@
 </span>
   
 <div id="viewDiv"></div>
-<!-- <div id="PRADiv"></div> -->
+<div id="PRADiv"></div>
 
 {% endblock %}
 
@@ -40,14 +40,14 @@
     name="viewport"
     content="initial-scale=1,maximum-scale=1,user-scalable=no"
   />
-
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <link
     href="https://js.arcgis.com/4.11/esri/themes/light/main.css"
     rel="stylesheet"
     type="text/css"
   />
   <script src="https://js.arcgis.com/4.11/"></script>
-  <!-- <script src="https://cdn.plot.ly/plotly-latest.min.js"></script> -->
+  
 
   <script>
     require([
@@ -172,7 +172,7 @@
           },
           camera: {
             position: [116.8233347, 39.3409284, 5032.93599],
-            tilt: 0
+            tilt: 60
           }
         });
 
@@ -317,6 +317,21 @@
       var resolution = 15;
       var locations = [];
       var drawData = [];
+      var timeat=[];
+      var heights = [];
+      var layoutA = {
+            xaxis: {
+              title: '时间',
+              showline: true,
+              tickmode:'auto'
+            },
+            yaxis: {
+              title: '距离(m)',
+              showline: true,
+              range:[0,3000],
+              // fixedrange:true
+            }
+          };
 
       $.post('{{ url_for('main.get_mov_data') }}', { 'task id': task_id},
           function(data,status){
@@ -337,9 +352,13 @@
             rdata.dep = [];
             rdata.pbl = [];
             resolution = data.result[0].resolution;
-
+            var leng = data.result[0].raw_A.length;        
+            for(let i = 0;i<leng;i++){
+                heights.push((i+1)*resolution);
+            };
             for(let i=0; i<data.result.length;i++){
                 if(data.result[i].longitude>-180){
+                    timeat.push(data.result[i].timestamp);
                     rdata.prr_A.push(data.result[i].prr_A);
                     rdata.prr_B.push(data.result[i].prr_B);
                     rdata.raw_A.push(data.result[i].raw_A);
@@ -359,6 +378,21 @@
             view.graphics.add(new Graphic(wallGeometry, symbol));
             view.center = locations[0];
 
+            var PRA_data = [
+                {
+                z: drawData,
+                x: timeat,
+                y: heights,
+                zmin: 0,
+                zmax: 10000,
+                type: 'heatmap',
+                transpose: true,
+                colorscale:'Jet'
+                }
+            ];
+
+            Plotly.newPlot('PRADiv', PRA_data, layoutA);
+
         });
       
       function lonlataltToWebmercator(lon, lat, alt){
@@ -376,9 +410,9 @@
       function SelectChannel(){
         drawData = rdata.prr_A;
         var channel = document.getElementById('channel');
+        var line = {};
         switch(channel.options[channel.selectedIndex].text){
           case '平行通道距离校正信号':
-          case '污染边界层':
             drawData = rdata.prr_A;
             break;
           case '垂直通道距离校正信号':
@@ -396,27 +430,56 @@
           case '垂直通道原始信号':
             drawData = rdata.raw_B;
             break;
+          case '污染边界层':
+            drawData = rdata.prr_A;
+            line = {
+              x:timeat,
+              y:rdata.pbl,
+              mode:'markers',
+              type:'scatter',
+              marker:{color:'black'}
+            };
+            break;
         };
         view.graphics.removeAll();
-        var wallGeometry = createPie(locations,drawData,resolution,rangeMax,vMin,vMax);
+        var wallGeometry = createWall(locations,drawData,resolution,rangeMax,vMin,vMax);
         view.graphics.add(new Graphic(wallGeometry, symbol));
         view.center = locations[0];
+
+        var heat = {
+              z: drawData,
+              x: timeat,
+              y: heights,
+              zmin: vMin,
+              zmax: vMax,
+              type: 'heatmap',
+              transpose: true,
+              colorscale:'Jet'
+            };
+        
+        var data = [heat,line];
+        Plotly.react('PRADiv',data,layoutA);
       }
 
       function ChangeMaxValue(){
         var colorMax = document.getElementById('colorMax');
         vMax = colorMax.value;
         view.graphics.removeAll();
-        var wallGeometry = createPie(locations,drawData,resolution,rangeMax,vMin,vMax);
+        var wallGeometry = createWall(locations,drawData,resolution,rangeMax,vMin,vMax);
         view.graphics.add(new Graphic(wallGeometry, symbol));
         view.center = locations[0];
+
+        var update = {
+          zmax:vMax
+        };
+        Plotly.restyle('PRADiv',update);
       }
 
       function ChangeMinValue(){
         var colorMin = document.getElementById('colorMin'); 
         vMin = colorMin.value;  
         view.graphics.removeAll();
-        var wallGeometry = createPie(locations,drawData,resolution,rangeMax,vMin,vMax);
+        var wallGeometry = createWall(locations,drawData,resolution,rangeMax,vMin,vMax);
         view.graphics.add(new Graphic(wallGeometry, symbol));
         view.center = locations[0];    
       }
@@ -425,7 +488,7 @@
         var zMax = document.getElementById('zMax'); 
         rangeMax = zMax.value;  
         view.graphics.removeAll();
-        var wallGeometry = createPie(locations,drawData,resolution,rangeMax,vMin,vMax);
+        var wallGeometry = createWall(locations,drawData,resolution,rangeMax,vMin,vMax);
         view.graphics.add(new Graphic(wallGeometry, symbol));
         view.center = locations[0];    
       }
