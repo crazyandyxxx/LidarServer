@@ -489,7 +489,7 @@
 
       function ChangeMaxValue(){
         var colorMax = document.getElementById('colorMax');
-        vMax = colorMax.value;
+        vMax = Number(colorMax.value);
         view.graphics.removeAll();
         var pieGeometry = createPie(location,drawData,resolution,rangeMax,verAngle,horStartAng,horEndAng,horAngStep,vMin,vMax);
         view.graphics.add(new Graphic(pieGeometry, symbol));
@@ -498,7 +498,7 @@
 
       function ChangeMinValue(){
         var colorMin = document.getElementById('colorMin'); 
-        vMin = colorMin.value;  
+        vMin = Number(colorMin.value);  
         view.graphics.removeAll();
         var pieGeometry = createPie(location,drawData,resolution,rangeMax,verAngle,horStartAng,horEndAng,horAngStep,vMin,vMax);
         view.graphics.add(new Graphic(pieGeometry, symbol));
@@ -507,7 +507,7 @@
 
       function ChangeRangeMax(){
         var zMax = document.getElementById('zMax'); 
-        rangeMax = zMax.value;  
+        rangeMax = Number(zMax.value);  
         view.graphics.removeAll();
         var pieGeometry = createPie(location,drawData,resolution,rangeMax,verAngle,horStartAng,horEndAng,horAngStep,vMin,vMax);
         view.graphics.add(new Graphic(pieGeometry, symbol));
