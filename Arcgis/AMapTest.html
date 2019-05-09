@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+<title>Mesh</title>
+<link rel="stylesheet" href="https://cache.amap.com/lbs/static/main1119.css"/>
+<script src="https://cache.amap.com/lbs/static/es5.min.js"></script>
+<script src="https://webapi.amap.com/maps?v=1.4.14&key=deccd88e5fc1ec27d19c67f6790c1c88&plugin=Map3D"></script>
+</head>
+<body>
+<div id="container"></div>
+<script>
+    
+    var map = new AMap.Map('container', {
+        viewMode:'3D',  
+        expandZoomRange:true,
+        zooms:[3,20],
+        zoom:16,
+        pitch:0,
+        center:[116.396132,39.900444]
+    });
+    var object3Dlayer = new AMap.Object3DLayer();
+    map.add(object3Dlayer)
+
+    var lnglat1 = new AMap.LngLat(116.395, 39.9)
+    var r = 6000;
+    var verAng = 15;
+    var horAngStep = 2;
+    var horAngStart = 30;
+    var horAngEnd = 330;
+    var gpn = Math.floor((horAngEnd-horAngStart)/horAngStep);
+
+    for(var i = 0;i<gpn;i++){
+        var tri = generateTriangle(lnglat1,r,0,verAng,horAngStart+i*horAngStep,horAngStart+(i+1)*horAngStep,0,0)
+        object3Dlayer.add(tri)
+    }
+
+    function generateTriangle(lnglat, r, rdata, verAng, horAngStart, horAngEnd, vmin, vmax){
+        var v0xy = map.lngLatToGeodeticCoord(lnglat1);
+        var x0 = v0xy.x;
+        var y0 = v0xy.y;
+        var z0 = 0;
+        var x1,y1,z1,x2,y2,z2;
+
+        var triangle = new AMap.Object3D.Mesh()
+        triangle.transparent = true;
+        var geometry = triangle.geometry;
+        var dz = r*Math.sin(verAng/180*Math.PI);
+        geometry.vertices.push(x0, y0, z0);
+        x1 = x0+r*Math.cos(verAng/180*Math.PI)*Math.sin(horAngStart/180*Math.PI);
+        y1 = y0-r*Math.cos(verAng/180*Math.PI)*Math.cos(horAngStart/180*Math.PI);
+        z1 = z0-dz;
+        geometry.vertices.push(x1, y1, z1);
+        x2 = x0+r*Math.cos(verAng/180*Math.PI)*Math.sin(horAngEnd/180*Math.PI);
+        y2 = y0-r*Math.cos(verAng/180*Math.PI)*Math.cos(horAngEnd/180*Math.PI);
+        z2 = z0-dz;
+        geometry.vertices.push(x2, y2, z2);
+        geometry.faces.push(0, 1, 2);
+        geometry.vertexUVs.push(0.5, 0); 
+        geometry.vertexUVs.push(0, 0.99); 
+        geometry.vertexUVs.push(1, 0.99);
+
+        var canvas = document.createElement('canvas');
+        canvas.width = 16;
+        canvas.height = 512;
+        var ctx = canvas.getContext('2d');
+        var gradient = ctx.createLinearGradient(0,0,0,512);
+        gradient.addColorStop(0,'rgba(' + 255 + ',' + 0 + ',' + 0 + ',' + 1+ ')');
+        gradient.addColorStop(1,'rgba(' + 0 + ',' + 255 + ',' + 0 + ',' + 0.15 + ')');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0,0,16,512);
+        
+        triangle.textures.push(canvas);
+        triangle.backOrFront = 'both';
+        return triangle;
+    }
+
+
+    // 颜色填充
+    // geometry.vertexColors.push(1, 0, 0, 1); //V0
+    // geometry.vertexColors.push(0, 1, 0, 1); //V1
+    // geometry.vertexColors.push(0, 0, 1, 1); //V2
+    // geometry.vertexColors.push(0, 1, 1, 1); //V3
+
+
+
+</script>
+</body>
+</html>
