@@ -23,6 +23,10 @@
     });
     var object3Dlayer = new AMap.Object3DLayer();
     map.add(object3Dlayer)
+        map.plugin(["AMap.Scale"],function(){
+        var scale = new AMap.Scale();
+        map.addControl(scale);   
+    });
 
     var lnglat1 = new AMap.LngLat(116.395, 39.9)
     var r = 6000;
@@ -33,7 +37,7 @@
     var gpn = Math.floor((horAngEnd-horAngStart)/horAngStep);
 
     for(var i = 0;i<gpn;i++){
-        var tri = generateTriangle(lnglat1,r,0,verAng,horAngStart+i*horAngStep,horAngStart+(i+1)*horAngStep,0,0)
+        var tri = generateTriangle(lnglat1,r,i,verAng,horAngStart+i*horAngStep,horAngStart+(i+1)*horAngStep,0,0)
         object3Dlayer.add(tri)
     }
 
@@ -67,8 +71,8 @@
         canvas.height = 512;
         var ctx = canvas.getContext('2d');
         var gradient = ctx.createLinearGradient(0,0,0,512);
-        gradient.addColorStop(0,'rgba(' + 255 + ',' + 0 + ',' + 0 + ',' + 1+ ')');
-        gradient.addColorStop(1,'rgba(' + 0 + ',' + 255 + ',' + 0 + ',' + 0.15 + ')');
+        gradient.addColorStop(0,'rgba(' + rdata + ',' + 0 + ',' + 0 + ',' + 1+ ')');
+        gradient.addColorStop(1,'rgba(' + 0 + ',' + rdata + ',' + 0 + ',' + 0.15 + ')');
         ctx.fillStyle = gradient;
         ctx.fillRect(0,0,16,512);
         
