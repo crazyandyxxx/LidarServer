@@ -55,36 +55,21 @@
         center:[116.396132,39.900444]
     });
 
-    // 同时引入工具条插件，比例尺插件和鹰眼插件
-    // AMap.plugin([
-    //     'AMap.ToolBar',
-    //     'AMap.Scale',
-    //     'AMap.OverView',
-    //     'AMap.MapType',
-    //     'AMap.Geolocation',
-    // ], function(){
-    //     // 在图面添加工具条控件，工具条控件集成了缩放、平移、定位等功能按钮在内的组合控件
-    //     map.addControl(new AMap.ToolBar());
+    AMap.plugin([
+        'AMap.ControlBar',
+        'AMap.Scale',
+        'AMap.MapType',
+    ], function(){
 
-    //     // 在图面添加比例尺控件，展示地图在当前层级和纬度下的比例尺
-    //     map.addControl(new AMap.Scale());
+        // 添加 3D 罗盘控制
+        // map.addControl(new AMap.ControlBar({position:'lt'}));
+        map.addControl(new AMap.Scale());
+        map.addControl(new AMap.MapType());
+    });
 
-    //     // 在图面添加鹰眼控件，在地图右下角显示地图的缩略图
-    //     map.addControl(new AMap.OverView({isOpen:true}));
-      
-    //     // 在图面添加类别切换控件，实现默认图层与卫星图、实施交通图层之间切换的控制
-    //     map.addControl(new AMap.MapType());
-      
-    //     // 在图面添加定位控件，用来获取和展示用户主机所在的经纬度位置
-    //     map.addControl(new AMap.Geolocation());
-    // });
 
     var object3Dlayer = new AMap.Object3DLayer();
     map.add(object3Dlayer);
-    // map.plugin(["AMap.Scale"],function(){
-    //     var scale = new AMap.Scale();
-    //     map.addControl(scale);   
-    // });
 
     var rdata = {};
     var rangeMax = 6000;
