@@ -41,7 +41,7 @@
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
     <link rel="stylesheet" href="https://cache.amap.com/lbs/static/main1119.css"/>
     <script src="https://cache.amap.com/lbs/static/es5.min.js"></script>
-    <script src="https://webapi.amap.com/maps?v=1.4.14&key=deccd88e5fc1ec27d19c67f6790c1c88&plugin=Map3D"></script>
+    <script src="https://webapi.amap.com/maps?v=1.4.14&key=deccd88e5fc1ec27d19c67f6790c1c88"></script>
 </head>
 <script>
     var task_id = '{{task_id}}';
@@ -54,7 +54,33 @@
         pitch:0,
         center:[116.396132,39.900444]
     });
+
+    // 同时引入工具条插件，比例尺插件和鹰眼插件
+    // AMap.plugin([
+    //     'AMap.ToolBar',
+    //     'AMap.Scale',
+    //     'AMap.OverView',
+    //     'AMap.MapType',
+    //     'AMap.Geolocation',
+    // ], function(){
+    //     // 在图面添加工具条控件，工具条控件集成了缩放、平移、定位等功能按钮在内的组合控件
+    //     map.addControl(new AMap.ToolBar());
+
+    //     // 在图面添加比例尺控件，展示地图在当前层级和纬度下的比例尺
+    //     map.addControl(new AMap.Scale());
+
+    //     // 在图面添加鹰眼控件，在地图右下角显示地图的缩略图
+    //     map.addControl(new AMap.OverView({isOpen:true}));
+      
+    //     // 在图面添加类别切换控件，实现默认图层与卫星图、实施交通图层之间切换的控制
+    //     map.addControl(new AMap.MapType());
+      
+    //     // 在图面添加定位控件，用来获取和展示用户主机所在的经纬度位置
+    //     map.addControl(new AMap.Geolocation());
+    // });
+
     var object3Dlayer = new AMap.Object3DLayer();
+    map.add(object3Dlayer);
     // map.plugin(["AMap.Scale"],function(){
     //     var scale = new AMap.Scale();
     //     map.addControl(scale);   
@@ -77,66 +103,61 @@
     function createPie(location,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax) {
         var gpn = Math.floor((horAngEnd-horAngStart)/horAngStep);
         for(var i = 0;i<gpn;i++){
-            var tri = generateTriangle(location,rangeMax,resolution,drawData[i],verAng,horAngStart+i*horAngStep,horAngStart+(i+1)*horAngStep,vMin,vMax);
+            var tri = generateTriangle(location,rangeMax,resolution,i,drawData,verAng,horAngStart+i*horAngStep,horAngStart+(i+1)*horAngStep,vMin,vMax);
             object3Dlayer.add(tri);
         }
     }
 
-    function generateTriangle(lnglat, r, resl, rdata, verAng, horAngStart, horAngEnd, vmin, vmax){
+    function generateTriangle(lnglat, r, resl, idata, rdata, verAng, horAngStart, horAngEnd, vmin, vmax){
         var v0xy = map.lngLatToGeodeticCoord(lnglat);
+        var v1xy = map.lngLatToGeodeticCoord(lnglat.offset(5000,0));
+        var scal = (v1xy.x-v0xy.x)/5000;
         var x0 = v0xy.x;
         var y0 = v0xy.y;
         var z0 = 0;
-        var x1,y1,z1,x2,y2,z2;
+
+        var x1 = [], y1 = [],z1 = [], x2 = [], y2 = [], z2 = [];
+        var nmax = r/resl;
+        resl *= scal;
+        for(var i = 0; i<nmax+1; i++){
+          x1.push(x0+i*resl*Math.cos(verAng/180*Math.PI)*Math.sin(horAngStart/180*Math.PI));
+          y1.push(y0-i*resl*Math.cos(verAng/180*Math.PI)*Math.cos(horAngStart/180*Math.PI));
+          z1.push(z0-i*resl*Math.sin(verAng/180*Math.PI));
+          x2.push(x0+i*resl*Math.cos(verAng/180*Math.PI)*Math.sin(horAngEnd/180*Math.PI));
+          y2.push(y0-i*resl*Math.cos(verAng/180*Math.PI)*Math.cos(horAngEnd/180*Math.PI));
+          z2.push(z0-i*resl*Math.sin(verAng/180*Math.PI));
+        }
 
         var triangle = new AMap.Object3D.Mesh()
         triangle.transparent = true;
-        var geometry = triangle.geometry;
-        var dz = r*Math.sin(verAng/180*Math.PI);
-        geometry.vertices.push(x0, y0, z0);
-        x1 = x0+r*Math.cos(verAng/180*Math.PI)*Math.sin(horAngStart/180*Math.PI);
-        y1 = y0-r*Math.cos(verAng/180*Math.PI)*Math.cos(horAngStart/180*Math.PI);
-        z1 = z0-dz;
-        geometry.vertices.push(x1, y1, z1);
-        x2 = x0+r*Math.cos(verAng/180*Math.PI)*Math.sin(horAngEnd/180*Math.PI);
-        y2 = y0-r*Math.cos(verAng/180*Math.PI)*Math.cos(horAngEnd/180*Math.PI);
-        z2 = z0-dz;
-        geometry.vertices.push(x2, y2, z2);
-        geometry.faces.push(0, 1, 2);
-        geometry.vertexUVs.push(0.5, 0); 
-        geometry.vertexUVs.push(0, 0.99); 
-        geometry.vertexUVs.push(1, 0.99);
-
-        var nmax = r/resl;
-        var texture = createTriangleTexture(rdata,nmax,vmin,vmax);        
-        triangle.textures.push(texture);
         triangle.backOrFront = 'both';
+
+        var geometry = triangle.geometry;
+        for(var i = 0; i<nmax; i++){
+          geometry.vertices.push(x1[i], y1[i], z1[i]);
+          geometry.vertices.push(x1[i+1], y1[i+1], z1[i+1]);
+          geometry.vertices.push(x2[i+1], y2[i+1], z2[i+1]);
+          geometry.vertices.push(x1[i], y1[i], z1[i]);
+          geometry.vertices.push(x2[i], y2[i], z2[i]);
+          geometry.vertices.push(x2[i+1], y2[i+1], z2[i+1]);
+          var xc1 = getColor(rdata[idata][i], vmin, vmax);
+          var xc2 = getColor(rdata[idata][i+1], vmin, vmax);
+          var xc3 = getColor(rdata[idata+1][i], vmin, vmax);
+          var xc4 = getColor(rdata[idata+1][i+1], vmin, vmax);
+          geometry.vertexColors.push(xc1.r, xc1.g, xc1.b, xc1.a);
+          geometry.vertexColors.push(xc2.r, xc2.g, xc2.b, xc2.a);
+          geometry.vertexColors.push(xc4.r, xc4.g, xc4.b, xc4.a);
+          geometry.vertexColors.push(xc1.r, xc1.g, xc1.b, xc1.a);
+          geometry.vertexColors.push(xc3.r, xc3.g, xc3.b, xc3.a);
+          geometry.vertexColors.push(xc4.r, xc4.g, xc4.b, xc4.a);
+        }
+        
+        
         return triangle;
     }
 
-    function createTriangleTexture(points, nmax, vmin, vmax) {
-        var canvas = document.createElement("canvas");
-        width = 16;
-        height = 512;
-        canvas.width = width;
-        canvas.height = height;
-
-        var ctx = canvas.getContext("2d");
-
-        // Create the linear gradient with which to fill the canvas
-        var gradient = ctx.createLinearGradient(0, 0, 0, height);
-        for(let i=0;i<nmax;i++){
-          gradient.addColorStop(i/nmax, getColor(points[i],vmin,vmax));
-        }
-        // Fill the canvas with the gradient pattern
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, width, height);
-
-        return canvas;
-    }
-
     function getColor(v, vmin, vmax){
-        var c = 'rgba(' + 255 + ',' + 255 + ',' + 255 + ',' + 0.15 + ')';
+        var c = {};
         if (v < vmin){
           v = vmin;
         }          
@@ -144,24 +165,28 @@
           v = vmax;
         }
         var dv = vmax - vmin;
-        var a = 0.15+0.6*(v - vmin) / dv;
+        c.a = 0.3+0.4*(v - vmin) / dv;
 
         if (v < (vmin + 0.25 * dv)) {
-            var g = Math.floor( 4 * (v - vmin) / dv*255);
-            
-            c = 'rgba(' + 0 + ',' + g + ',' + 255 + ',' + a + ')'
+            var g = 4 * (v - vmin) / dv;
+            c.r = 0;
+            c.g = g;
+            c.b = 1;
         } else if (v < (vmin + 0.5 * dv)) {
             var b = 1 + 4 * (vmin + 0.25 * dv - v) / dv;
-            b = Math.floor(b*255);
-            c = 'rgba(' + 0 + ',' + 255 + ',' + b + ',' + a + ')'
+            c.r = 0;
+            c.g = 1;
+            c.b = b;
         } else if (v < (vmin + 0.75 * dv)) {
             var r = 4 * (v - vmin - 0.5 * dv) / dv;
-            r = Math.floor(r*255);
-            c = 'rgba(' + r + ',' + 255 + ',' + 0 + ',' + a + ')'
+            c.r = r;
+            c.g = 1;
+            c.b = 0;
         } else {
             var g = 1 + 4 * (vmin + 0.75 * dv - v) / dv;
-            g = Math.floor(g*255);
-            c = 'rgba(' + 255 + ',' + g + ',' + 0 + ',' + a + ')'
+            c.r = 1;
+            c.g = g;
+            c.b = 0;
         }
         return c;
       }
