@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<style type="text/css">
+    .inputNum {
+      width: 6em;
+      text-align: right;
+    }
+    #viewDiv {
+      height: 800px;
+    }
+</style>
+ <select id="timeSeries">
+
+ </select>
+  <select  id="channel">
+          <option>平行通道距离校正信号</option>
+          <option>垂直通道距离校正信号</option>
+          <option>消光系数</option>
+          <option>退偏比</option>
+          <option>平行通道原始信号</option>
+          <option>垂直通道原始信号</option>
+        </select>
+        <span>
+          &nbsp;&nbsp;&nbsp;&nbsp;从<input type="number" id="zMin" value="0" class="inputNum" max="30000" min="15">
+          至<input type="number" id="zMax" value="6000" class="inputNum" max="30000" min="15">&nbsp;&nbsp;&nbsp;&nbsp;
+        </span>
+        <span>
+          色标最小值<input type="number" id="colorMin" value="0" class="inputNum">
+          色标最大值<input type="number" id="colorMax" value="10000" class="inputNum">
+        </span>
+  
+  <div id="viewDiv"></div>
+
+{% endblock %}
+
+{% block app_scripts %}
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <link rel="stylesheet" href="https://cache.amap.com/lbs/static/main1119.css"/>
+    <script src="https://cache.amap.com/lbs/static/es5.min.js"></script>
+    <script src="https://webapi.amap.com/maps?v=1.4.14&key=deccd88e5fc1ec27d19c67f6790c1c88"></script>
+</head>
+<script>
+    var task_id = '{{task_id}}';
+
+    var map = new AMap.Map('viewDiv', {
+        viewMode:'3D',  
+        expandZoomRange:true,
+        zooms:[3,20],
+        zoom:16,
+        pitch:0,
+        center:[116.396132,39.900444]
+    });
+
+    AMap.plugin([
+        'AMap.ControlBar',
+        'AMap.Scale',
+        'AMap.MapType',
+    ], function(){
+
+        // 添加 3D 罗盘控制
+        // map.addControl(new AMap.ControlBar({position:'lt'}));
+        map.addControl(new AMap.Scale());
+        map.addControl(new AMap.MapType());
+    });
+
+
+    var object3Dlayer = new AMap.Object3DLayer();
+    map.add(object3Dlayer);
+
+    var rdata = {};
+    var rangeMax = 6000;
+    var vMax = 10000;
+    var vMin = 0;
+    var resolution = 15;
+    var verAng = 0;
+    var horAngStart=0;
+    var horAngEnd = 360;
+    var horAngStep = 5;
+    var longitude = 0;
+    var latitude = 0;
+    var altitude = 0;
+    var drawData = [];
+    var postion = new AMap.LngLat(0, 0);
+
+    function createPie(location,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax) {
+        var gpn = Math.floor((horAngEnd-horAngStart)/horAngStep);
+        for(var i = 0;i<gpn;i++){
+            var tri = generateTriangle(location,rangeMax,resolution,i,drawData,verAng,horAngStart+i*horAngStep,horAngStart+(i+1)*horAngStep,vMin,vMax);
+            object3Dlayer.add(tri);
+        }
+    }
+
+    function generateTriangle(lnglat, r, resl, idata, rdata, verAng, horAngStart, horAngEnd, vmin, vmax){
+        var v0xy = map.lngLatToGeodeticCoord(lnglat);
+        var v1xy = map.lngLatToGeodeticCoord(lnglat.offset(5000,0));
+        var scal = (v1xy.x-v0xy.x)/5000;
+        var x0 = v0xy.x;
+        var y0 = v0xy.y;
+        var z0 = 0;
+
+        var x1 = [], y1 = [],z1 = [], x2 = [], y2 = [], z2 = [];
+        var nmax = r/resl;
+        resl *= scal;
+        for(var i = 0; i<nmax+1; i++){
+          x1.push(x0+i*resl*Math.cos(verAng/180*Math.PI)*Math.sin(horAngStart/180*Math.PI));
+          y1.push(y0-i*resl*Math.cos(verAng/180*Math.PI)*Math.cos(horAngStart/180*Math.PI));
+          z1.push(z0-i*resl*Math.sin(verAng/180*Math.PI));
+          x2.push(x0+i*resl*Math.cos(verAng/180*Math.PI)*Math.sin(horAngEnd/180*Math.PI));
+          y2.push(y0-i*resl*Math.cos(verAng/180*Math.PI)*Math.cos(horAngEnd/180*Math.PI));
+          z2.push(z0-i*resl*Math.sin(verAng/180*Math.PI));
+        }
+
+        var triangle = new AMap.Object3D.Mesh()
+        triangle.transparent = true;
+        triangle.backOrFront = 'both';
+
+        var geometry = triangle.geometry;
+        for(var i = 0; i<nmax; i++){
+          geometry.vertices.push(x1[i], y1[i], z1[i]);
+          geometry.vertices.push(x1[i+1], y1[i+1], z1[i+1]);
+          geometry.vertices.push(x2[i+1], y2[i+1], z2[i+1]);
+          geometry.vertices.push(x1[i], y1[i], z1[i]);
+          geometry.vertices.push(x2[i], y2[i], z2[i]);
+          geometry.vertices.push(x2[i+1], y2[i+1], z2[i+1]);
+          var xc1 = getColor(rdata[idata][i], vmin, vmax);
+          var xc2 = getColor(rdata[idata][i+1], vmin, vmax);
+          var xc3 = getColor(rdata[idata+1][i], vmin, vmax);
+          var xc4 = getColor(rdata[idata+1][i+1], vmin, vmax);
+          geometry.vertexColors.push(xc1.r, xc1.g, xc1.b, xc1.a);
+          geometry.vertexColors.push(xc2.r, xc2.g, xc2.b, xc2.a);
+          geometry.vertexColors.push(xc4.r, xc4.g, xc4.b, xc4.a);
+          geometry.vertexColors.push(xc1.r, xc1.g, xc1.b, xc1.a);
+          geometry.vertexColors.push(xc3.r, xc3.g, xc3.b, xc3.a);
+          geometry.vertexColors.push(xc4.r, xc4.g, xc4.b, xc4.a);
+        }
+        
+        
+        return triangle;
+    }
+
+    function getColor(v, vmin, vmax){
+        var c = {};
+        if (v < vmin){
+          v = vmin;
+        }          
+        if (v > vmax){
+          v = vmax;
+        }
+        var dv = vmax - vmin;
+        c.a = 0.25+0.55*(v - vmin) / dv;
+
+        if (v < (vmin + 0.25 * dv)) {
+            var g = 4 * (v - vmin) / dv;
+            c.r = 0;
+            c.g = g;
+            c.b = 1;
+        } else if (v < (vmin + 0.5 * dv)) {
+            var b = 1 + 4 * (vmin + 0.25 * dv - v) / dv;
+            c.r = 0;
+            c.g = 1;
+            c.b = b;
+        } else if (v < (vmin + 0.75 * dv)) {
+            var r = 4 * (v - vmin - 0.5 * dv) / dv;
+            c.r = r;
+            c.g = 1;
+            c.b = 0;
+        } else {
+            var g = 1 + 4 * (vmin + 0.75 * dv - v) / dv;
+            c.r = 1;
+            c.g = g;
+            c.b = 0;
+        }
+        return c;
+      }
+
+    $.post('{{ url_for('main.get_ppi_data') }}', { 'task id': task_id, 'content':'list' },
+        function(data,status){
+        var sel1 = document.getElementById('timeSeries');
+        sel1.addEventListener("change", SelectTime);
+        var channel = document.getElementById('channel');
+        channel.addEventListener("change", SelectChannel);
+        var colorMax = document.getElementById('colorMax');
+        colorMax.addEventListener("change", ChangeMaxValue);
+        var colorMin = document.getElementById('colorMin');
+        colorMin.addEventListener("change", ChangeMinValue);
+        var zMax = document.getElementById('zMax');
+        zMax.addEventListener("change", ChangeRangeMax);
+        for(let i=0; i<data.result.length;i++){
+            sel1.options.add(new Option(data.result[i].timestamp+""));
+        };
+        $.post('{{ url_for('main.get_ppi_data') }}', { 'task id': task_id, 'content':'timedata', 'time': sel1.options[0].text},
+            function(data,status){
+            rdata.raw_A = [];
+            rdata.raw_B = [];
+            rdata.prr_A = [];
+            rdata.prr_B = [];
+            rdata.ext = [];
+            rdata.dep = [];
+            resolution = data.result[0].resolution;
+            verAng = data.result[0].verAngle;
+            horAngStart = data.result[0].horAngle;
+            horAngEnd = data.result[data.result.length-1].horAngle;
+            horAngStep = data.result[1].horAngle - data.result[0].horAngle;
+            var validI = 0;
+            for(let i=0; i<data.result.length;i++){
+                if(data.result[i].longitude>0){
+                validI = i;
+                };
+            };
+            longitude = data.result[validI].longitude<0?0:data.result[validI].longitude;
+            latitude = data.result[validI].latitude<0?0:data.result[validI].latitude;
+            altitude = data.result[validI].altitude<0?0:data.result[validI].altitude;
+            position = new AMap.LngLat(longitude, latitude);
+            for(let i=0; i<data.result.length;i++){
+                rdata.prr_A.push(data.result[i].prr_A);
+                rdata.prr_B.push(data.result[i].prr_B);
+                rdata.raw_A.push(data.result[i].raw_A);
+                rdata.raw_B.push(data.result[i].raw_B);
+                rdata.ext.push(data.result[i].ext);
+                rdata.dep.push(data.result[i].dep);
+            };
+            drawData = rdata.prr_A;
+            createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax);
+            map.setCenter(position);
+        });
+    });
+    
+    function SelectTime(){
+        var sel1 = document.getElementById('timeSeries');
+        var index = sel1.selectedIndex;
+        $.post('{{ url_for('main.get_ppi_data') }}', { 'task id': task_id, 'content':'timedata', 'time': sel1.options[index].text},
+        function(data,status){
+          rdata.raw_A = [];
+          rdata.raw_B = [];
+          rdata.prr_A = [];
+          rdata.prr_B = [];
+          rdata.ext = [];
+          rdata.dep = [];
+          resolution = data.result[0].resolution;
+          verAngle = data.result[0].verAngle;
+          horStartAng = data.result[0].horAngle;
+          horEndAng = data.result[data.result.length-1].horAngle;
+          horAngStep = data.result[1].horAngle - data.result[0].horAngle;
+          var validI = 0;
+          for(let i=0; i<data.result.length;i++){
+            if(data.result[i].longitude>0){
+              validI = i;
+            };
+          };
+          longitude = data.result[validI].longitude<0?0:data.result[validI].longitude;
+          latitude = data.result[validI].latitude<0?0:data.result[validI].latitude;
+          altitude = data.result[validI].altitude<0?0:data.result[validI].altitude;
+          position = new AMap.LngLat(longitude, latitude);
+          for(let i=0; i<data.result.length;i++){
+            rdata.prr_A.push(data.result[i].prr_A);
+            rdata.prr_B.push(data.result[i].prr_B);
+            rdata.raw_A.push(data.result[i].raw_A);
+            rdata.raw_B.push(data.result[i].raw_B);
+            rdata.ext.push(data.result[i].ext);
+            rdata.dep.push(data.result[i].dep);
+          };
+          drawData = rdata.prr_A;
+          var channel = document.getElementById('channel');
+          switch(channel.options[channel.selectedIndex].text){
+            case '平行通道距离校正信号':
+              drawData = rdata.prr_A;
+              break;
+            case '垂直通道距离校正信号':
+              drawData = rdata.prr_B;
+              break;
+            case '消光系数':
+              drawData = rdata.ext;
+              break;
+            case '退偏比':
+              drawData = rdata.dep;
+              break;
+            case '平行通道原始信号':
+              drawData = rdata.raw_A;
+              break;
+            case '垂直通道原始信号':
+              drawData = rdata.raw_B;
+              break;
+          };
+          object3Dlayer.clear();
+          createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax);
+          map.setCenter(position);
+        });      
+      }
+
+      function SelectChannel(){
+        drawData = rdata.prr_A;
+        var channel = document.getElementById('channel');
+        switch(channel.options[channel.selectedIndex].text){
+          case '平行通道距离校正信号':
+            drawData = rdata.prr_A;
+            break;
+          case '垂直通道距离校正信号':
+            drawData = rdata.prr_B;
+            break;
+          case '消光系数':
+            drawData = rdata.ext;
+            break;
+          case '退偏比':
+            drawData = rdata.dep;
+            break;
+          case '平行通道原始信号':
+            drawData = rdata.raw_A;
+            break;
+          case '垂直通道原始信号':
+            drawData = rdata.raw_B;
+            break;
+        };
+        object3Dlayer.clear();
+        createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax);
+        map.setCenter(position);
+      }
+
+      function ChangeMaxValue(){
+        var colorMax = document.getElementById('colorMax');
+        vMax = Number(colorMax.value);
+        object3Dlayer.clear();
+        createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax);
+        map.setCenter(position);
+      }
+
+      function ChangeMinValue(){
+        var colorMin = document.getElementById('colorMin'); 
+        vMin = Number(colorMin.value);  
+        object3Dlayer.clear();
+        createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax);
+        map.setCenter(position);   
+      }
+
+      function ChangeRangeMax(){
+        var zMax = document.getElementById('zMax'); 
+        rangeMax = Number(zMax.value);  
+        object3Dlayer.clear();
+        createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax);
+        map.setCenter(position);    
+      }
+
+
+</script>
+
+
+
+{% endblock %}
