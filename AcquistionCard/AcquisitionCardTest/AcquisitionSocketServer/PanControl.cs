@@ -16,6 +16,12 @@ namespace AcquisitionSocketServer
             return "{\"heading\":" + currentHorAng + ",\"pitch\":" + currentVerAng + "}";
         }
 
+        private enum AngleType
+        {
+            Hor,
+            Ver
+        }
+
         private static void SetPanPort()
         {
             panPort.BaudRate = 2400;
@@ -33,9 +39,9 @@ namespace AcquisitionSocketServer
                 return;
             }
             Thread.Sleep(200);
-            currentVerAng = VerPosition();
+            currentVerAng = CurrentPosition(AngleType.Ver);
             Thread.Sleep(200);
-            currentHorAng = HorPosition();
+            currentHorAng = CurrentPosition(AngleType.Hor);
         }
 
         private static void WaitPanToAngle()
@@ -46,15 +52,19 @@ namespace AcquisitionSocketServer
             if (mode == "PPI")
             {
                 var horTargetAng = horStartAng + acquisitionCount % (horN + 1) * horAngStep;
-                if (horTargetAng > 360) horTargetAng = horTargetAng % 360;
-                ToHorAngle(horTargetAng);
-                Thread.Sleep(500);
-                ToHorAngle(horTargetAng);
+                var verTargetAng = verStartAng;
+                if (verStartAng > 90)
+                {
+                    verTargetAng = 180 - verTargetAng;
+                    horTargetAng += 180; 
+                }
+                horTargetAng = (horTargetAng + 360) % 360;
+                ToAngle(horTargetAng, AngleType.Hor, 2, 500);
                 int iloop = 0;
                 while (iloop < 50)
                 {
                     Thread.Sleep(500);
-                    currentHorAng = HorPosition();
+                    currentHorAng = CurrentPosition(AngleType.Hor);
                     if (IsInPosition(currentHorAng,horTargetAng))
                     {
                         currentHorAng = horTargetAng;
@@ -64,61 +74,62 @@ namespace AcquisitionSocketServer
                 }
                 currentHorAng = horTargetAng;
 
-                ToVerAngle(verStartAng);
-                Thread.Sleep(500);
-                ToVerAngle(verStartAng);
+                ToAngle(verTargetAng, AngleType.Ver, 2, 500);
                 iloop = 0;
                 while (iloop < 50)
                 {
                     Thread.Sleep(500);
-                    currentVerAng = VerPosition();
-                    if (IsInPosition(currentVerAng, verStartAng))
+                    currentVerAng = CurrentPosition(AngleType.Ver);
+                    if (IsInPosition(currentVerAng, verTargetAng))
                     {
-                        currentVerAng = verStartAng;
+                        currentVerAng = verTargetAng;
                         break;
                     }
                     
                     iloop++;
                 }
-                currentVerAng = verStartAng;
+                currentVerAng = verTargetAng;
             }
             if (mode == "RHI")
             {
-                var VerTargetAng = verStartAng + acquisitionCount % (verN + 1) * verAngStep;
-                ToHorAngle(horStartAng);
-                Thread.Sleep(500);
-                ToHorAngle(horStartAng);
+                var verTargetAng = verStartAng + acquisitionCount % (verN + 1) * verAngStep;
+                var horTargetAng = horStartAng;
+                if (verStartAng > 90)
+                {
+                    verTargetAng = 180 - verTargetAng;
+                    horTargetAng += 180;
+                }
+                horTargetAng = (horTargetAng + 360) % 360;
+                ToAngle(horTargetAng, AngleType.Hor, 2, 500);
                 int iloop = 0;
                 while (iloop < 50)
                 {
                     Thread.Sleep(500);
-                    currentHorAng = HorPosition();
-                    if (IsInPosition(currentHorAng, horStartAng))
+                    currentHorAng = CurrentPosition(AngleType.Hor);
+                    if (IsInPosition(currentHorAng, horTargetAng))
                     {
-                        currentHorAng = horStartAng;
+                        currentHorAng = horTargetAng;
                         break;
                     }
                     
                     iloop++;
                 }
-                currentHorAng = horStartAng;
+                currentHorAng = horTargetAng;
 
-                ToVerAngle(VerTargetAng);
-                Thread.Sleep(500);
-                ToVerAngle(VerTargetAng);
+                ToAngle(verTargetAng, AngleType.Ver, 2, 500);
                 iloop = 0;
                 while (iloop < 50)
                 {
                     Thread.Sleep(500);
-                    currentVerAng = VerPosition();
-                    if (IsInPosition(currentVerAng, VerTargetAng))
+                    currentVerAng = CurrentPosition(AngleType.Ver);
+                    if (IsInPosition(currentVerAng, verTargetAng))
                     {
-                        currentVerAng = VerTargetAng;
+                        currentVerAng = verTargetAng;
                         break;
                     }
                     iloop++;
                 }
-                currentVerAng = VerTargetAng;
+                currentVerAng = verTargetAng;
             }
         }
 
@@ -135,43 +146,43 @@ namespace AcquisitionSocketServer
             return false;
         }
 
-        private static void ToHorAngle(float angle)
+        private static void ToAngle(float angle, AngleType angType, int repeatTimes, int interval)
         {
-            byte[] PanPositionByte = new byte[] { 0xff, 0x01, 0x00, 0x4b, 0x00, 0x00, 0x00 };
+            byte[] PanPositionByte = new byte[7];
+            if (angType == AngleType.Hor)
+            {
+                PanPositionByte = new byte[] { 0xff, 0x01, 0x00, 0x4b, 0x00, 0x00, 0x00 };
+            }
+            else if (angType == AngleType.Ver)
+            {
+                PanPositionByte = new byte[] { 0xff, 0x01, 0x00, 0x4d, 0x00, 0x00, 0x00 };
+            }
             var bt = BitConverter.GetBytes((ushort)(angle * 100));
             PanPositionByte[4] = bt[1];
             PanPositionByte[5] = bt[0];
             PanPositionByte[6] = (byte)(PanPositionByte[1] + PanPositionByte[2] + PanPositionByte[3] + PanPositionByte[4] + PanPositionByte[5]);
-            SerialPortCommunicate(PanPositionByte, null, panPort);
+            for (int i = 0; i < repeatTimes; i++)
+            {
+                SerialPortCommunicate(PanPositionByte, null, panPort);
+                Thread.Sleep(interval);
+            }           
         }
 
-        private static void ToVerAngle(float angle)
-        {
-            byte[] PanPositionByte = new byte[] { 0xff, 0x01, 0x00, 0x4d, 0x00, 0x00, 0x00 };
-            var bt = BitConverter.GetBytes((ushort)(angle * 100));
-            PanPositionByte[4] = bt[1];
-            PanPositionByte[5] = bt[0];
-            PanPositionByte[6] = (byte)(PanPositionByte[1] + PanPositionByte[2] + PanPositionByte[3] + PanPositionByte[4] + PanPositionByte[5]);
-            SerialPortCommunicate(PanPositionByte, null, panPort);
-        }
-
-        private static float HorPosition()
+        private static float CurrentPosition(AngleType angType)
         {
             float PanPos = 0;
             byte[] PanPositionByteRv = new byte[7];
-            byte[] PanPositionByte = new byte[]{0xff,0x01,0x00,0x51,0x00,0x00,0x52};
+            byte[] PanPositionByte = new byte[7];
+            if (angType == AngleType.Hor)
+            {
+                PanPositionByte = new byte[] { 0xff, 0x01, 0x00, 0x51, 0x00, 0x00, 0x52 };
+            }
+            else if (angType == AngleType.Ver)
+            {
+                PanPositionByte = new byte[] { 0xff, 0x01, 0x00, 0x53, 0x00, 0x00, 0x54 };
+            }
             SerialPortCommunicate(PanPositionByte, PanPositionByteRv, panPort);
             PanPos = BitConverter.ToUInt16(new byte[] { PanPositionByteRv[5],PanPositionByteRv[4]}, 0)/100f;
-            return PanPos;
-        }
-
-        private static float VerPosition()
-        {
-            float PanPos = 0;
-            byte[] PanPositionByteRv = new byte[7];
-            byte[] PanPositionByte = new byte[] { 0xff, 0x01, 0x00, 0x53, 0x00, 0x00, 0x54 };
-            SerialPortCommunicate(PanPositionByte, PanPositionByteRv, panPort);
-            PanPos = BitConverter.ToUInt16(new byte[] { PanPositionByteRv[5], PanPositionByteRv[4] }, 0) / 100f;
             return PanPos;
         }
 

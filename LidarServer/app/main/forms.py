@@ -23,12 +23,12 @@ class AcquireForm(FlaskForm):
                                  ('15.0', 15.0),
                                  ('30.0', 30.0)],
                         default='15.0') 
-    VerStartAngle= FloatField(('垂直起始角'), validators=[NumberRange(0,360)])
-    VerEndAngle= FloatField(('垂直终止角'), validators=[NumberRange(0,360)])
-    VerAngleStep= FloatField(('垂直步进角'), validators=[NumberRange(0,360)])
-    HorStartAngle= FloatField(('水平起始角'), validators=[NumberRange(0,360)])
-    HorEndAngle= FloatField(('水平终止角'), validators=[NumberRange(0,360)])
-    HorAngleStep= FloatField(('水平步进角'), validators=[NumberRange(0,360)])
+    VerStartAngle= FloatField(('垂直起始角'), validators=[NumberRange(0,180)])
+    VerEndAngle= FloatField(('垂直终止角'), validators=[NumberRange(0,180)])
+    VerAngleStep= FloatField(('垂直步进角'), validators=[NumberRange(0,180)])
+    HorStartAngle= FloatField(('水平起始角'), validators=[NumberRange(-360,720)])
+    HorEndAngle= FloatField(('水平终止角'), validators=[NumberRange(-360,720)])
+    HorAngleStep= FloatField(('水平步进角'), validators=[NumberRange(0,720)])
     submit = SubmitField(('开始'))
 
     def __init__(self, *args, **kwargs):
