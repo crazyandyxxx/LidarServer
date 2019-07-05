@@ -97,12 +97,17 @@
       var tMapImgBaseLayer = new WebTileLayer({
         urlTemplate:
           "https://t{subDomain}.tianditu.gov.cn/DataServer?T=img_w&X={col}&Y={row}&L={level}&tk=3cf2285447247c7191415c8725cc2e78",
-          subDomains: ["1", "2", "3", "4","5","6"]
+          subDomains: ["1", "2", "3", "0"]
       });
-      var tMapRoadBaseLayer = new WebTileLayer({
+      var tMapRoadIBaseLayer = new WebTileLayer({
         urlTemplate:
-          "https://t{subDomain}.tianditu.gov.cn/DataServer?T=cta_w&X={col}&Y={row}&L={level}&tk=3cf2285447247c7191415c8725cc2e78",
-          subDomains: ["1", "2", "3", "4","5","6"]
+          "https://t{subDomain}.tianditu.gov.cn/DataServer?T=cia_w&X={col}&Y={row}&L={level}&tk=3cf2285447247c7191415c8725cc2e78",
+          subDomains: ["1", "2", "3", "0"]
+      });
+      var tMapRoadVBaseLayer = new WebTileLayer({
+        urlTemplate:
+          "https://t{subDomain}.tianditu.gov.cn/DataServer?T=cva_w&X={col}&Y={row}&L={level}&tk=3cf2285447247c7191415c8725cc2e78",
+          subDomains: ["1", "2", "3", "0"]
       });
       var tMapVecBaseLayer = new WebTileLayer({
         urlTemplate:
@@ -140,14 +145,14 @@
           "https://mt3.google.cn/maps/vt?lyrs=s%40781&hl=zh-CN&gl=CN&x=3372&y=1547&z=12"
       });   
       var tMapVec = new Basemap({
-        baseLayers: [tMapVecBaseLayer,tMapRoadBaseLayer],
+        baseLayers: [tMapVecBaseLayer,tMapRoadVBaseLayer],
         title: "天地图矢量图",
         id: "g Map Vector",
         thumbnailUrl:
           "https://t1.tianditu.gov.cn/DataServer?T=vec_w&X=3370&Y=1550&L=12&tk=3cf2285447247c7191415c8725cc2e78"
       });
       var tMapImg = new Basemap({
-        baseLayers: [tMapImgBaseLayer,tMapRoadBaseLayer],
+        baseLayers: [tMapImgBaseLayer,tMapRoadIBaseLayer],
         title: "天地图影像图",
         id: "g Map Img",
         thumbnailUrl:
