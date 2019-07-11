@@ -1,0 +1,523 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<style type="text/css">
+    .inputNum {
+      width: 6em;
+      text-align: right;
+    }
+    #viewDiv {
+      height: 600px;
+    }
+</style>
+<select  id="channel">
+    <option>平行通道距离校正信号</option>
+    <option>垂直通道距离校正信号</option>
+    <option>消光系数</option>
+    <option>退偏比</option>
+    <option>污染边界层</option>
+    <option>平行通道原始信号</option>
+    <option>垂直通道原始信号</option>
+</select>
+<span>
+    &nbsp;&nbsp;&nbsp;&nbsp;从<input type="number" id="zMin" value="0" class="inputNum" max="30000" min="15">
+    至<input type="number" id="zMax" value="3000" class="inputNum" max="30000" min="15">&nbsp;&nbsp;&nbsp;&nbsp;
+</span>
+<span>
+    色标最小值<input type="number" id="colorMin" value="0" class="inputNum">
+    色标最大值<input type="number" id="colorMax" value="10000" class="inputNum">
+</span>
+  
+<div id="viewDiv"></div>
+<div id="PRADiv"></div>
+
+{% endblock %}
+
+{% block app_scripts %}
+<head>
+  <meta charset="utf-8" />
+  <meta
+    name="viewport"
+    content="initial-scale=1,maximum-scale=1,user-scalable=no"
+  />
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <link
+    href="https://js.arcgis.com/4.11/esri/themes/light/main.css"
+    rel="stylesheet"
+    type="text/css"
+  />
+  <script src="https://js.arcgis.com/4.11/"></script>
+  
+
+  <script>
+    require([
+      "esri/layers/WebTileLayer",
+      "esri/Map",
+      "esri/Basemap",
+      "esri/widgets/BasemapGallery",
+      "esri/Graphic",
+      "esri/views/SceneView",
+      "esri/views/MapView",
+      "esri/geometry/Mesh",
+      "esri/geometry/Point",
+      "esri/geometry/SpatialReference",
+      "esri/geometry/support/meshUtils",
+      "esri/widgets/CoordinateConversion",
+        "esri/widgets/Locate",
+        "esri/widgets/DirectLineMeasurement3D",
+        "esri/widgets/AreaMeasurement3D"
+    ], function(WebTileLayer, Map, Basemap, BasemapGallery, Graphic, SceneView, MapView, Mesh, Point, 
+                SpatialReference, meshUtils, CoordinateConversion, Locate,DirectLineMeasurement3D,AreaMeasurement3D) {
+      // Create a WebTileLayer with a third-party cached service
+      var aMapVecBaseLayer = new WebTileLayer({
+        urlTemplate:
+          "https://webrd0{subDomain}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={col}&y={row}&z={level}",
+          subDomains: ["1", "2", "3", "4"]
+      });
+      var aMapRoadBaseLayer = new WebTileLayer({
+        urlTemplate:
+          "http://wprd0{subDomain}.is.autonavi.com/appmaptile?x={col}&y={row}&z={level}&lang=zh_cn&size=1&scl=1&style=8",
+          subDomains: ["1", "2", "3", "4"]
+      });
+      var aMapImgBaseLayer = new WebTileLayer({
+        urlTemplate:
+          "http://wprd0{subDomain}.is.autonavi.com/appmaptile?x={col}&y={row}&z={level}&lang=zh_cn&size=1&scl=1&style=6",
+          subDomains: ["1", "2", "3", "4"]
+      });
+      var gMapImgBaseLayer = new WebTileLayer({
+        urlTemplate:
+          "http://mt{subDomain}.google.cn/vt/lyrs=y@126&hl=zh-CN&gl=cn&src=app&s=G&x={col}&y={row}&z={level}",
+          subDomains: ["0", "1", "2", "3"]
+      });
+      var gMapVecBaseLayer = new WebTileLayer({
+        urlTemplate:
+          "http://mt{subDomain}.google.cn/vt/lyrs=m@126&hl=zh-CN&gl=cn&src=app&s=G&x={col}&y={row}&z={level}",
+          subDomains: ["0", "1", "2", "3"]
+      });
+      var tMapImgBaseLayer = new WebTileLayer({
+        urlTemplate:
+          "https://t{subDomain}.tianditu.gov.cn/DataServer?T=img_w&X={col}&Y={row}&L={level}&tk=3cf2285447247c7191415c8725cc2e78",
+          subDomains: ["1", "2", "3", "0"]
+      });
+      var tMapRoadIBaseLayer = new WebTileLayer({
+        urlTemplate:
+          "https://t{subDomain}.tianditu.gov.cn/DataServer?T=cia_w&X={col}&Y={row}&L={level}&tk=3cf2285447247c7191415c8725cc2e78",
+          subDomains: ["1", "2", "3", "0"]
+      });
+      var tMapRoadVBaseLayer = new WebTileLayer({
+        urlTemplate:
+          "https://t{subDomain}.tianditu.gov.cn/DataServer?T=cva_w&X={col}&Y={row}&L={level}&tk=3cf2285447247c7191415c8725cc2e78",
+          subDomains: ["1", "2", "3", "0"]
+      });
+      var tMapVecBaseLayer = new WebTileLayer({
+        urlTemplate:
+        "https://t{subDomain}.tianditu.gov.cn/DataServer?T=vec_w&X={col}&Y={row}&L={level}&tk=3cf2285447247c7191415c8725cc2e78",
+          subDomains: ["1", "2", "3", "4","5","6"]
+      });
+      // Create a Basemap with the WebTileLayer. The thumbnailUrl will be used for
+      // the image in the BasemapToggle widget.
+      var aMapVec = new Basemap({
+        baseLayers: [aMapVecBaseLayer],
+        title: "高德矢量图",
+        id: "g Map Vector",
+        thumbnailUrl:
+          "https://webrd02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x=3369&y=1548&z=12"
+      });
+      var aMapImg = new Basemap({
+        baseLayers: [aMapImgBaseLayer,aMapRoadBaseLayer],
+        title: "高德影像图",
+        id: "g Map Img",
+        thumbnailUrl:
+          "https://webst04.is.autonavi.com/appmaptile?style=6&x=3369&y=1550&z=12"
+      });   
+      var gMapVec = new Basemap({
+        baseLayers: [gMapVecBaseLayer],
+        title: "谷歌矢量图",
+        id: "a Map Img",
+        thumbnailUrl:
+          "https://mt0.google.cn/vt/lyrs=m@207000000&hl=zh-CN&gl=CN&src=app&x=3372&y=1548&z=12&s=Galile"
+      }); 
+      var gMapImg = new Basemap({
+        baseLayers: [gMapImgBaseLayer],
+        title: "谷歌影像图",
+        id: "a Map Img",
+        thumbnailUrl:
+          "https://mt3.google.cn/maps/vt?lyrs=s%40781&hl=zh-CN&gl=CN&x=3372&y=1547&z=12"
+      });   
+      var tMapVec = new Basemap({
+        baseLayers: [tMapVecBaseLayer,tMapRoadVBaseLayer],
+        title: "天地图矢量图",
+        id: "g Map Vector",
+        thumbnailUrl:
+          "https://t1.tianditu.gov.cn/DataServer?T=vec_w&X=3370&Y=1550&L=12&tk=3cf2285447247c7191415c8725cc2e78"
+      });
+      var tMapImg = new Basemap({
+        baseLayers: [tMapImgBaseLayer,tMapRoadIBaseLayer],
+        title: "天地图影像图",
+        id: "g Map Img",
+        thumbnailUrl:
+          "https://t2.tianditu.gov.cn/DataServer?T=img_w&X=3368&Y=1547&L=12&tk=3cf2285447247c7191415c8725cc2e78"
+      });
+
+      var map = new Map({
+        basemap: aMapVec
+      });
+      
+      var view = new SceneView({
+          container: "viewDiv",
+          map: map,
+          environment: {
+            atmosphere: {
+              quality: "low"
+            },
+            // lighting: {
+            //   directShadowsEnabled: true,
+            //   ambientOcclusionEnabled: true
+            // }
+          },
+          camera: {
+            position: [116.8233347, 39.3409284, 5032.93599],
+            tilt: 60
+          }
+        });
+
+      var ccWidget = new CoordinateConversion({
+          view: view
+        });  
+      var locateBtn = new Locate({
+        view: view
+      });
+      var basemapGallery = new BasemapGallery({
+        view: view,
+        source:[aMapVec, aMapImg, gMapVec, gMapImg, tMapVec, tMapImg]
+      });
+
+      // Add the widget to the top-right corner of the view
+      view.ui.add(basemapGallery, {
+        position: "top-right"
+      });
+      view.ui.add(ccWidget, "bottom-left");
+      view.ui.add(locateBtn, {
+          position: "top-left"
+        });
+ 
+      function createRectangle(pt0, pt1, zMax, texture) {
+          var position = [
+            pt0.x,
+            pt0.y,
+            pt0.z,
+            pt0.x,
+            pt0.y,
+            pt0.z + zMax,
+            pt1.x,
+            pt1.y,
+            pt1.z + zMax,
+            pt1.x,
+            pt1.y,
+            pt1.z,
+          ];
+
+          var uv = [0, 0, 0, 1, 1, 1, 1, 0];
+
+          var triagl = new Mesh({
+            vertexAttributes: {
+              position: position,
+              uv: uv
+            },
+            components: [
+              { faces: [0, 1, 2], material: texture },
+              { faces: [0, 2, 3], material: texture }
+            ],
+
+            spatialReference: pt0.spatialReference
+          });
+
+          return triagl;
+        }
+
+      function createRectangleTexture(points, nmax, vmin, vmax) {
+        var canvas = document.createElement("canvas");
+        width = 64;
+        height = nmax;
+        canvas.width = width;
+        canvas.height = height;
+
+        var ctx = canvas.getContext("2d");
+        ctx.globalAlpha=0.5;
+
+        // Create the linear gradient with which to fill the canvas
+        var gradient = ctx.createLinearGradient(0, 0, 0, height);
+        for(let i=0;i<nmax;i++){
+          gradient.addColorStop(i/nmax, getColor(points[i],vmin,vmax));
+        }
+        // Fill the canvas with the gradient pattern
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, width, height);
+
+        return canvas;
+      }
+      
+      function componentToHex(c) {
+          var hex = c.toString(16);
+          return hex.length == 1 ? "0" + hex : hex;
+      }
+      function rgbToHex(r, g, b) {
+          return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+      }
+
+      function getColor(v, vmin, vmax){
+        var c = rgbToHex(255,255,255);
+        if (v < vmin){
+          v = vmin;
+        }          
+        if (v > vmax){
+          v = vmax;
+        }
+        var dv = vmax - vmin;
+
+        if (v < (vmin + 0.25 * dv)) {
+            var g = Math.floor( 4 * (v - vmin) / dv*255);
+            g= g<0?0:g;
+            c = rgbToHex(0,g,255);
+        } else if (v < (vmin + 0.5 * dv)) {
+            var b = 1 + 4 * (vmin + 0.25 * dv - v) / dv;
+            b = Math.floor(b*255);
+            b = b<0?0:b;
+            c = rgbToHex(0,255,b);
+        } else if (v < (vmin + 0.75 * dv)) {
+            var r = 4 * (v - vmin - 0.5 * dv) / dv;
+            r = Math.floor(r*255);
+            r = r<0?0:r;
+            c = rgbToHex(r,255,0);
+        } else {
+            var g = 1 + 4 * (vmin + 0.75 * dv - v) / dv;
+            g = Math.floor(g*255);
+            g = g<0?0:g;
+            c = rgbToHex(255,g,0);
+        }
+        return c;
+      }
+
+      function createWall(pts,rdata,resl,zMax,vmin,vmax) {
+          var n =  pts.length - 1;
+          var nmax = zMax/resl;
+          var meshToMerge= [];
+          for(let i=0;i<n;i++){
+            var rectMaterial = { colorTexture: createRectangleTexture(rdata[i],nmax,vmin,vmax) };
+            var rect = createRectangle(pts[i], pts[i+1], zMax, rectMaterial);
+            meshToMerge.push(rect);
+          }         
+          return meshUtils.merge(meshToMerge);
+      }
+
+      var symbol = {
+        type: "mesh-3d",
+        symbolLayers: [{ type: "fill" }]
+      };
+
+      var rdata = {};
+      var rangeMax = 3000;
+      var vMax = 10000;
+      var vMin = 0;
+      var resolution = 15;
+      var locations = [];
+      var drawData = [];
+      var timeat=[];
+      var heights = [];
+      var layoutA = {
+            xaxis: {
+              title: '时间',
+              showline: true,
+              tickmode:'auto'
+            },
+            yaxis: {
+              title: '距离(m)',
+              showline: true,
+              range:[0,3000],
+              // fixedrange:true
+            }
+          };
+
+      $.post('{{ url_for('main.get_mov_data') }}', { 'task id': task_id},
+          function(data,status){
+            var channel = document.getElementById('channel');
+            channel.addEventListener("change", SelectChannel);
+            var colorMax = document.getElementById('colorMax');
+            colorMax.addEventListener("change", ChangeMaxValue);
+            var colorMin = document.getElementById('colorMin');
+            colorMin.addEventListener("change", ChangeMinValue);
+            var zMax = document.getElementById('zMax');
+            zMax.addEventListener("change", ChangeRangeMax);
+
+            rdata.raw_A = [];
+            rdata.raw_B = [];
+            rdata.prr_A = [];
+            rdata.prr_B = [];
+            rdata.ext = [];
+            rdata.dep = [];
+            rdata.pbl = [];
+            resolution = data.result[0].resolution;
+            var leng = data.result[0].raw_A.length;        
+            for(let i = 0;i<leng;i++){
+                heights.push((i+1)*resolution);
+            };
+            for(let i=0; i<data.result.length;i++){
+                if(data.result[i].longitude>-180){
+                    timeat.push(data.result[i].timestamp);
+                    rdata.prr_A.push(data.result[i].prr_A);
+                    rdata.prr_B.push(data.result[i].prr_B);
+                    rdata.raw_A.push(data.result[i].raw_A);
+                    rdata.raw_B.push(data.result[i].raw_B);
+                    rdata.ext.push(data.result[i].ext);
+                    rdata.dep.push(data.result[i].dep);
+                    rdata.pbl.push(data.result[i].pbl);
+                    var longitude = data.result[i].longitude;
+                    var latitude = data.result[i].latitude;
+                    var altitude = data.result[i].altitude;
+                    locations.push(lonlataltToWebmercator(longitude,latitude,altitude));
+                }             
+            };
+            drawData = rdata.prr_A;
+            view.graphics.removeAll();
+            var wallGeometry = createWall(locations,drawData,resolution,rangeMax,vMin,vMax);
+            view.graphics.add(new Graphic(wallGeometry, symbol));
+            view.center = locations[0];
+
+            var PRA_data = [
+                {
+                z: drawData,
+                x: timeat,
+                y: heights,
+                zmin: 0,
+                zmax: 10000,
+                type: 'heatmap',
+                transpose: true,
+                colorscale:'Jet'
+                }
+            ];
+
+            Plotly.newPlot('PRADiv', PRA_data, layoutA);
+
+        });
+      
+      function lonlataltToWebmercator(lon, lat, alt){
+        var x = lon*20037508.34/180;
+        var y = Math.log(Math.tan((90+lat)*Math.PI/360))/(Math.PI/180);
+        y = y *20037508.34/180;
+        return new Point({
+                            x: x,
+                            y: y,
+                            z: alt,
+                            spatialReference: SpatialReference.WebMercator
+                          });
+      }
+      
+      function SelectChannel(){
+        drawData = rdata.prr_A;
+        var channel = document.getElementById('channel');
+        var line = {};
+        switch(channel.options[channel.selectedIndex].text){
+          case '平行通道距离校正信号':
+            drawData = rdata.prr_A;
+            break;
+          case '垂直通道距离校正信号':
+            drawData = rdata.prr_B;
+            break;
+          case '消光系数':
+            drawData = rdata.ext;
+            break;
+          case '退偏比':
+            drawData = rdata.dep;
+            break;
+          case '平行通道原始信号':
+            drawData = rdata.raw_A;
+            break;
+          case '垂直通道原始信号':
+            drawData = rdata.raw_B;
+            break;
+          case '污染边界层':
+            drawData = rdata.prr_A;
+            line = {
+              x:timeat,
+              y:rdata.pbl,
+              mode:'markers',
+              type:'scatter',
+              marker:{color:'black'}
+            };
+            break;
+        };
+        view.graphics.removeAll();
+        var wallGeometry = createWall(locations,drawData,resolution,rangeMax,vMin,vMax);
+        view.graphics.add(new Graphic(wallGeometry, symbol));
+        view.center = locations[0];
+
+        var heat = {
+              z: drawData,
+              x: timeat,
+              y: heights,
+              zmin: vMin,
+              zmax: vMax,
+              type: 'heatmap',
+              transpose: true,
+              colorscale:'Jet'
+            };
+        
+        var data = [heat,line];
+        Plotly.react('PRADiv',data,layoutA);
+      }
+
+      function ChangeMaxValue(){
+        var colorMax = document.getElementById('colorMax');
+        vMax = Number(colorMax.value);
+        view.graphics.removeAll();
+        var wallGeometry = createWall(locations,drawData,resolution,rangeMax,vMin,vMax);
+        view.graphics.add(new Graphic(wallGeometry, symbol));
+        view.center = locations[0];
+
+        var update = {
+          zmax:vMax
+        };
+        Plotly.restyle('PRADiv',update);
+      }
+
+      function ChangeMinValue(){
+        var colorMin = document.getElementById('colorMin'); 
+        vMin = Number(colorMin.value);  
+        view.graphics.removeAll();
+        var wallGeometry = createWall(locations,drawData,resolution,rangeMax,vMin,vMax);
+        view.graphics.add(new Graphic(wallGeometry, symbol));
+        view.center = locations[0];   
+
+        var update = {
+          zmin:vMin
+        };
+        Plotly.restyle('PRADiv',update); 
+      }
+
+      function ChangeRangeMax(){
+        var zMax = document.getElementById('zMax'); 
+        rangeMax = Number(zMax.value);  
+        view.graphics.removeAll();
+        var wallGeometry = createWall(locations,drawData,resolution,rangeMax,vMin,vMax);
+        view.graphics.add(new Graphic(wallGeometry, symbol));
+        view.center = locations[0];    
+
+        layoutA.yaxis.range[1] = rangeMax;
+        var update = {
+          'yaxis.range[1]':rangeMax
+        };
+        Plotly.relayout('PRADiv',update);
+      }
+
+    });
+  </script>
+</head>
+
+<script>
+var task_id = '{{task_id}}';
+
+</script>
+
+
+
+{% endblock %}

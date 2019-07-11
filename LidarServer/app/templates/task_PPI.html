@@ -37,14 +37,14 @@
 
 {% block app_scripts %}
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
-    <link rel="stylesheet" href="https://cache.amap.com/lbs/static/main1119.css"/>
-    <script src="https://cache.amap.com/lbs/static/es5.min.js"></script>
-    <script src="https://webapi.amap.com/maps?v=1.4.14&key=deccd88e5fc1ec27d19c67f6790c1c88"></script>
-    <!-- UI组件库 1.0 -->
-    <script src="//webapi.amap.com/ui/1.0/main.js?v=1.0.11"></script>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+  <link rel="stylesheet" href="https://cache.amap.com/lbs/static/main1119.css"/>
+  <script src="https://cache.amap.com/lbs/static/es5.min.js"></script>
+  <script src="https://webapi.amap.com/maps?v=1.4.14&key=deccd88e5fc1ec27d19c67f6790c1c88"></script>
+  <!-- UI组件库 1.0 -->
+  <script src="//webapi.amap.com/ui/1.0/main.js?v=1.0.11"></script>
 </head>
 <script type="text/javascript">
     var task_id = '{{task_id}}';
@@ -106,8 +106,6 @@
       map.addControl(layerCtrl);
       map.setLayers(layerCtrl.getEnabledLayers());
     });
-
-
 
     AMap.plugin([
         'AMap.ControlBar',
@@ -226,7 +224,7 @@
             c.b = 0;
         }
         return c;
-      }
+  }
 
     $.post('{{ url_for('main.get_ppi_data') }}', { 'task id': task_id, 'content':'list' },
         function(data,status){
@@ -279,6 +277,7 @@
             drawData = rdata.prr_A;
             createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);
             map.setCenter(position);
+            map.setFitView();
         });
     });
     
@@ -383,7 +382,6 @@
           };
           object3Dlayer.clear();
           createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);
-          map.setCenter(position);
         });      
       }
 
@@ -412,7 +410,6 @@
         };
         object3Dlayer.clear();
         createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);
-        map.setCenter(position);
       }
 
       function ChangeMaxValue(){
@@ -420,31 +417,27 @@
         vMax = Number(colorMax.value);
         object3Dlayer.clear();
         createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);
-        map.setCenter(position);
       }
 
       function ChangeMinValue(){
         var colorMin = document.getElementById('colorMin'); 
         vMin = Number(colorMin.value);  
         object3Dlayer.clear();
-        createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);
-        map.setCenter(position);   
+        createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);  
       }
 
       function ChangeRangeMax(){
         var zMax = document.getElementById('zMax'); 
         rangeMax = Number(zMax.value);  
         object3Dlayer.clear();
-        createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);
-        map.setCenter(position);    
+        createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);   
       }
 
       function ChangeColorOpacity(){
         var opacity = document.getElementById('opacity'); 
         colorOpacity = Number(opacity.value);  
         object3Dlayer.clear();
-        createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);
-        map.setCenter(position);    
+        createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);   
       }
 
 
