@@ -55,7 +55,7 @@ namespace AcquisitionSocketServer
                 var horTargetAng = horAng;
                 var verAng = verStartAng;
                 var verTargetAng = verAng;
-                if (verStartAng > 90)
+                if (verAng > 90)
                 {
                     verTargetAng = 180 - verTargetAng;
                     horTargetAng += 180; 
@@ -92,9 +92,11 @@ namespace AcquisitionSocketServer
             }
             if (mode == "RHI")
             {
-                var verTargetAng = verStartAng + acquisitionCount % (verN + 1) * verAngStep;
-                var horTargetAng = horStartAng;
-                if (verStartAng > 90)
+                var verAng = verStartAng + acquisitionCount % (verN + 1) * verAngStep;
+                var verTargetAng = verAng;
+                var horAng = horStartAng;
+                var horTargetAng = horAng;
+                if (verAng > 90)
                 {
                     verTargetAng = 180 - verTargetAng;
                     horTargetAng += 180;
@@ -105,31 +107,29 @@ namespace AcquisitionSocketServer
                 while (iloop < 50)
                 {
                     Thread.Sleep(500);
-                    currentHorAng = CurrentPosition(AngleType.Hor);
-                    if (IsInPosition(currentHorAng, horTargetAng))
+                    if (IsInPosition(CurrentPosition(AngleType.Hor), horTargetAng))
                     {
-                        currentHorAng = horTargetAng;
+                        currentHorAng = horAng;
                         break;
                     }
                     
                     iloop++;
                 }
-                currentHorAng = horTargetAng;
+                currentHorAng = horAng;
 
                 ToAngle(verTargetAng, AngleType.Ver, 2, 500);
                 iloop = 0;
                 while (iloop < 50)
                 {
                     Thread.Sleep(500);
-                    currentVerAng = CurrentPosition(AngleType.Ver);
-                    if (IsInPosition(currentVerAng, verTargetAng))
+                    if (IsInPosition(CurrentPosition(AngleType.Ver), verTargetAng))
                     {
-                        currentVerAng = verTargetAng;
+                        currentVerAng = verAng;
                         break;
                     }
                     iloop++;
                 }
-                currentVerAng = verTargetAng;
+                currentVerAng = verAng;
             }
         }
 
