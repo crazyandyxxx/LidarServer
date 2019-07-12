@@ -51,8 +51,10 @@ namespace AcquisitionSocketServer
             var verN = (int)(((verEndAng - verStartAng)+360)%360 / verAngStep);
             if (mode == "PPI")
             {
-                var horTargetAng = horStartAng + acquisitionCount % (horN + 1) * horAngStep;
-                var verTargetAng = verStartAng;
+                var horAng = horStartAng + acquisitionCount % (horN + 1) * horAngStep;
+                var horTargetAng = horAng;
+                var verAng = verStartAng;
+                var verTargetAng = verAng;
                 if (verStartAng > 90)
                 {
                     verTargetAng = 180 - verTargetAng;
@@ -64,31 +66,29 @@ namespace AcquisitionSocketServer
                 while (iloop < 50)
                 {
                     Thread.Sleep(500);
-                    currentHorAng = CurrentPosition(AngleType.Hor);
-                    if (IsInPosition(currentHorAng,horTargetAng))
+                    if (IsInPosition(CurrentPosition(AngleType.Hor), horTargetAng))
                     {
-                        currentHorAng = horTargetAng;
+                        currentHorAng = horAng;
                         break;
                     }                  
                     iloop++;
                 }
-                currentHorAng = horTargetAng;
+                currentHorAng = horAng;
 
                 ToAngle(verTargetAng, AngleType.Ver, 2, 500);
                 iloop = 0;
                 while (iloop < 50)
                 {
                     Thread.Sleep(500);
-                    currentVerAng = CurrentPosition(AngleType.Ver);
-                    if (IsInPosition(currentVerAng, verTargetAng))
+                    if (IsInPosition(CurrentPosition(AngleType.Ver), verTargetAng))
                     {
-                        currentVerAng = verTargetAng;
+                        currentVerAng = verAng;
                         break;
                     }
                     
                     iloop++;
                 }
-                currentVerAng = verTargetAng;
+                currentVerAng = verAng;
             }
             if (mode == "RHI")
             {

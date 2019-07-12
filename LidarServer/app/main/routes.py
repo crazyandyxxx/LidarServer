@@ -90,7 +90,11 @@ def browse():
     if request.method == 'POST':
         sTime = request.values.get('start time', 0)
         eTime = request.values.get('end time',0)
-        tasks = Task.query.filter(Task.start_time.between(sTime,eTime)).all()
+        scanType = request.values.get('scan type',0)
+        if(scanType=='ALL'):
+            tasks = Task.query.filter(Task.start_time.between(sTime,eTime)).filter(Task.data_num>1).all()
+        else:
+            tasks = Task.query.filter(Task.mode==scanType).filter(Task.start_time.between(sTime,eTime)).filter(Task.data_num>1).all()
         cols = ['id','start_time','end_time','mode','data_num']
         results = [{col: getattr(task, col) for col in cols} for task in tasks]
         for result in results:

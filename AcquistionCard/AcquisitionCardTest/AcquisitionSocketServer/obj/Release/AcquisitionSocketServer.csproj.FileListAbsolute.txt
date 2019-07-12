@@ -4,3 +4,6 @@ C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\obj\Release
 C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\obj\Release\AcquisitionSocketServer.exe
 C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\obj\Release\AcquisitionSocketServer.pdb
 C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\bin\Release\CyUSB.dll
+E:\project\temp\LidarServer\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\bin\Release\AcquisitionSocketServer.exe.config
+E:\project\temp\LidarServer\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\obj\Release\AcquisitionSocketServer.exe
+E:\project\temp\LidarServer\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\obj\Release\AcquisitionSocketServer.pdb
