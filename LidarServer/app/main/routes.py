@@ -267,3 +267,58 @@ def get_ppi_data():
                 results.append(data)
         return jsonify(result=results)
 
+@bp.route('/task/RHI', methods=['POST'])
+@login_required
+def get_rhi_data():
+    results = []
+    if request.method == 'POST':
+        task_id = request.values.get('task id', 0)
+        content = request.values.get('content', 0)
+        if(content=='list'):
+            task = Task.query.filter_by(id = task_id).first()
+            verStartAng = task.ver_start_angle
+            task_dat = TaskData.query.filter_by(task_id=task_id,ver_angle=verStartAng).all()
+            for i in range(len(task_dat)):
+                data = {}
+                ts = task_dat[i].timestamp
+                data['timestamp']="{}".format(ts.strftime('%Y-%m-%d %H:%M:%S'))
+                results.append(data)
+        if(content=='timedata'):
+            task = Task.query.filter_by(id = task_id).first()
+            verStartAng = task.ver_start_angle
+            verEndAng = task.ver_end_angle
+            verAngStep = task.ver_step
+            ln = int((verEndAng-verStartAng)/verAngStep)+1
+            timeat = request.values.get('time',0)
+            resolution = task.resolution
+            dataLength = task.bin_length
+            ri = np.arange(dataLength)+1
+            task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=timeat,TaskData.ver_angle<=verEndAng).order_by(TaskData.timestamp).limit(ln).all()
+            ov = np.loadtxt(r'./overlap/19000101000000_15.ov')
+            overlapA = ov[:,0]
+            overlapB = ov[:,1]
+            for i in range(len(task_dat)):
+                data = {}
+                ts = task_dat[i].timestamp
+                data['timestamp']="{}".format(ts.strftime('%Y-%m-%d %H:%M:%S'))
+                data['longitude'] = task_dat[i].longitude
+                data['latitude'] = task_dat[i].latitude
+                data['altitude'] = task_dat[i].altitude
+                data['verAngle'] = task_dat[i].ver_angle
+                data['horAngle'] = task_dat[i].hor_angle
+                dt = np.dtype(int)
+                dt = dt.newbyteorder('<')
+                chA = np.frombuffer(task_dat[i].raw_A, dtype=dt)
+                chB = np.frombuffer(task_dat[i].raw_B, dtype=dt)
+                chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chA, chB, overlapA, overlapB, resolution, snrT=1.5, rc=15000)
+                data['raw_A'] = chA
+                data['raw_B'] = chB
+                data['prr_A'] = chAPR2
+                data['prr_B'] = chBPR2
+                data['pbl'] = pbl
+                data['ext'] = ext_a
+                data['dep'] = dePolar
+                data['resolution'] = resolution
+                results.append(data)
+        return jsonify(result=results)
+
