@@ -1,4 +1,4 @@
-start C:\Server\LidarProject\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\bin\Release\AcquisitionSocketServer.exe
-call C:\Server\LidarProject\LidarServer\venv37\Scripts\activate.bat
-cd /d C:\Server\LidarProject\LidarServer
-.\venv37\Scripts\python WebServer.py
+start D:\LidarSoft\LidarServer\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\bin\Release\AcquisitionSocketServer.exe
+call D:\LidarSoft\LidarServer\LidarServer\venv\Scripts\activate.bat
+cd /d D:\LidarSoft\LidarServer\LidarServer
+.\venv\Scripts\python WebServer.py
