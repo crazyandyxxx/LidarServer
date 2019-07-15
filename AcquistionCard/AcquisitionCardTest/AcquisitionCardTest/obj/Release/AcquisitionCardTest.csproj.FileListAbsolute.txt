@@ -8,3 +8,13 @@ C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionCardTest\bin\Release\Acq
 C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionCardTest\bin\Release\CyUSB.dll
 C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionCardTest\obj\Release\AcquisitionCardTest.exe
 C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionCardTest\obj\Release\AcquisitionCardTest.pdb
+D:\Project\Lidar\LidarServer\AcquistionCard\AcquisitionCardTest\AcquisitionCardTest\bin\Release\AcquisitionCardTest.exe.config
+D:\Project\Lidar\LidarServer\AcquistionCard\AcquisitionCardTest\AcquisitionCardTest\bin\Release\AcquisitionCardTest.exe
+D:\Project\Lidar\LidarServer\AcquistionCard\AcquisitionCardTest\AcquisitionCardTest\bin\Release\AcquisitionCardTest.pdb
+D:\Project\Lidar\LidarServer\AcquistionCard\AcquisitionCardTest\AcquisitionCardTest\bin\Release\CyUSB.dll
+D:\Project\Lidar\LidarServer\AcquistionCard\AcquisitionCardTest\AcquisitionCardTest\obj\Release\AcquisitionCardTest.csprojResolveAssemblyReference.cache
+D:\Project\Lidar\LidarServer\AcquistionCard\AcquisitionCardTest\AcquisitionCardTest\obj\Release\AcquisitionCardTest.Form1.resources
+D:\Project\Lidar\LidarServer\AcquistionCard\AcquisitionCardTest\AcquisitionCardTest\obj\Release\AcquisitionCardTest.Properties.Resources.resources
+D:\Project\Lidar\LidarServer\AcquistionCard\AcquisitionCardTest\AcquisitionCardTest\obj\Release\AcquisitionCardTest.csproj.GenerateResource.Cache
+D:\Project\Lidar\LidarServer\AcquistionCard\AcquisitionCardTest\AcquisitionCardTest\obj\Release\AcquisitionCardTest.exe
+D:\Project\Lidar\LidarServer\AcquistionCard\AcquisitionCardTest\AcquisitionCardTest\obj\Release\AcquisitionCardTest.pdb

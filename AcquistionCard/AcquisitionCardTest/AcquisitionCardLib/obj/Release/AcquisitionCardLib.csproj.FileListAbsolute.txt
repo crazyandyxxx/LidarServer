@@ -10,3 +10,9 @@ C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionCardLib\obj\Release\Acqu
 C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionCardLib\obj\Release\AcquisitionCardLib.dll
 C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionCardLib\obj\Release\AcquisitionCardLib.pdb
 C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionCardLib\bin\Release\CyUSB.dll
+D:\Project\Lidar\LidarServer\AcquistionCard\AcquisitionCardTest\AcquisitionCardLib\bin\Release\AcquisitionCardLib.dll
+D:\Project\Lidar\LidarServer\AcquistionCard\AcquisitionCardTest\AcquisitionCardLib\bin\Release\AcquisitionCardLib.pdb
+D:\Project\Lidar\LidarServer\AcquistionCard\AcquisitionCardTest\AcquisitionCardLib\bin\Release\CyUSB.dll
+D:\Project\Lidar\LidarServer\AcquistionCard\AcquisitionCardTest\AcquisitionCardLib\obj\Release\AcquisitionCardLib.csprojResolveAssemblyReference.cache
+D:\Project\Lidar\LidarServer\AcquistionCard\AcquisitionCardTest\AcquisitionCardLib\obj\Release\AcquisitionCardLib.dll
+D:\Project\Lidar\LidarServer\AcquistionCard\AcquisitionCardTest\AcquisitionCardLib\obj\Release\AcquisitionCardLib.pdb

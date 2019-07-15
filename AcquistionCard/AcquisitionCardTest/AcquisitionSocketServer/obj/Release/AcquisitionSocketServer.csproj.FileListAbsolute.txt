@@ -10,3 +10,7 @@ E:\project\temp\LidarServer\AcquistionCard\AcquisitionCardTest\AcquisitionSocket
 D:\Project\Lidar\LidarServer\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\bin\Release\AcquisitionSocketServer.exe.config
 D:\Project\Lidar\LidarServer\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\obj\Release\AcquisitionSocketServer.exe
 D:\Project\Lidar\LidarServer\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\obj\Release\AcquisitionSocketServer.pdb
+D:\Project\Lidar\LidarServer\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\bin\Release\AcquisitionSocketServer.exe
+D:\Project\Lidar\LidarServer\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\bin\Release\AcquisitionSocketServer.pdb
+D:\Project\Lidar\LidarServer\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\bin\Release\CyUSB.dll
+D:\Project\Lidar\LidarServer\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\obj\Release\AcquisitionSocketServer.csprojResolveAssemblyReference.cache
