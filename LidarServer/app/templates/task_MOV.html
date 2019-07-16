@@ -5,12 +5,12 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
-    <link rel="stylesheet" href="https://cache.amap.com/lbs/static/main1119.css"/>
-    <script src="https://cache.amap.com/lbs/static/es5.min.js"></script>
-    <script src="https://webapi.amap.com/maps?v=1.4.14&key=deccd88e5fc1ec27d19c67f6790c1c88"></script>
+    <link rel="stylesheet" href="../static/main1119.css"/>
+    <script src="../static/es5.min.js"></script>
+    <script src="../static/maps.js"></script>
     <!-- UI组件库 1.0 -->
-    <script src="//webapi.amap.com/ui/1.0/main.js?v=1.0.11"></script>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="../static/main.js"></script>
+    <script src="../static/plotly-latest.min.js"></script>
 </head>
 <style type="text/css">
     .inputNum {
@@ -213,6 +213,16 @@
         return c;
     }
 
+    function createColorScale(n){
+      var colorScale = [];
+      for(let i=0;i<n;i++){
+        var c = getColor(i/(n-1),0,1,1);
+        var rgbStr = 'rgb('+Math.floor(c.r*255)+','+Math.floor(c.g*255)+','+Math.floor(c.b*255)+')';
+        colorScale.push([i/(n-1),rgbStr]);
+      }
+      return colorScale;
+    }
+
     var rdata = {};
     var rangeMax = 3000;
     var vMax = 10000;
@@ -295,7 +305,8 @@
                 zmax: 10000,
                 type: 'heatmap',
                 transpose: true,
-                colorscale:'Jet'
+                colorscale:createColorScale(11),
+                colorbar:{thickness:15,xpad:5}
                 }
             ];
 
@@ -391,7 +402,8 @@
               zmax: vMax,
               type: 'heatmap',
               transpose: true,
-              colorscale:'Jet'
+              colorscale:createColorScale(11),
+              colorbar:{thickness:15,xpad:5}
             };
         
         var data = [heat,line];
