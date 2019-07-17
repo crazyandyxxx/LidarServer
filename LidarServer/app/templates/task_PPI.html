@@ -26,6 +26,12 @@
       bottom: 0;
       right: 0;
     }
+    #colorbar{
+      z-index: 100;
+      position: absolute; 
+      bottom: 60px;
+      right: 10px;
+    }
 </style>
  <select class = 'tS' id="timeSeries">
 
@@ -49,7 +55,10 @@
   </span>
   
 <div id="viewDiv" class = "map">
-  <div class="input-card" id = "info">
+  <div id="colorbar">
+      <canvas id="canvas" width="50" height="260"></canvas>
+  </div>
+  <div class="input-card" id = "info">  
     <h4>左击获取经纬度值：</h4>
     <div class="input-item">
       <span id="lnglat"></span>
@@ -63,6 +72,54 @@
 
 <script type="text/javascript">
     var task_id = '{{task_id}}';
+
+    function drawColorbar(n) {
+      var canvas = document.getElementById("canvas");
+        width = canvas.width;
+        height = canvas.height;
+
+        var ctx = canvas.getContext("2d");
+
+        // Create the linear gradient with which to fill the canvas
+        var gradient = ctx.createLinearGradient(0, 10, 0, 250);
+        for(let i=0;i<n;i++){
+          var c = getColor(i/(n-1),0,1,1);
+          var rgbStr = 'rgb('+Math.floor(c.r*255)+','+Math.floor(c.g*255)+','+Math.floor(c.b*255)+')';
+          gradient.addColorStop(1-i/(n-1), rgbStr);
+        }
+        // Fill the canvas with the gradient pattern
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 10, 10, 240);
+}
+
+    function drawTicks(){
+      var canvas = document.getElementById("canvas");
+      var ctx = canvas.getContext("2d");
+      
+      for (let i = 0;i<6;i++){
+        ctx.beginPath();
+        ctx.moveTo(10,10+i*48);
+        ctx.lineTo(15,10+i*48);
+        ctx.stroke();
+      }
+    }
+
+    function drawTickText(){
+      var canvas = document.getElementById("canvas");
+      var ctx = canvas.getContext("2d");
+      ctx.clearRect(16,0,canvas.width,canvas.height);
+      let dv = (vMax-vMin)/5;
+      ctx.fillStyle = '#000';
+      for (let i = 0;i<6;i++){
+        ctx.fillText((vMax-i*dv).toExponential(1),16,10+i*48);
+      }
+    }
+
+drawColorbar(11);
+drawTicks();
+var vMax = 10000;
+var vMin = 0;
+drawTickText();
 
     var map = new AMap.Map('viewDiv', {
         viewMode:'3D',  
@@ -81,7 +138,7 @@
       var p1 = map.lngLatToGeodeticCoord(ll);
       var ang = (Math.atan2(p1.y-p0.y,p1.x-p0.x)/Math.PI*180+450)%360;
       var an = Math.floor((ang-horAngStart)/horAngStep);
-      document.getElementById("lnglat").textContent = e.lnglat.getLng() + ',' + e.lnglat.getLat()+','+drawData[an][rn];
+      document.getElementById("lnglat").textContent = e.lnglat.getLng() + ',' + e.lnglat.getLat()+','+drawData[an][rn].toFixed(2);
     });
 
     var object3Dlayer = new AMap.Object3DLayer();
@@ -147,8 +204,6 @@
 
     var rdata = {};
     var rangeMax = 6000;
-    var vMax = 10000;
-    var vMin = 0;
     var colorOpacity = 0.5;
     var resolution = 15;
     var verAng = 0;
@@ -443,13 +498,15 @@
         vMax = Number(colorMax.value);
         object3Dlayer.clear();
         createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);
+        drawTickText();
       }
 
       function ChangeMinValue(){
         var colorMin = document.getElementById('colorMin'); 
         vMin = Number(colorMin.value);  
         object3Dlayer.clear();
-        createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);  
+        createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity); 
+        drawTickText(); 
       }
 
       function ChangeRangeMax(){
