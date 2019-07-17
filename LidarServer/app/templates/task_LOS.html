@@ -51,7 +51,7 @@
 {% endblock %}
 
 {% block app_scripts %}
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="../static/plotly-latest.min.js"></script>
 
 <script>
     var task_id = '{{task_id}}';
@@ -125,7 +125,8 @@
               zmax: 10000,
               type: 'heatmap',
               transpose: true,
-              colorscale:'Jet'
+              colorscale:createColorScale(11),
+              colorbar:{thickness:15,xpad:5}
             }
           ];
 
@@ -138,14 +139,59 @@
               zmax: 10000,
               type: 'heatmap',
               transpose: true,
-              colorscale:'Jet'
+              colorscale:createColorScale(11),
+              colorbar:{thickness:15,xpad:5}
             }
           ];
-
           Plotly.newPlot('PRADiv', PRA_data, layoutA);
           Plotly.newPlot('PRBDiv', PRB_data, layoutB);
         };  
       });
+    
+    function createColorScale(n){
+      var colorScale = [];
+      for(let i=0;i<n;i++){
+        var c = getColor(i/(n-1),0,1,1);
+        var rgbStr = 'rgb('+Math.floor(c.r*255)+','+Math.floor(c.g*255)+','+Math.floor(c.b*255)+')';
+        colorScale.push([i/(n-1),rgbStr]);
+      }
+      return colorScale;
+    }
+
+    function getColor(v, vmin, vmax, alpha){
+        var c = {};
+        if (v < vmin){
+          v = vmin;
+        }          
+        if (v > vmax){
+          v = vmax;
+        }
+        var dv = vmax - vmin;
+        c.a = alpha-0.1+0.2*(v - vmin) / dv;
+
+        if (v < (vmin + 0.25 * dv)) {
+            var g = 4 * (v - vmin) / dv;
+            c.r = 0;
+            c.g = g;
+            c.b = 1;
+        } else if (v < (vmin + 0.5 * dv)) {
+            var b = 1 + 4 * (vmin + 0.25 * dv - v) / dv;
+            c.r = 0;
+            c.g = 1;
+            c.b = b;
+        } else if (v < (vmin + 0.75 * dv)) {
+            var r = 4 * (v - vmin - 0.5 * dv) / dv;
+            c.r = r;
+            c.g = 1;
+            c.b = 0;
+        } else {
+            var g = 1 + 4 * (vmin + 0.75 * dv - v) / dv;
+            c.r = 1;
+            c.g = g;
+            c.b = 0;
+        }
+        return c;
+    }
 
     function SelectChannelA(){
         var channel = document.getElementById('channelA');
@@ -189,7 +235,8 @@
               zmax: AMax,
               type: 'heatmap',
               transpose: true,
-              colorscale:'Jet'
+              colorscale:createColorScale(11),
+              colorbar:{thickness:15,xpad:5}
             };
         
         var data = [heat,line];
@@ -275,7 +322,8 @@
               zmax: BMax,
               type: 'heatmap',
               transpose: true,
-              colorscale:'Jet'
+              colorscale:createColorScale(11),
+              colorbar:{thickness:15,xpad:5}
             },line
           ];
         Plotly.react('PRBDiv',data,layoutB);
