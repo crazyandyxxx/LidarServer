@@ -6,8 +6,16 @@
   width: 6em;
   text-align: right;
 }
+.PRDiv{
+  float:left;
+}
+.lineDiv{
+  float:left;
+  width:300px;
+}
 </style>
 
+<div>
 <select  id="channelA" onchange="SelectChannelA()">
   <option>平行通道距离校正信号</option>
   <option>垂直通道距离校正信号</option>
@@ -25,9 +33,13 @@
   色标最小值<input type="number" id="colorMinA" value="0" class="inputNum" onchange="ChangeChannelAMin()">
   色标最大值<input type="number" id="colorMaxA" value="10000" class="inputNum" onchange="ChangeChannelAMax()">
 </span>
+</div>
+<div>
+    <div class = 'PRDiv' id="PRADiv"><!-- Plotly chart will be drawn inside this DIV --></div>
+    <div class = 'lineDiv' id='lineADiv'></div>
+</div>
 
-<div id="PRADiv"><!-- Plotly chart will be drawn inside this DIV --></div>
-
+<div style="clear:both">
 <select  id="channelB" onchange="SelectChannelB()">
     <option>垂直通道距离校正信号</option>
     <option>平行通道距离校正信号</option>
@@ -45,8 +57,11 @@
     色标最小值<input type="number" id="colorMinB" value="0" class="inputNum" onchange="ChangeChannelBMin()">
     色标最大值<input type="number" id="colorMaxB" value="10000" class="inputNum" onchange="ChangeChannelBMax()">
   </span>
-
-<div id="PRBDiv"><!-- Plotly chart will be drawn inside this DIV --></div>
+</div>
+  <div>
+      <div class = 'PRDiv' id="PRBDiv"><!-- Plotly chart will be drawn inside this DIV --></div>
+      <div class = 'lineDiv' id='lineBDiv'></div>
+  </div>
 
 {% endblock %}
 
@@ -96,6 +111,19 @@
               // fixedrange:true
             }
           };
+      
+    var layoutLine = {
+      xaxis: {
+        title: '强度',
+        showline: true,
+        tickmode:'auto'
+      },
+      yaxis: {
+        showline: true,
+        range:[0,3000],
+        // fixedrange:true
+      }
+    };
     
     $.post('{{ url_for('main.get_los_data') }}', { 'task id': task_id },
         function(data,status){
@@ -143,8 +171,21 @@
               colorbar:{thickness:15,xpad:5}
             }
           ];
+
+          var trace = {
+            x: linePRA[0],
+            y: height,
+            mode: 'lines',
+            line: {
+              color: 'black',
+              width: 3
+            }
+          };
+
           Plotly.newPlot('PRADiv', PRA_data, layoutA);
           Plotly.newPlot('PRBDiv', PRB_data, layoutB);
+          Plotly.newPlot('lineADiv',[trace],layoutLine);
+          Plotly.newPlot('lineBDiv',[trace],layoutLine);
         };  
       });
     
