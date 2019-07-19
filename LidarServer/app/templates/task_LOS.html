@@ -7,13 +7,15 @@
   text-align: right;
 }
 .PRDiv{
-  float:left;
-  width:800px;
+  float:right;
+  width:900px;
+  z-index: 100;
 }
 .lineDiv{
-  float:left;
+  float:right;
   width:300px;
-  margin-left:0px;
+  margin-left:-70px;
+  z-index: 10;
 }
 </style>
 
@@ -37,8 +39,8 @@
 </span>
 </div>
 <div>
-    <div class = 'PRDiv' id="PRADiv"><!-- Plotly chart will be drawn inside this DIV --></div>
     <div class = 'lineDiv' id='lineADiv'></div>
+    <div class = 'PRDiv' id="PRADiv"><!-- Plotly chart will be drawn inside this DIV --></div>
 </div>
 
 <div style="clear:both">
@@ -61,8 +63,8 @@
   </span>
 </div>
   <div>
-      <div class = 'PRDiv' id="PRBDiv"><!-- Plotly chart will be drawn inside this DIV --></div>
       <div class = 'lineDiv' id='lineBDiv'></div>
+      <div class = 'PRDiv' id="PRBDiv"><!-- Plotly chart will be drawn inside this DIV --></div>
   </div>
 
 {% endblock %}
@@ -123,6 +125,8 @@
       yaxis: {
         showline: true,
         range:[0,3000],
+        showticklabels:false,
+        ticks:'outside'
         // fixedrange:true
       }
     };
