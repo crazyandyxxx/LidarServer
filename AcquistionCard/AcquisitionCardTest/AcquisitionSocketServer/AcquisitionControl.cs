@@ -47,7 +47,7 @@ namespace AcquisitionSocketServer
             for (int i = 0; i < rN; i++)
             {
                 currentR[i] = CheckAcquisitionTimes();
-                System.Threading.Thread.Sleep(50);
+                System.Threading.Thread.Sleep(500);
             }
             if (currentR[1] != currentR[0])
                 return 1;
@@ -106,8 +106,8 @@ namespace AcquisitionSocketServer
 
                 MyDevice.BulkInEndPt.XferData(ref buf, ref len);
                 currentAccumNum = (int)BitConverter.ToUInt32(buf, 1);
+                Thread.Sleep(500);
                 if (currentAccumNum >= accumTimes) break;
-                Thread.Sleep(200);
             }
         }
 

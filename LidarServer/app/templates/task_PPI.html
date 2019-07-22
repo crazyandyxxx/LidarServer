@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="../static/main1119.css"/>
   <script src="../static/es5.min.js"></script>
   <script src="../static/maps.js"></script>
+  <script src="../static/loca.js"></script>
   <!-- UI组件库 1.0 -->
   <script src="../static/main.js"></script>
 </head>
@@ -143,6 +144,10 @@ drawTickText();
 
     var object3Dlayer = new AMap.Object3DLayer();
     map.add(object3Dlayer);
+
+    var heatmapLayer = new Loca.HeatmapLayer({
+        map: map,
+    });
 
     AMapUI.loadUI(['control/BasicControl'], function(BasicControl) {
       var layerCtrl = new BasicControl.LayerSwitcher({
@@ -307,6 +312,49 @@ drawTickText();
         return c;
   }
 
+  function create3DHeatmap(){
+    var list = [];
+    var v0xy = map.lngLatToGeodeticCoord(position);
+    var v1xy = map.lngLatToGeodeticCoord(position.offset(5000,0));
+    var scal = (v1xy.x-v0xy.x)/5000;
+    var x0 = v0xy.x;
+    var y0 = v0xy.y;
+    for (let i = 0;i<drawData.length;i++) {
+      let horAng = horAngStart+i*horAngStep;
+      for(let j = 0;j<rangeMax/resolution;j++){        
+        x1 = (x0+j*resolution*scal*Math.cos(verAng/180*Math.PI)*Math.sin(horAng/180*Math.PI));
+        y1 = (y0-j*resolution*scal*Math.cos(verAng/180*Math.PI)*Math.cos(horAng/180*Math.PI));
+        let ll = map.geodeticCoordToLngLat(new AMap.Pixel(x1,y1));
+        list.push({
+            coordinate: [ll.lng, ll.lat],
+            count: drawData[i][j]
+        })
+      }
+    
+
+    }
+
+    heatmapLayer.setData(list, {
+        lnglat: 'coordinate',
+        value: 'count'
+    });
+
+    heatmapLayer.setOptions({
+        style: {
+            radius: 30,
+            color: {
+                0.5: '#2c7bb6',
+                0.65: '#abd9e9',
+                0.7: '#ffffbf',
+                0.9: '#fde468',
+                1.0: '#d7191c'
+            }
+        }
+    });
+
+    heatmapLayer.render();
+  }
+
     $.post('{{ url_for('main.get_ppi_data') }}', { 'task id': task_id, 'content':'list' },
         function(data,status){
         var sel1 = document.getElementById('timeSeries');
@@ -337,15 +385,22 @@ drawTickText();
             horAngStart = data.result[0].horAngle;
             horAngEnd = data.result[data.result.length-1].horAngle;
             horAngStep = data.result[1].horAngle - data.result[0].horAngle;
-            var validI = 0;
+            let lonArr = [];
+            let latArr = [];
+            let altArr = [];
             for(let i=0; i<data.result.length;i++){
-                if(data.result[i].longitude>0){
-                validI = i;
-                };
+              if(data.result[i].longitude>0){
+                lonArr.push(data.result[i].longitude);
+                latArr.push(data.result[i].latitude);
+                altArr.push(data.result[i].altitude);
+            }; 
             };
-            longitude = data.result[validI].longitude<0?0:data.result[validI].longitude;
-            latitude = data.result[validI].latitude<0?0:data.result[validI].latitude;
-            altitude = data.result[validI].altitude<0?0:data.result[validI].altitude;
+            lonArr.sort(function(a,b){return a-b});
+            latArr.sort(function(a,b){return a-b});
+            altArr.sort(function(a,b){return a-b});
+            longitude = lonArr[Math.floor(lonArr.length/2)];
+            latitude = latArr[Math.floor(lonArr.length/2)];
+            altitude = altArr[Math.floor(lonArr.length/2)];
             position = Gps84ToGcj02(longitude,latitude);
             for(let i=0; i<data.result.length;i++){
                 rdata.prr_A.push(data.result[i].prr_A);
@@ -421,16 +476,23 @@ drawTickText();
           horStartAng = data.result[0].horAngle;
           horEndAng = data.result[data.result.length-1].horAngle;
           horAngStep = data.result[1].horAngle - data.result[0].horAngle;
-          var validI = 0;
+          let lonArr = [];
+          let latArr = [];
+          let altArr = [];
           for(let i=0; i<data.result.length;i++){
             if(data.result[i].longitude>0){
-              validI = i;
-            };
+              lonArr.push(data.result[i].longitude);
+              latArr.push(data.result[i].latitude);
+              altArr.push(data.result[i].altitude);
+            };          
           };
-          longitude = data.result[validI].longitude<0?0:data.result[validI].longitude;
-          latitude = data.result[validI].latitude<0?0:data.result[validI].latitude;
-          altitude = data.result[validI].altitude<0?0:data.result[validI].altitude;
-          position = new AMap.LngLat(longitude, latitude);
+          lonArr.sort(function(a,b){return a-b});
+          latArr.sort(function(a,b){return a-b});
+          altArr.sort(function(a,b){return a-b});
+          longitude = lonArr[Math.floor(lonArr.length/2)];
+          latitude = latArr[Math.floor(lonArr.length/2)];
+          altitude = altArr[Math.floor(lonArr.length/2)];
+          position = Gps84ToGcj02(longitude,latitude);
           for(let i=0; i<data.result.length;i++){
             rdata.prr_A.push(data.result[i].prr_A);
             rdata.prr_B.push(data.result[i].prr_B);
