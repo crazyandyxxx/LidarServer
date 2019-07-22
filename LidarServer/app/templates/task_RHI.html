@@ -19,6 +19,12 @@
     #viewDiv {
       height: 800px;
     }
+    #colorbar{
+      z-index: 100;
+      position: absolute; 
+      bottom: 10px;
+      right: 10px;
+    }
 </style>
  <select id="timeSeries">
 
@@ -41,7 +47,11 @@
           透明度<input type="number" id="opacity" value="0.5" class="inputNum">
         </span>
   
-  <div id="viewDiv"></div>
+  <div id="viewDiv">
+      <div id="colorbar">
+          <canvas id="canvas" width="50" height="260"></canvas>
+      </div>
+  </div>
 
 {% endblock %}
 
@@ -49,6 +59,54 @@
 
 <script type="text/javascript">
     var task_id = '{{task_id}}';
+
+    function drawColorbar(n) {
+      var canvas = document.getElementById("canvas");
+        width = canvas.width;
+        height = canvas.height;
+
+        var ctx = canvas.getContext("2d");
+
+        // Create the linear gradient with which to fill the canvas
+        var gradient = ctx.createLinearGradient(0, 10, 0, 250);
+        for(let i=0;i<n;i++){
+          var c = getColor(i/(n-1),0,1,1);
+          var rgbStr = 'rgb('+Math.floor(c.r*255)+','+Math.floor(c.g*255)+','+Math.floor(c.b*255)+')';
+          gradient.addColorStop(1-i/(n-1), rgbStr);
+        }
+        // Fill the canvas with the gradient pattern
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 10, 10, 240);
+}
+
+    function drawTicks(){
+      var canvas = document.getElementById("canvas");
+      var ctx = canvas.getContext("2d");
+      
+      for (let i = 0;i<6;i++){
+        ctx.beginPath();
+        ctx.moveTo(10,10+i*48);
+        ctx.lineTo(15,10+i*48);
+        ctx.stroke();
+      }
+    }
+
+    function drawTickText(){
+      var canvas = document.getElementById("canvas");
+      var ctx = canvas.getContext("2d");
+      ctx.clearRect(16,0,canvas.width,canvas.height);
+      let dv = (vMax-vMin)/5;
+      ctx.fillStyle = '#000';
+      for (let i = 0;i<6;i++){
+        ctx.fillText((vMax-i*dv).toExponential(1),16,10+i*48);
+      }
+    }
+
+drawColorbar(11);
+drawTicks();
+var vMax = 10000;
+var vMin = 0;
+drawTickText();
 
     var map = new AMap.Map('viewDiv', {
         viewMode:'3D',  
@@ -422,6 +480,7 @@
         vMax = Number(colorMax.value);
         object3Dlayer.clear();
         createPie(position,drawData,resolution,rangeMax,horAng,verAngStart,verAngEnd,verAngStep,vMin,vMax,colorOpacity);
+        drawTickText();
       }
 
       function ChangeMinValue(){
@@ -429,6 +488,7 @@
         vMin = Number(colorMin.value);  
         object3Dlayer.clear();
         createPie(position,drawData,resolution,rangeMax,horAng,verAngStart,verAngEnd,verAngStep,vMin,vMax,colorOpacity);  
+        drawTickText();
       }
 
       function ChangeRangeMax(){
