@@ -78,11 +78,14 @@
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 10, 10, 240);
 }
+var tickColor = 'black';
+var textColor = 'black';
 
     function drawTicks(){
       var canvas = document.getElementById("canvas");
       var ctx = canvas.getContext("2d");
-      
+      ctx.clearRect(10,0,canvas.width,canvas.height);
+      ctx.strokeStyle = tickColor;
       for (let i = 0;i<6;i++){
         ctx.beginPath();
         ctx.moveTo(10,10+i*48);
@@ -96,7 +99,7 @@
       var ctx = canvas.getContext("2d");
       ctx.clearRect(16,0,canvas.width,canvas.height);
       let dv = (vMax-vMin)/5;
-      ctx.fillStyle = '#000';
+      ctx.fillStyle = textColor;
       for (let i = 0;i<6;i++){
         ctx.fillText((vMax-i*dv).toExponential(1),16,10+i*48);
       }
@@ -164,6 +167,21 @@ drawTickText();
       //图层切换控件
       map.addControl(layerCtrl);
       map.setLayers(layerCtrl.getEnabledLayers());
+      layerCtrl.on('layerPropChanged',function(e){
+        if(e.props.enable){
+          if(e.layer.id.includes('satellite')){
+            tickColor = '#FFF';
+            textColor = '#FFF';
+            drawTicks();
+            drawTickText();
+          }else{
+            tickColor = '#000';
+            textColor = '#000';
+            drawTicks();
+            drawTickText();
+          };
+        };
+      });
     });
 
     AMap.plugin([
@@ -319,15 +337,22 @@ drawTickText();
             verAngStart = data.result[0].verAngle;
             verAngEnd = data.result[data.result.length-1].verAngle;
             verAngStep = data.result[1].verAngle - data.result[0].verAngle;
-            var validI = 0;
+            let lonArr = [];
+            let latArr = [];
+            let altArr = [];
             for(let i=0; i<data.result.length;i++){
-                if(data.result[i].longitude>0){
-                validI = i;
-                };
+              if(data.result[i].longitude>0){
+                lonArr.push(data.result[i].longitude);
+                latArr.push(data.result[i].latitude);
+                altArr.push(data.result[i].altitude);
+            }; 
             };
-            longitude = data.result[validI].longitude<0?0:data.result[validI].longitude;
-            latitude = data.result[validI].latitude<0?0:data.result[validI].latitude;
-            altitude = data.result[validI].altitude<0?0:data.result[validI].altitude;
+            lonArr.sort(function(a,b){return a-b});
+            latArr.sort(function(a,b){return a-b});
+            altArr.sort(function(a,b){return a-b});
+            longitude = lonArr[Math.floor(lonArr.length/2)];
+            latitude = latArr[Math.floor(lonArr.length/2)];
+            altitude = altArr[Math.floor(lonArr.length/2)];
             position = Gps84ToGcj02(longitude,latitude);
             for(let i=0; i<data.result.length;i++){
                 rdata.prr_A.push(data.result[i].prr_A);
@@ -403,16 +428,23 @@ drawTickText();
           verStartAng = data.result[0].verAngle;
           verEndAng = data.result[data.result.length-1].verAngle;
           verAngStep = data.result[1].verAngle - data.result[0].verAngle;
-          var validI = 0;
+          let lonArr = [];
+          let latArr = [];
+          let altArr = [];
           for(let i=0; i<data.result.length;i++){
             if(data.result[i].longitude>0){
-              validI = i;
-            };
+              lonArr.push(data.result[i].longitude);
+              latArr.push(data.result[i].latitude);
+              altArr.push(data.result[i].altitude);
+          }; 
           };
-          longitude = data.result[validI].longitude<0?0:data.result[validI].longitude;
-          latitude = data.result[validI].latitude<0?0:data.result[validI].latitude;
-          altitude = data.result[validI].altitude<0?0:data.result[validI].altitude;
-          position = new AMap.LngLat(longitude, latitude);
+          lonArr.sort(function(a,b){return a-b});
+          latArr.sort(function(a,b){return a-b});
+          altArr.sort(function(a,b){return a-b});
+          longitude = lonArr[Math.floor(lonArr.length/2)];
+          latitude = latArr[Math.floor(lonArr.length/2)];
+          altitude = altArr[Math.floor(lonArr.length/2)];
+          position = Gps84ToGcj02(longitude,latitude);
           for(let i=0; i<data.result.length;i++){
             rdata.prr_A.push(data.result[i].prr_A);
             rdata.prr_B.push(data.result[i].prr_B);
