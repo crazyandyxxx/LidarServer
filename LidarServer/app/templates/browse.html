@@ -23,6 +23,7 @@
                     <th data-field="timespan">起止时间</th>
                     <th data-field="mode">扫描类型</th>
                     <th data-field="datanum">数据量</th>
+                    <th data-field="export" data-formatter="LinkFormatter">操作</th> 
                   </tr>
                 </thead>
                 <tbody id = task-rows>
@@ -32,7 +33,7 @@
 {% endblock %}
 
 {% block app_scripts %}
-    <script type="text/javascript" src="../static/latest/jquery.min.js"></script>
+    <script type="text/javascript" src="../static/jquery.min.js"></script>
     <script type="text/javascript" src="../static/moment.min.js"></script>
     <script type="text/javascript" src="../static/daterangepicker.js"></script>
     <link rel="stylesheet" type="text/css" href="../static/daterangepicker.css" />
@@ -127,15 +128,94 @@
             break;
         };
       }
+  // $('#task-table').on('click-cell.bs.table', function (field, value, row, $el) {
+ 	//   if (value !="type"){
+  //      // alert($el.timespan+"-"+$el.mode+"-"+$el.datanum);
+  //      task_id = srId[$el.serialN];
+  //      window.open("{{ url_for('main.browse_task', task_id=task_id) }}"+task_id);
+  //     // alert(srId[$el.serialN]);
+  //   }
+  // });
 
-  $('#task-table').on('click-cell.bs.table', function (field, value, row, $el) {
- 	  if (value !="type"){
-       // alert($el.timespan+"-"+$el.mode+"-"+$el.datanum);
-       task_id = srId[$el.serialN];
-       window.open("{{ url_for('main.browse_task', task_id=task_id) }}"+task_id);
-      // alert(srId[$el.serialN]);
+  function LinkFormatter(value, row, index) {
+    return "<a class='view' href='javascript:void(0)' onclick='ViewTask(\""+srId[row.serialN]+"\"); return false;'>查看</a>    "+
+          "<a class='view' href='javascript:void(0)' onclick='ExportTask(\""+srId[row.serialN]+"\",\""+row.mode+"\"); return false;'>导出</a>";
+  }
+  function ViewTask(task_id){
+    window.open("{{ url_for('main.browse_task', task_id=task_id) }}"+task_id);
+  }
+  function ExportTask(task_id,task_mode){
+    if(task_mode==='水平切面'){
+      ExportPPI(task_id);
     }
-  });
+  }
+  function ExportPPI(task_id){
+    $.post('{{ url_for('main.get_ppi_data') }}', { 'task id': task_id, 'content':'list' },
+        function(dataList,status){
+        for(let i=0; i<dataList.result.length;i++){
+        $.post('{{ url_for('main.get_ppi_data') }}', { 'task id': task_id, 'content':'timedata', 'time': dataList.result[i].timestamp},
+            function(data,status){
+              let csvContent = "";
+              csvContent += 'Data Count,'+data.result.length+'\r\n';
+              csvContent += 'Data Length,'+data.result[0].raw_A.length+'\r\n';
+              csvContent += 'Resolution,'+data.result[0].resolution+'\r\n';
+              csvContent += 'Vertical Angle,'+data.result[0].verAngle+'\r\n';
+              csvContent += 'Horizontal Angle Start,'+data.result[0].horAngle+'\r\n';
+              csvContent += 'Horizontal Angle End,'+data.result[data.result.length-1].horAngle+'\r\n';
+              csvContent += 'Horizontal Angle Step,'+(data.result[1].horAngle - data.result[0].horAngle)+'\r\n';
+              let lonArr = [];
+              let latArr = [];
+              let altArr = [];
+              for(let i=0; i<data.result.length;i++){
+                if(data.result[i].longitude>0){
+                  lonArr.push(data.result[i].longitude);
+                  latArr.push(data.result[i].latitude);
+                  altArr.push(data.result[i].altitude);
+                }; 
+              };
+              lonArr.sort(function(a,b){return a-b});
+              latArr.sort(function(a,b){return a-b});
+              altArr.sort(function(a,b){return a-b});
+              longitude = lonArr[Math.floor(lonArr.length/2)];
+              latitude = latArr[Math.floor(lonArr.length/2)];
+              altitude = altArr[Math.floor(lonArr.length/2)];
+              csvContent += 'Longitude,'+longitude+'\r\n';
+              csvContent += 'Latitude,'+latitude+'\r\n';
+              csvContent += 'Altitude,'+altitude+'\r\n';
+              csvContent += '********************'+'\r\n';
+              csvContent += 'Aerosol Extinction'+'\r\n';
+              csvContent += '********************'+'\r\n';
+              for(let i=0; i<data.result.length;i++){
+                csvContent += data.result[i].timestamp+','+data.result[i].horAngle+',';
+                csvContent += data.result[i].ext.join(',')+'\r\n';
+              };
+              csvContent += '********************'+'\r\n';
+              csvContent += 'Depolarization'+'\r\n';
+              csvContent += '********************'+'\r\n';
+              for(let i=0; i<data.result.length;i++){
+                csvContent += data.result[i].timestamp+','+data.result[i].horAngle+',';
+                csvContent += data.result[i].dep.join(',')+'\r\n';
+              };
 
+              var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+              if (navigator.msSaveBlob) { // IE 10+
+                  navigator.msSaveBlob(blob, "水平切面_"+data.result[0].timestamp+".csv");
+              } else {
+                  var link = document.createElement("a");
+                  if (link.download !== undefined) { // feature detection
+                      // Browsers that support HTML5 download attribute
+                      var url = URL.createObjectURL(blob);
+                      link.setAttribute("href", url);
+                      link.setAttribute("download", "水平切面_"+data.result[0].timestamp+".csv");
+                      link.style.visibility = 'hidden';
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                  }
+              }
+          });
+      };
+    });
+  }
     </script>
 {% endblock %}

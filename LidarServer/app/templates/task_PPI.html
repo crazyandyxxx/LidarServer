@@ -92,11 +92,14 @@
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 10, 10, 240);
 }
+var tickColor = 'black';
+var textColor = 'black';
 
     function drawTicks(){
       var canvas = document.getElementById("canvas");
       var ctx = canvas.getContext("2d");
-      
+      ctx.clearRect(10,0,canvas.width,canvas.height);
+      ctx.strokeStyle = tickColor;
       for (let i = 0;i<6;i++){
         ctx.beginPath();
         ctx.moveTo(10,10+i*48);
@@ -110,7 +113,7 @@
       var ctx = canvas.getContext("2d");
       ctx.clearRect(16,0,canvas.width,canvas.height);
       let dv = (vMax-vMin)/5;
-      ctx.fillStyle = '#000';
+      ctx.fillStyle = textColor;
       for (let i = 0;i<6;i++){
         ctx.fillText((vMax-i*dv).toExponential(1),16,10+i*48);
       }
@@ -193,6 +196,21 @@ drawTickText();
       //图层切换控件
       map.addControl(layerCtrl);
       map.setLayers(layerCtrl.getEnabledLayers());
+      layerCtrl.on('layerPropChanged',function(e){
+        if(e.props.enable){
+          if(e.layer.id.includes('satellite')){
+            tickColor = '#FFF';
+            textColor = '#FFF';
+            drawTicks();
+            drawTickText();
+          }else{
+            tickColor = '#000';
+            textColor = '#000';
+            drawTicks();
+            drawTickText();
+          };
+        };
+      });
     });
 
     AMap.plugin([
