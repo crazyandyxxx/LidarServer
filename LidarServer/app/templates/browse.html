@@ -155,11 +155,14 @@
         for(let i=0; i<dataList.result.length;i++){
         $.post('{{ url_for('main.get_ppi_data') }}', { 'task id': task_id, 'content':'timedata', 'time': dataList.result[i].timestamp},
             function(data,status){
-              resolution = data.result[0].resolution;
-              verAng = data.result[0].verAngle;
-              horAngStart = data.result[0].horAngle;
-              horAngEnd = data.result[data.result.length-1].horAngle;
-              horAngStep = data.result[1].horAngle - data.result[0].horAngle;
+              let csvContent = "";
+              csvContent += 'Data Count,'+data.result.length+'\r\n';
+              csvContent += 'Data Length,'+data.result[0].raw_A.length+'\r\n';
+              csvContent += 'Resolution,'+data.result[0].resolution+'\r\n';
+              csvContent += 'Vertical Angle,'+data.result[0].verAngle+'\r\n';
+              csvContent += 'Horizontal Angle Start,'+data.result[0].horAngle+'\r\n';
+              csvContent += 'Horizontal Angle End,'+data.result[data.result.length-1].horAngle+'\r\n';
+              csvContent += 'Horizontal Angle Step,'+(data.result[1].horAngle - data.result[0].horAngle)+'\r\n';
               let lonArr = [];
               let latArr = [];
               let altArr = [];
@@ -168,7 +171,7 @@
                   lonArr.push(data.result[i].longitude);
                   latArr.push(data.result[i].latitude);
                   altArr.push(data.result[i].altitude);
-              }; 
+                }; 
               };
               lonArr.sort(function(a,b){return a-b});
               latArr.sort(function(a,b){return a-b});
@@ -176,9 +179,40 @@
               longitude = lonArr[Math.floor(lonArr.length/2)];
               latitude = latArr[Math.floor(lonArr.length/2)];
               altitude = altArr[Math.floor(lonArr.length/2)];
+              csvContent += 'Longitude,'+longitude+'\r\n';
+              csvContent += 'Latitude,'+latitude+'\r\n';
+              csvContent += 'Altitude,'+altitude+'\r\n';
+              csvContent += '********************'+'\r\n';
+              csvContent += 'Aerosol Extinction'+'\r\n';
+              csvContent += '********************'+'\r\n';
               for(let i=0; i<data.result.length;i++){
-
+                csvContent += data.result[i].timestamp+','+data.result[i].horAngle+',';
+                csvContent += data.result[i].ext.join(',')+'\r\n';
               };
+              csvContent += '********************'+'\r\n';
+              csvContent += 'Depolarization'+'\r\n';
+              csvContent += '********************'+'\r\n';
+              for(let i=0; i<data.result.length;i++){
+                csvContent += data.result[i].timestamp+','+data.result[i].horAngle+',';
+                csvContent += data.result[i].dep.join(',')+'\r\n';
+              };
+
+              var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+              if (navigator.msSaveBlob) { // IE 10+
+                  navigator.msSaveBlob(blob, "水平切面_"+data.result[0].timestamp+".csv");
+              } else {
+                  var link = document.createElement("a");
+                  if (link.download !== undefined) { // feature detection
+                      // Browsers that support HTML5 download attribute
+                      var url = URL.createObjectURL(blob);
+                      link.setAttribute("href", url);
+                      link.setAttribute("download", "水平切面_"+data.result[0].timestamp+".csv");
+                      link.style.visibility = 'hidden';
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                  }
+              }
           });
       };
     });
