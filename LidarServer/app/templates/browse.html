@@ -139,7 +139,8 @@
 
   function LinkFormatter(value, row, index) {
     return "<a class='view' href='javascript:void(0)' onclick='ViewTask(\""+srId[row.serialN]+"\"); return false;'>查看</a>    "+
-          "<a class='view' href='javascript:void(0)' onclick='ExportTask(\""+srId[row.serialN]+"\",\""+row.mode+"\"); return false;'>导出</a>";
+          "<a class='view' href='javascript:void(0)' onclick='ExportTask(\""+srId[row.serialN]+"\",\""+row.mode+"\"); return false;'>导出</a>    "+
+          "<a class='view' href='javascript:void(0)' onclick='DeleteTask(\""+srId[row.serialN]+"\"); return false;'>删除</a>";
   }
   function ViewTask(task_id){
     window.open("{{ url_for('main.browse_task', task_id=task_id) }}"+task_id);
@@ -148,6 +149,15 @@
     if(task_mode==='水平切面'){
       ExportPPI(task_id);
     }
+  }
+  function DeleteTask(task_id){
+    var r = confirm("数据删除将不可恢复！");
+    if (r == true) {
+      $.post('{{ url_for('main.delete_task') }}', { 'task id': task_id},
+            function(data,status){
+              checkTask();
+            });
+    } 
   }
   function ExportPPI(task_id){
     $.post('{{ url_for('main.get_ppi_data') }}', { 'task id': task_id, 'content':'list' },
