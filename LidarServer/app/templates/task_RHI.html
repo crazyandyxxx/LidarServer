@@ -174,7 +174,7 @@ drawTickText();
             textColor = '#FFF';
             drawTicks();
             drawTickText();
-          }else{
+          }else if(e.layer.id.includes('tile')){
             tickColor = '#000';
             textColor = '#000';
             drawTicks();
