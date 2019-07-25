@@ -61,7 +61,7 @@ namespace AcquisitionSocketServer
                     horTargetAng += 180; 
                 }
                 horTargetAng = (horTargetAng + 360) % 360;
-                ToAngle(horTargetAng, AngleType.Hor, 2, 500);
+                ToAngle(horTargetAng, AngleType.Hor, 3, 400);
                 int iloop = 0;
                 while (iloop < 50)
                 {
@@ -75,7 +75,7 @@ namespace AcquisitionSocketServer
                 }
                 currentHorAng = horAng;
 
-                ToAngle(verTargetAng, AngleType.Ver, 2, 500);
+                ToAngle(verTargetAng, AngleType.Ver, 3, 400);
                 iloop = 0;
                 while (iloop < 50)
                 {
@@ -102,7 +102,7 @@ namespace AcquisitionSocketServer
                     horTargetAng += 180;
                 }
                 horTargetAng = (horTargetAng + 360) % 360;
-                ToAngle(horTargetAng, AngleType.Hor, 2, 500);
+                ToAngle(horTargetAng, AngleType.Hor, 3, 400);
                 int iloop = 0;
                 while (iloop < 50)
                 {
@@ -117,7 +117,7 @@ namespace AcquisitionSocketServer
                 }
                 currentHorAng = horAng;
 
-                ToAngle(verTargetAng, AngleType.Ver, 2, 500);
+                ToAngle(verTargetAng, AngleType.Ver, 3, 400);
                 iloop = 0;
                 while (iloop < 50)
                 {

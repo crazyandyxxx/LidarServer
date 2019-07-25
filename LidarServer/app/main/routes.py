@@ -143,6 +143,17 @@ def browse_task(task_id):
     if request.method == 'POST':
         pass
 
+@bp.route('/task/delete', methods=['POST'])
+@login_required
+def delete_task():
+    results = []
+    if request.method == 'POST':
+        task_id = request.values.get('task id', 0)
+        Task.query.filter_by(id = task_id).delete()
+        TaskData.query.filter_by(task_id=task_id).delete()
+        db.session.commit()
+        return jsonify(result=results)
+
 @bp.route('/task/LOS', methods=['POST'])
 @login_required
 def get_los_data():
