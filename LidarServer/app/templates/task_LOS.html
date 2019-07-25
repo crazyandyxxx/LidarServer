@@ -87,8 +87,7 @@
     var AMax = 10000;
     var BMin = 0;
     var BMax = 10000;
-    var lineIndexA = 0;
-    var lineIndexB = 0;
+    var lineIndex = 0;
     var drawDataA={}, drawDataB={};
     var res = 15;
     var layoutA = {
@@ -164,7 +163,7 @@
             linePRB.push(data.result[i].prr_B);
             lineExt.push(data.result[i].ext);
             lineDep.push(data.result[i].dep);
-            linePbl.push(data.result[i].pbl);
+            linePbl.push(data.result[i].pbl/1000);
           };
           drawDataA = linePRA;
           var PRA_data = [
@@ -230,28 +229,46 @@
           Plotly.newPlot('lineADiv',[traceA],layoutLineA);
           Plotly.newPlot('lineBDiv',[traceB],layoutLineB);
 
-          plotA.on('plotly_hover',function(data){
-            var pn='';
-            pn = data.points[0].pointNumber;
-            lineIndexA = pn[1];
-
-            var trace = {
-              x: drawDataA[lineIndexA].slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
-              y: height.slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
-              mode: 'lines',
-              line: {
-                color: 'black',
-                width: 2
-              }
-            };
-        
-            Plotly.react('lineADiv',[trace],layoutLineA);
-          });
+          plotA.on('plotly_hover',plotHover);
+          plotB.on('plotly_hover',plotHover);
         };  
       });
     
+    function plotHover(data){
+      var pn='';
+      for(let i=0;i<data.points.length;i++){
+        if(data.points[i].fullData.type==='heatmap'){
+          pn = data.points[i].pointNumber;
+        }
+      }
+      lineIndex = pn[1];
+
+      var traceA = {
+        x: drawDataA[lineIndex].slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
+        y: height.slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
+        mode: 'lines',
+        line: {
+          color: 'black',
+          width: 2
+        }
+      };
+
+      var traceB = {
+        x: drawDataB[lineIndex].slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res),
+        y: height.slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res),
+        mode: 'lines',
+        line: {
+          color: 'black',
+          width: 2
+        }
+      };
+  
+      Plotly.react('lineADiv',[traceA],layoutLineA);
+      Plotly.react('lineBDiv',[traceB],layoutLineB);
+    }
 
     var plotA = document.getElementById('PRADiv');
+    var plotB = document.getElementById('PRBDiv');
     
 
     function createColorScale(n){
@@ -349,7 +366,7 @@
               }
         };
         var trace = {
-            x: drawDataA[lineIndexA].slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
+            x: drawDataA[lineIndex].slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
             y: height.slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
             mode: 'lines',
             line: {
@@ -390,7 +407,7 @@
       };
       Plotly.relayout('PRADiv',update);
       var trace = {
-            x: drawDataA[lineIndexA].slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
+            x: drawDataA[lineIndex].slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
             y: height.slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
             mode: 'lines',
             line: {
@@ -410,7 +427,7 @@
       };
       Plotly.relayout('PRADiv',update);
       var trace = {
-            x: drawDataA[lineIndexA].slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
+            x: drawDataA[lineIndex].slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
             y: height.slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
             mode: 'lines',
             line: {
@@ -473,7 +490,7 @@
             },line
           ];
         var trace = {
-          x: drawDataB[lineIndexB].slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res),
+          x: drawDataB[lineIndex].slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res),
           y: height.slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res),
           mode: 'lines',
           line: {
@@ -512,7 +529,7 @@
       };
       Plotly.relayout('PRBDiv',update);
       var trace = {
-          x: drawDataB[lineIndexB].slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res),
+          x: drawDataB[lineIndex].slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res),
           y: height.slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res),
           mode: 'lines',
           line: {
@@ -532,7 +549,7 @@
       };
       Plotly.relayout('PRBDiv',update);
       var trace = {
-          x: drawDataB[lineIndexB].slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res),
+          x: drawDataB[lineIndex].slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res),
           y: height.slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res),
           mode: 'lines',
           line: {
