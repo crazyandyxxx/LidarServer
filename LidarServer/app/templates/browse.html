@@ -206,6 +206,20 @@
                 csvContent += data.result[i].timestamp+','+data.result[i].horAngle+',';
                 csvContent += data.result[i].dep.join(',')+'\r\n';
               };
+              csvContent += '********************'+'\r\n';
+              csvContent += 'Channel A Data'+'\r\n';
+              csvContent += '********************'+'\r\n';
+              for(let i=0; i<data.result.length;i++){
+                csvContent += data.result[i].timestamp+','+data.result[i].horAngle+',';
+                csvContent += data.result[i].raw_A.join(',')+'\r\n';
+              };
+              csvContent += '********************'+'\r\n';
+              csvContent += 'Channel B Data'+'\r\n';
+              csvContent += '********************'+'\r\n';
+              for(let i=0; i<data.result.length;i++){
+                csvContent += data.result[i].timestamp+','+data.result[i].horAngle+',';
+                csvContent += data.result[i].raw_B.join(',')+'\r\n';
+              };
 
               var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
               if (navigator.msSaveBlob) { // IE 10+

@@ -89,7 +89,6 @@
     var BMax = 10000;
     var lineIndexA = 0;
     var lineIndexB = 0;
-
     var layoutA = {
             xaxis: {
               title: '时间',
@@ -103,7 +102,6 @@
               // fixedrange:true
             }
           };
-    
     var layoutB = {
             xaxis: {
               title: '时间',
@@ -116,8 +114,7 @@
               range:[0,3000],
               // fixedrange:true
             }
-          };
-      
+          };  
     var layoutLineA = {
       xaxis: {
         title: '强度',
@@ -132,7 +129,6 @@
         // fixedrange:true
       }
     };
-
     var layoutLineB = {
       xaxis: {
         title: '强度',
@@ -148,7 +144,6 @@
       }
     };
 
-    
     $.post('{{ url_for('main.get_los_data') }}', { 'task id': task_id },
         function(data,status){
         if(status == "success"){
@@ -312,10 +307,20 @@
               transpose: true,
               colorscale:createColorScale(11),
               colorbar:{thickness:15,xpad:5}
-            };
+        };
+        var trace = {
+            x: drawData[lineIndexA],
+            y: height,
+            mode: 'lines',
+            line: {
+              color: 'black',
+              width: 3
+            }
+          };
         
         var data = [heat,line];
         Plotly.react('PRADiv',data,layoutA);
+        Plotly.react('lineADiv',[trace],layoutLineA)
       }
 
     function ChangeChannelAMax(){
@@ -339,19 +344,23 @@
     function ChangeChannelARangeMax(){
       var rangeMax = document.getElementById('zMaxA');
       layoutA.yaxis.range[1] = rangeMax.value;
+      layoutLineA.yaxis.range[1] = rangeMax.value;
       var update = {
         'yaxis.range[1]':rangeMax.value
       };
       Plotly.relayout('PRADiv',update);
+      Plotly.relayout('lineADiv',update);
     }
 
     function ChangeChannelARangeMin(){
       var rangeMin = document.getElementById('zMinA');
       layoutA.yaxis.range[0] = rangeMin.value;
+      layoutLineA.yaxis.range[0] = rangeMin.value;
       var update = {
         'yaxis.range[0]':rangeMin.value
       };
       Plotly.relayout('PRADiv',update);
+      Plotly.relayout('lineADiv',update);
     }
 
     function SelectChannelB(){
