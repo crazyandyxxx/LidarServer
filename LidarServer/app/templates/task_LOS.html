@@ -13,8 +13,8 @@
 }
 .lineDiv{
   float:right;
-  width:300px;
-  margin-left:-70px;
+  width:290px;
+  margin-left:-50px;
   z-index: 10;
 }
 </style>
@@ -89,6 +89,8 @@
     var BMax = 10000;
     var lineIndexA = 0;
     var lineIndexB = 0;
+    var drawDataA={}, drawDataB={};
+    var res = 15;
     var layoutA = {
             xaxis: {
               title: '时间',
@@ -96,9 +98,9 @@
               tickmode:'auto'
             },
             yaxis: {
-              title: '距离(m)',
+              title: '距离(km)',
               showline: true,
-              range:[0,3000],
+              range:[0,3],
               // fixedrange:true
             }
           };
@@ -109,9 +111,9 @@
               tickmode:'auto'
             },
             yaxis: {
-              title: '距离(m)',
+              title: '距离(km)',
               showline: true,
-              range:[0,3000],
+              range:[0,3],
               // fixedrange:true
             }
           };  
@@ -119,12 +121,13 @@
       xaxis: {
         title: '强度',
         showline: true,
-        tickmode:'auto'
+        tickmode:'auto',
+        showexponent:"last",
+        exponentformat:"power"
       },
       yaxis: {
         showline: true,
-        range:[0,3000],
-        showticklabels:false,
+        range:[0,3],
         ticks:'outside'
         // fixedrange:true
       }
@@ -133,12 +136,13 @@
       xaxis: {
         title: '强度',
         showline: true,
-        tickmode:'auto'
+        tickmode:'auto',
+        showexponent:"last",
+        exponentformat:"power"
       },
       yaxis: {
         showline: true,
-        range:[0,3000],
-        showticklabels:false,
+        range:[0,3],
         ticks:'outside'
         // fixedrange:true
       }
@@ -147,7 +151,7 @@
     $.post('{{ url_for('main.get_los_data') }}', { 'task id': task_id },
         function(data,status){
         if(status == "success"){
-          res = data.result[0].resolution;
+          res = data.result[0].resolution/1000;
           leng = data.result[0].raw_A.length;        
           for(let i = 0;i<leng;i++){
             height.push((i+1)*res);
@@ -162,7 +166,7 @@
             lineDep.push(data.result[i].dep);
             linePbl.push(data.result[i].pbl);
           };
-
+          drawDataA = linePRA;
           var PRA_data = [
             {
               z: linePRA,
@@ -173,10 +177,15 @@
               type: 'heatmap',
               transpose: true,
               colorscale:createColorScale(11),
-              colorbar:{thickness:15,xpad:5}
+              colorbar:{
+                thickness:15,
+                xpad:5,
+                showexponent:"last",
+                exponentformat:"power"
+              }
             }
           ];
-
+          drawDataB = linePRB;
           var PRB_data = [
             {
               z: linePRB,
@@ -187,27 +196,32 @@
               type: 'heatmap',
               transpose: true,
               colorscale:createColorScale(11),
-              colorbar:{thickness:15,xpad:5}
+              colorbar:{
+                thickness:15,
+                xpad:5,
+                showexponent:"last",
+                exponentformat:"power"
+              }
             }
           ];
 
           var traceA = {
-            x: linePRA[0],
+            x: linePRA[0].slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
             y: height,
             mode: 'lines',
             line: {
               color: 'black',
-              width: 3
+              width: 2
             }
           };
 
           var traceB = {
-            x: linePRB[0],
+            x: linePRB[0].slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
             y: height,
             mode: 'lines',
             line: {
               color: 'black',
-              width: 3
+              width: 2
             }
           };
 
@@ -265,29 +279,28 @@
 
     function SelectChannelA(){
         var channel = document.getElementById('channelA');
-        var drawData;
         var line = {};
         switch(channel.options[channel.selectedIndex].text){
           case '平行通道距离校正信号':
-            drawData = linePRA;
+            drawDataA = linePRA;
             break;
           case '垂直通道距离校正信号':
-            drawData = linePRB;
+            drawDataA = linePRB;
             break;
           case '消光系数':
-            drawData = lineExt;
+            drawDataA = lineExt;
             break;
           case '退偏比':
-            drawData = lineDep;
+            drawDataA = lineDep;
             break;
           case '平行通道原始信号':
-            drawData = lineA;
+            drawDataA = lineA;
             break;
           case '垂直通道原始信号':
-            drawData = lineB;
+            drawDataA = lineB;
             break;
           case '污染边界层':
-            drawData = linePRA;
+            drawDataA = linePRA;
             line = {
               x:timeat,
               y:linePbl,
@@ -298,7 +311,7 @@
             break;
         };
         var heat = {
-              z: drawData,
+              z: drawDataA,
               x: timeat,
               y: height,
               zmin: AMin,
@@ -306,21 +319,26 @@
               type: 'heatmap',
               transpose: true,
               colorscale:createColorScale(11),
-              colorbar:{thickness:15,xpad:5}
+              colorbar:{
+                thickness:15,
+                xpad:5,
+                showexponent:"last",
+                exponentformat:"power"
+              }
         };
         var trace = {
-            x: drawData[lineIndexA],
-            y: height,
+            x: drawDataA[lineIndexA].slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
+            y: height.slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
             mode: 'lines',
             line: {
               color: 'black',
-              width: 3
+              width: 2
             }
           };
         
         var data = [heat,line];
         Plotly.react('PRADiv',data,layoutA);
-        Plotly.react('lineADiv',[trace],layoutLineA)
+        Plotly.react('lineADiv',[trace],layoutLineA);
       }
 
     function ChangeChannelAMax(){
@@ -343,51 +361,68 @@
   
     function ChangeChannelARangeMax(){
       var rangeMax = document.getElementById('zMaxA');
-      layoutA.yaxis.range[1] = rangeMax.value;
-      layoutLineA.yaxis.range[1] = rangeMax.value;
+      layoutA.yaxis.range[1] = rangeMax.value/1000;
+      layoutLineA.yaxis.range[1] = rangeMax.value/1000;
       var update = {
-        'yaxis.range[1]':rangeMax.value
+        'yaxis.range[1]':rangeMax.value/1000
       };
       Plotly.relayout('PRADiv',update);
-      Plotly.relayout('lineADiv',update);
+      var trace = {
+            x: drawDataA[lineIndexA].slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
+            y: height.slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
+            mode: 'lines',
+            line: {
+              color: 'black',
+              width: 2
+            }
+          };
+        Plotly.react('lineADiv',[trace],layoutLineA);
     }
 
     function ChangeChannelARangeMin(){
       var rangeMin = document.getElementById('zMinA');
-      layoutA.yaxis.range[0] = rangeMin.value;
-      layoutLineA.yaxis.range[0] = rangeMin.value;
+      layoutA.yaxis.range[0] = rangeMin.value/1000;
+      layoutLineA.yaxis.range[0] = rangeMin.value/1000;
       var update = {
-        'yaxis.range[0]':rangeMin.value
+        'yaxis.range[0]':rangeMin.value/1000
       };
       Plotly.relayout('PRADiv',update);
-      Plotly.relayout('lineADiv',update);
+      var trace = {
+            x: drawDataA[lineIndexA].slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
+            y: height.slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
+            mode: 'lines',
+            line: {
+              color: 'black',
+              width: 2
+            }
+          };
+        Plotly.react('lineADiv',[trace],layoutLineA);
     }
 
     function SelectChannelB(){
         var channel = document.getElementById('channelB');
-        var drawData;
         var line = {};
         switch(channel.options[channel.selectedIndex].text){
           case '平行通道距离校正信号':
-            drawData = linePRA;
+            drawDataB = linePRA;
             break;
           case '垂直通道距离校正信号':
-            drawData = linePRB;
+            drawDataB = linePRB;
             break;
           case '消光系数':
-            drawData = lineExt;
+            drawDataB = lineExt;
             break;
           case '退偏比':
-            drawData = lineDep;
+            drawDataB = lineDep;
             break;
           case '平行通道原始信号':
-            drawData = lineA;
+            drawDataB = lineA;
             break;
           case '垂直通道原始信号':
-            drawData = lineB;
+            drawDataB = lineB;
             break;
           case '污染边界层':
-            drawData = linePRA;
+            drawDataB = linePRA;
             line = {
               x:timeat,
               y:linePbl,
@@ -399,7 +434,7 @@
         };
         var data = [
             {
-              z: drawData,
+              z: drawDataB,
               x: timeat,
               y: height,
               zmin: BMin,
@@ -407,10 +442,25 @@
               type: 'heatmap',
               transpose: true,
               colorscale:createColorScale(11),
-              colorbar:{thickness:15,xpad:5}
+              colorbar:{
+                thickness:15,
+                xpad:5,
+                showexponent:"last",
+                exponentformat:"power"
+              }
             },line
           ];
+        var trace = {
+          x: drawDataB[lineIndexB].slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res),
+          y: height.slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res),
+          mode: 'lines',
+          line: {
+            color: 'black',
+            width: 2
+          }
+        };
         Plotly.react('PRBDiv',data,layoutB);
+        Plotly.react('lineBDiv',[trace],layoutLineB);
       }
 
     function ChangeChannelBMax(){
@@ -433,20 +483,42 @@
   
     function ChangeChannelBRangeMax(){
       var rangeMax = document.getElementById('zMaxB');
-      layoutB.yaxis.range[1] = rangeMax.value;
+      layoutB.yaxis.range[1] = rangeMax.value/1000;
+      layoutLineB.yaxis.range[1] = rangeMax.value/1000;
       var update = {
-        'yaxis.range[1]':rangeMax.value
+        'yaxis.range[1]':rangeMax.value/1000
       };
       Plotly.relayout('PRBDiv',update);
+      var trace = {
+          x: drawDataB[lineIndexB].slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res),
+          y: height.slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res),
+          mode: 'lines',
+          line: {
+            color: 'black',
+            width: 2
+          }
+        };
+        Plotly.react('lineBDiv',[trace],layoutLineB);
     }
 
     function ChangeChannelBRangeMin(){
       var rangeMin = document.getElementById('zMinB');
-      layoutB.yaxis.range[0] = rangeMin.value;
+      layoutB.yaxis.range[0] = rangeMin.value/1000;
+      layoutLineB.yaxis.range[0] = rangeMin.value/1000;
       var update = {
-        'yaxis.range[0]':rangeMin.value
+        'yaxis.range[0]':rangeMin.value/1000
       };
       Plotly.relayout('PRBDiv',update);
+      var trace = {
+          x: drawDataB[lineIndexB].slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res),
+          y: height.slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res),
+          mode: 'lines',
+          line: {
+            color: 'black',
+            width: 2
+          }
+        };
+        Plotly.react('lineBDiv',[trace],layoutLineB);
     }
 
 </script>
