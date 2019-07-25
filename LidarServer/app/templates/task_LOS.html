@@ -229,9 +229,31 @@
           Plotly.newPlot('PRBDiv', PRB_data, layoutB);
           Plotly.newPlot('lineADiv',[traceA],layoutLineA);
           Plotly.newPlot('lineBDiv',[traceB],layoutLineB);
+
+          plotA.on('plotly_hover',function(data){
+            var pn='';
+            pn = data.points[0].pointNumber;
+            lineIndexA = pn[1];
+
+            var trace = {
+              x: drawDataA[lineIndexA].slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
+              y: height.slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
+              mode: 'lines',
+              line: {
+                color: 'black',
+                width: 2
+              }
+            };
+        
+            Plotly.react('lineADiv',[trace],layoutLineA);
+          });
         };  
       });
     
+
+    var plotA = document.getElementById('PRADiv');
+    
+
     function createColorScale(n){
       var colorScale = [];
       for(let i=0;i<n;i++){
