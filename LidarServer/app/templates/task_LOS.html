@@ -94,26 +94,26 @@
             xaxis: {
               title: '时间',
               showline: true,
-              tickmode:'auto'
+              tickmode:'auto',
+              range:[]
             },
             yaxis: {
               title: '距离(km)',
               showline: true,
-              range:[0,3],
-              // fixedrange:true
+              range:[0,3]
             }
           };
     var layoutB = {
             xaxis: {
               title: '时间',
               showline: true,
-              tickmode:'auto'
+              tickmode:'auto',
+              range:[]
             },
             yaxis: {
               title: '距离(km)',
               showline: true,
-              range:[0,3],
-              // fixedrange:true
+              range:[0,3]
             }
           };  
     var layoutLineA = {
@@ -128,7 +128,6 @@
         showline: true,
         range:[0,3],
         ticks:'outside'
-        // fixedrange:true
       }
     };
     var layoutLineB = {
@@ -143,9 +142,13 @@
         showline: true,
         range:[0,3],
         ticks:'outside'
-        // fixedrange:true
       }
     };
+    var layoutConfig = {
+      displayModeBar: false,
+      responsive: true
+    };
+    var PRA_data ={},PRB_data={},traceA={},traceB={},traceIndex={},tracePblA={},tracePblB={};
 
     $.post('{{ url_for('main.get_los_data') }}', { 'task id': task_id },
         function(data,status){
@@ -166,8 +169,7 @@
             linePbl.push(data.result[i].pbl/1000);
           };
           drawDataA = linePRA;
-          var PRA_data = [
-            {
+          PRA_data = {
               z: linePRA,
               x: timeat,
               y: height,
@@ -182,11 +184,9 @@
                 showexponent:"last",
                 exponentformat:"power"
               }
-            }
-          ];
+          };
           drawDataB = linePRB;
-          var PRB_data = [
-            {
+          PRB_data = {
               z: linePRB,
               x: timeat,
               y: height,
@@ -201,10 +201,9 @@
                 showexponent:"last",
                 exponentformat:"power"
               }
-            }
-          ];
+          };
 
-          var traceA = {
+          traceA = {
             x: linePRA[0].slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
             y: height,
             mode: 'lines',
@@ -214,7 +213,7 @@
             }
           };
 
-          var traceB = {
+          traceB = {
             x: linePRB[0].slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
             y: height,
             mode: 'lines',
@@ -224,10 +223,42 @@
             }
           };
 
-          Plotly.newPlot('PRADiv', PRA_data, layoutA);
-          Plotly.newPlot('PRBDiv', PRB_data, layoutB);
-          Plotly.newPlot('lineADiv',[traceA],layoutLineA);
-          Plotly.newPlot('lineBDiv',[traceB],layoutLineB);
+          traceIndex = {
+            x: [timeat[lineIndex],timeat[lineIndex]],
+            y: [0,height[height.length-1]],
+            mode: 'lines',
+            line: {
+              color: '#e6ff00',
+              width: 2,
+              dash: 'dashdot'
+            },
+            showlegend:false
+          };
+          tracePblA = {
+            x:timeat,
+            y:linePbl,
+            mode:'markers',
+            type:'scatter',
+            marker:{color:'black'},
+            showlegend:false,
+            visible:false
+          };
+          tracePblB = {
+            x:timeat,
+            y:linePbl,
+            mode:'markers',
+            type:'scatter',
+            marker:{color:'black'},
+            showlegend:false,
+            visible:false
+          };
+
+          layoutA.xaxis.range = [timeat[0],timeat[timeat.length-1]];
+          layoutB.xaxis.range = [timeat[0],timeat[timeat.length-1]];
+          Plotly.newPlot('PRADiv', [PRA_data,tracePblA,traceIndex], layoutA,layoutConfig);
+          Plotly.newPlot('PRBDiv', [PRB_data,tracePblB,traceIndex], layoutB,layoutConfig);
+          Plotly.newPlot('lineADiv',[traceA],layoutLineA,layoutConfig);
+          Plotly.newPlot('lineBDiv',[traceB],layoutLineB,layoutConfig);
 
           plotA.on('plotly_hover',plotHover);
           plotB.on('plotly_hover',plotHover);
@@ -243,26 +274,18 @@
       }
       lineIndex = pn[1];
 
-      var traceA = {
-        x: drawDataA[lineIndex].slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
-        y: height.slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
-        mode: 'lines',
-        line: {
-          color: 'black',
-          width: 2
-        }
-      };
+      traceA.x = drawDataA[lineIndex].slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res);
+      traceA.y = height.slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res);
 
-      var traceB = {
-        x: drawDataB[lineIndex].slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res),
-        y: height.slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res),
-        mode: 'lines',
-        line: {
-          color: 'black',
-          width: 2
-        }
-      };
+      traceB.x = drawDataB[lineIndex].slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res);
+      traceB.y = height.slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res);
   
+      traceIndex.x=[timeat[lineIndex],timeat[lineIndex]];
+
+      // Plotly.react('PRADiv', [PRA_data,traceIndex,tracePblA],layoutA);
+      // Plotly.react('PRBDiv', [PRB_data,traceIndex,tracePblB],layoutB);
+      // Plotly.react('PRADiv', traceIndex, layoutA);
+      // Plotly.react('PRBDiv', traceIndex, layoutB);
       Plotly.react('lineADiv',[traceA],layoutLineA);
       Plotly.react('lineBDiv',[traceB],layoutLineB);
     }
@@ -318,7 +341,7 @@
 
     function SelectChannelA(){
         var channel = document.getElementById('channelA');
-        var line = {};
+        tracePblA.visible = false;
         switch(channel.options[channel.selectedIndex].text){
           case '平行通道距离校正信号':
             drawDataA = linePRA;
@@ -339,45 +362,15 @@
             drawDataA = lineB;
             break;
           case '污染边界层':
-            drawDataA = linePRA;
-            line = {
-              x:timeat,
-              y:linePbl,
-              mode:'markers',
-              type:'scatter',
-              marker:{color:'black'}
-            };
+            tracePblA.visible = true;
             break;
         };
-        var heat = {
-              z: drawDataA,
-              x: timeat,
-              y: height,
-              zmin: AMin,
-              zmax: AMax,
-              type: 'heatmap',
-              transpose: true,
-              colorscale:createColorScale(11),
-              colorbar:{
-                thickness:15,
-                xpad:5,
-                showexponent:"last",
-                exponentformat:"power"
-              }
-        };
-        var trace = {
-            x: drawDataA[lineIndex].slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
-            y: height.slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
-            mode: 'lines',
-            line: {
-              color: 'black',
-              width: 2
-            }
-          };
+ 
+        PRA_data.z = drawDataA;
+        traceA.x = drawDataA[lineIndex].slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res);
         
-        var data = [heat,line];
-        Plotly.react('PRADiv',data,layoutA);
-        Plotly.react('lineADiv',[trace],layoutLineA);
+        Plotly.react('PRADiv',[PRA_data,tracePblA,traceIndex],layoutA);
+        Plotly.react('lineADiv',[traceA],layoutLineA);
       }
 
     function ChangeChannelAMax(){
@@ -386,6 +379,7 @@
       var update = {
         zmax:AMax
       };
+      PRA_data.zmax = AMax;
       Plotly.restyle('PRADiv',update);
     }
 
@@ -395,6 +389,7 @@
       var update = {
         zmin:AMin
       };
+      PRA_data.zmin = AMin;
       Plotly.restyle('PRADiv',update);
     }
   
@@ -406,16 +401,9 @@
         'yaxis.range[1]':rangeMax.value/1000
       };
       Plotly.relayout('PRADiv',update);
-      var trace = {
-            x: drawDataA[lineIndex].slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
-            y: height.slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
-            mode: 'lines',
-            line: {
-              color: 'black',
-              width: 2
-            }
-          };
-        Plotly.react('lineADiv',[trace],layoutLineA);
+      traceA.x = drawDataA[lineIndex].slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res);
+      traceA.y = height.slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res);
+      Plotly.react('lineADiv',[traceA],layoutLineA);
     }
 
     function ChangeChannelARangeMin(){
@@ -426,21 +414,14 @@
         'yaxis.range[0]':rangeMin.value/1000
       };
       Plotly.relayout('PRADiv',update);
-      var trace = {
-            x: drawDataA[lineIndex].slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
-            y: height.slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res),
-            mode: 'lines',
-            line: {
-              color: 'black',
-              width: 2
-            }
-          };
-        Plotly.react('lineADiv',[trace],layoutLineA);
+      traceA.x = drawDataA[lineIndex].slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res);
+      traceA.y = height.slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res);
+      Plotly.react('lineADiv',[traceA],layoutLineA);
     }
 
     function SelectChannelB(){
         var channel = document.getElementById('channelB');
-        var line = {};
+        tracePblB.visible=false;
         switch(channel.options[channel.selectedIndex].text){
           case '平行通道距离校正信号':
             drawDataB = linePRA;
@@ -461,45 +442,14 @@
             drawDataB = lineB;
             break;
           case '污染边界层':
-            drawDataB = linePRA;
-            line = {
-              x:timeat,
-              y:linePbl,
-              mode:'markers',
-              type:'scatter',
-              marker:{color:'black'}
-            };
-            break;
+            tracePblB.visible = true;
         };
-        var data = [
-            {
-              z: drawDataB,
-              x: timeat,
-              y: height,
-              zmin: BMin,
-              zmax: BMax,
-              type: 'heatmap',
-              transpose: true,
-              colorscale:createColorScale(11),
-              colorbar:{
-                thickness:15,
-                xpad:5,
-                showexponent:"last",
-                exponentformat:"power"
-              }
-            },line
-          ];
-        var trace = {
-          x: drawDataB[lineIndex].slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res),
-          y: height.slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res),
-          mode: 'lines',
-          line: {
-            color: 'black',
-            width: 2
-          }
-        };
-        Plotly.react('PRBDiv',data,layoutB);
-        Plotly.react('lineBDiv',[trace],layoutLineB);
+
+        PRB_data.z = drawDataB;
+        traceB.x = drawDataB[lineIndex].slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res);
+
+        Plotly.react('PRBDiv',[PRB_data,tracePblB,traceIndex],layoutB);
+        Plotly.react('lineBDiv',[traceB],layoutLineB);
       }
 
     function ChangeChannelBMax(){
@@ -508,6 +458,7 @@
       var update = {
         zmax:BMax
       };
+      PRB_data.zmax = BMax;
       Plotly.restyle('PRBDiv',update);
     }
 
@@ -517,6 +468,7 @@
       var update = {
         zmin:BMin
       };
+      PRB_data.zmin = BMin;
       Plotly.restyle('PRBDiv',update);
     }
   
@@ -528,16 +480,9 @@
         'yaxis.range[1]':rangeMax.value/1000
       };
       Plotly.relayout('PRBDiv',update);
-      var trace = {
-          x: drawDataB[lineIndex].slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res),
-          y: height.slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res),
-          mode: 'lines',
-          line: {
-            color: 'black',
-            width: 2
-          }
-        };
-        Plotly.react('lineBDiv',[trace],layoutLineB);
+      traceB.x = drawDataB[lineIndex].slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res);
+      traceB.y = height.slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res);
+      Plotly.react('lineBDiv',[traceB],layoutLineB);
     }
 
     function ChangeChannelBRangeMin(){
@@ -548,16 +493,9 @@
         'yaxis.range[0]':rangeMin.value/1000
       };
       Plotly.relayout('PRBDiv',update);
-      var trace = {
-          x: drawDataB[lineIndex].slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res),
-          y: height.slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res),
-          mode: 'lines',
-          line: {
-            color: 'black',
-            width: 2
-          }
-        };
-        Plotly.react('lineBDiv',[trace],layoutLineB);
+      traceB.x = drawDataB[lineIndex].slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res);
+      traceB.y = height.slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res);
+      Plotly.react('lineBDiv',[traceB],layoutLineB);
     }
 
 </script>
