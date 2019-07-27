@@ -369,7 +369,7 @@
         PRA_data.z = drawDataA;
         traceA.x = drawDataA[lineIndex].slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res);
         
-        Plotly.react('PRADiv',[PRA_data,tracePblA,traceIndex],layoutA);
+        Plotly.react('PRADiv',[PRA_data,tracePblA],layoutA);
         Plotly.react('lineADiv',[traceA],layoutLineA);
       }
 
@@ -448,7 +448,7 @@
         PRB_data.z = drawDataB;
         traceB.x = drawDataB[lineIndex].slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res);
 
-        Plotly.react('PRBDiv',[PRB_data,tracePblB,traceIndex],layoutB);
+        Plotly.react('PRBDiv',[PRB_data,tracePblB],layoutB);
         Plotly.react('lineBDiv',[traceB],layoutLineB);
       }
 

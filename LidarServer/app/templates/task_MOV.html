@@ -14,7 +14,7 @@
 </head>
 <style type="text/css">
     .inputNum {
-      width: 6em;
+      width: 4em;
       text-align: right;
     }
     #viewDiv {
@@ -121,15 +121,16 @@
         map.addControl(new AMap.Scale());
     });
 
-    function createRectangle(pt1, pt2, resl, zMax, zScale, idata, rdata, vmin, vmax, alpha) {
+    function createRectangle(pt1, pt2, resl, zMin, zMax, zScale, idata, rdata, vmin, vmax, alpha) {
         var v1xy = map.lngLatToGeodeticCoord(pt1);
         var v2xy = map.lngLatToGeodeticCoord(pt2);
         var v1z = 0;
         var v2z = 0;
         var x1 = [], y1 = [],z1 = [], x2 = [], y2 = [], z2 = [];
-        var nmax = zMax/resl;
+        var nmax = Math.floor(zMax/resl);
+        var nmin = Math.floor(zMin/resl);
         resl *= zScale;
-        for(var i = 0; i<nmax+1; i++){
+        for(var i = nmin; i<nmax+1; i++){
           x1.push(v1xy.x);
           y1.push(v1xy.y);
           z1.push(v1z-i*resl);
@@ -143,17 +144,17 @@
         rectangle.backOrFront = 'both';
 
         var geometry = rectangle.geometry;
-        for(var i = 0; i<nmax; i++){
+        for(var i = 0; i<nmax-nmin; i++){
           geometry.vertices.push(x1[i], y1[i], z1[i]);
           geometry.vertices.push(x1[i+1], y1[i+1], z1[i+1]);
           geometry.vertices.push(x2[i+1], y2[i+1], z2[i+1]);
           geometry.vertices.push(x1[i], y1[i], z1[i]);
           geometry.vertices.push(x2[i], y2[i], z2[i]);
           geometry.vertices.push(x2[i+1], y2[i+1], z2[i+1]);
-          var xc1 = getColor(rdata[idata][i], vmin, vmax, alpha);
-          var xc2 = getColor(rdata[idata][i+1], vmin, vmax, alpha);
-          var xc3 = getColor(rdata[idata+1][i], vmin, vmax, alpha);
-          var xc4 = getColor(rdata[idata+1][i+1], vmin, vmax, alpha);
+          var xc1 = getColor(rdata[idata][i+nmin], vmin, vmax, alpha);
+          var xc2 = getColor(rdata[idata][i+1+nmin], vmin, vmax, alpha);
+          var xc3 = getColor(rdata[idata+1][i+nmin], vmin, vmax, alpha);
+          var xc4 = getColor(rdata[idata+1][i+1+nmin], vmin, vmax, alpha);
           geometry.vertexColors.push(xc1.r, xc1.g, xc1.b, xc1.a);
           geometry.vertexColors.push(xc2.r, xc2.g, xc2.b, xc2.a);
           geometry.vertexColors.push(xc4.r, xc4.g, xc4.b, xc4.a);
@@ -165,15 +166,16 @@
         return rectangle;
     }
 
-    function createWall(pts,rdata,resl,zMax,zScale,vmin,vmax,opacity) {
+    function createWall(pts,rdata,resl,zMin,zMax,zScale,vmin,vmax,opacity) {
         var n =  pts.length - 1;
         var v0xy = map.lngLatToGeodeticCoord(pts[0]);
         var v1xy = map.lngLatToGeodeticCoord(pts[0].offset(5000,0));
         var scal = (v1xy.x-v0xy.x)/5000;
         resl *= scal;
         zMax *= scal;
+        zMin *= scal;
         for(let i=0;i<n;i++){
-            var rect = createRectangle(pts[i],pts[i+1],resl,zMax,zScale,i,rdata,vmin,vmax,opacity);
+            var rect = createRectangle(pts[i],pts[i+1],resl,zMin,zMax,zScale,i,rdata,vmin,vmax,opacity);
             object3Dlayer.add(rect);
         }         
     }
@@ -225,6 +227,7 @@
 
     var rdata = {};
     var rangeMax = 3000;
+    var rangeMin = 0;
     var vMax = 10000;
     var vMin = 0;
     var colorOpacity = 0.5;
@@ -258,6 +261,8 @@
             colorMin.addEventListener("change", ChangeMinValue);
             var zMax = document.getElementById('zMax');
             zMax.addEventListener("change", ChangeRangeMax);
+            var zMin = document.getElementById('zMin');
+            zMin.addEventListener("change", ChangeRangeMin);
             var opacity = document.getElementById('opacity');
             opacity.addEventListener("change", ChangeColorOpacity);
             var scale = document.getElementById('scale');
@@ -292,7 +297,7 @@
                 }             
             };
             drawData = rdata.prr_A;
-            createWall(locations,drawData,resolution,rangeMax,rangeScale,vMin,vMax,colorOpacity);
+            createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity);
             map.setCenter(locations[0]);
             map.setFitView();
 
@@ -392,7 +397,7 @@
             break;
         };
         object3Dlayer.clear();
-        createWall(locations,drawData,resolution,rangeMax,rangeScale,vMin,vMax,colorOpacity);
+        createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity);
 
         var heat = {
               z: drawData,
@@ -414,7 +419,7 @@
         var colorMax = document.getElementById('colorMax');
         vMax = Number(colorMax.value);
         object3Dlayer.clear();
-        createWall(locations,drawData,resolution,rangeMax,rangeScale,vMin,vMax,colorOpacity);
+        createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity);
 
         var update = {
           zmax:vMax
@@ -426,7 +431,7 @@
         var colorMin = document.getElementById('colorMin'); 
         vMin = Number(colorMin.value);  
         object3Dlayer.clear();
-        createWall(locations,drawData,resolution,rangeMax,rangeScale,vMin,vMax,colorOpacity); 
+        createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity); 
 
         var update = {
           zmin:vMin
@@ -439,7 +444,7 @@
         var zMax = document.getElementById('zMax'); 
         rangeMax = Number(zMax.value);  
         object3Dlayer.clear();
-        createWall(locations,drawData,resolution,rangeMax,rangeScale,vMin,vMax,colorOpacity); 
+        createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity); 
         
         layoutA.yaxis.range[1] = rangeMax;
         var update = {
@@ -448,18 +453,31 @@
         Plotly.relayout('PRADiv',update);
       }
 
+      function ChangeRangeMin(){
+        var zMin = document.getElementById('zMin'); 
+        rangeMin = Number(zMin.value);  
+        object3Dlayer.clear();
+        createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity); 
+        
+        layoutA.yaxis.range[0] = rangeMin;
+        var update = {
+          'yaxis.range[0]':rangeMin
+        };
+        Plotly.relayout('PRADiv',update);
+      }
+
       function ChangeColorOpacity(){
         var opacity = document.getElementById('opacity'); 
         colorOpacity = Number(opacity.value);  
         object3Dlayer.clear();
-        createWall(locations,drawData,resolution,rangeMax,rangeScale,vMin,vMax,colorOpacity);  
+        createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity);  
       }
 
       function ChangeRangeScale(){
         var scale = document.getElementById('scale'); 
         rangeScale = Number(scale.value);  
         object3Dlayer.clear();
-        createWall(locations,drawData,resolution,rangeMax,rangeScale,vMin,vMax,colorOpacity);   
+        createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity);   
       }
 
 </script>
