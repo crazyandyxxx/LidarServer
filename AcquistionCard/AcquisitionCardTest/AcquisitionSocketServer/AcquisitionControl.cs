@@ -65,7 +65,7 @@ namespace AcquisitionSocketServer
                     {
                         WaitPanToAngle();//等待电机转到指定位置
                         StartAcquisition();//开始采集
-                        Thread.Sleep(500);
+                        Thread.Sleep(1000);
                         WaitAcquistionFinish();//等待采集结束
                         CheckAcquisitionChannelData(chA, chB);//读取通道数据
                         acquisitionCount++;//采集组数递增
