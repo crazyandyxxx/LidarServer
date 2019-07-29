@@ -170,7 +170,7 @@
         var n =  pts.length - 1;
         var v0xy = map.lngLatToGeodeticCoord(pts[0]);
         var v1xy = map.lngLatToGeodeticCoord(pts[0].offset(5000,0));
-        var scal = (v1xy.x-v0xy.x)/5000;
+        scal = (v1xy.x-v0xy.x)/5000;
         resl *= scal;
         zMax *= scal;
         zMin *= scal;
@@ -232,16 +232,20 @@
     var vMin = 0;
     var colorOpacity = 0.5;
     var rangeScale = 1;
+    var scal = 1;
     var resolution = 15;
     var locations = [];
     var drawData = [];
     var timeat=[];
     var heights = [];
+    var lines, points3D;
     var layoutA = {
         xaxis: {
             title: '时间',
             showline: true,
-            tickmode:'auto'
+            tickmode:'auto',
+            showspikes: true,
+            spikemode: 'across'
         },
         yaxis: {
             title: '距离(m)',
@@ -316,8 +320,48 @@
             ];
 
             Plotly.newPlot('PRADiv', PRA_data, layoutA);
+            plotA.on('plotly_hover',plotHover);
 
         });
+
+    var lineIndex = 0;
+    var plotA = document.getElementById('PRADiv');
+    function plotHover(data){
+      var pn='';
+      for(let i=0;i<data.points.length;i++){
+        if(data.points[i].fullData.type==='heatmap'){
+          pn = data.points[i].pointNumber;
+        }
+      }
+      lineIndex = pn[1];
+      object3Dlayer.remove(lines);
+      object3Dlayer.remove(points3D);
+      var center = map.lngLatToGeodeticCoord(locations[lineIndex]);
+      lines = new AMap.Object3D.Line();
+      var lineGeo = lines.geometry;
+      points3D = new AMap.Object3D.RoundPoints();
+      points3D.transparent = true;
+      var pointsGeo = points3D.geometry;
+      var height = scal*rangeMax;
+      // 连线
+      lineGeo.vertices.push(center.x, center.y, 0);
+      lineGeo.vertexColors.push(0, 1, 1, 1);
+      lineGeo.vertices.push(center.x, center.y, -height);
+      lineGeo.vertexColors.push(0, 1, 1, 1);
+
+      pointsGeo.vertices.push(center.x, center.y, 0); // 尾部小点
+      pointsGeo.pointSizes.push(5);
+      pointsGeo.vertexColors.push(0, 0, 1, 1);
+
+      pointsGeo.vertices.push(center.x, center.y, -height); // 空中点
+      pointsGeo.pointSizes.push(20);
+      pointsGeo.vertexColors.push(2 * 0.029, 2 * 0.015, 2 * 0.01, 1);
+
+      points3D.borderColor = [0.4, 0.8, 1, 1];
+      points3D.borderWeight = 3;
+      object3Dlayer.add(lines);
+      object3Dlayer.add(points3D);
+    }
 
     function Gps84ToGcj02(lon,lat){
       if (outOfChina(lon, lat)) {
