@@ -16,8 +16,8 @@ namespace AcquisitionSocketServer
         private static void ReceiveMessage(object clientSocket)
         {
             Socket myClientSocket = (Socket)clientSocket;
-            while (true)
-            {
+            //while (true)
+            //{
                 try
                 {
                     //通过clientSocket接收数据  
@@ -64,7 +64,7 @@ namespace AcquisitionSocketServer
                     string sendStr = "{\"cmdType\":\"" + (string)cmd.cmdType + "\",\"result\":" + resultCode + "}";
                     byte[] bs = Encoding.UTF8.GetBytes(sendStr);//Encoding.UTF8.GetBytes()不然中文会乱码
                     myClientSocket.Send(bs, bs.Length, 0);  //返回信息给客户端
-                    //myClientSocket.Close(); //发送完数据关闭Socket并释放资源
+                    myClientSocket.Close(); //发送完数据关闭Socket并释放资源
                     //Console.ReadLine();
                 }
                 catch (Exception ex)
@@ -72,9 +72,9 @@ namespace AcquisitionSocketServer
                     Console.WriteLine(ex.Message);
                     myClientSocket.Shutdown(SocketShutdown.Both);//禁止发送和上传
                     myClientSocket.Close();//关闭Socket并释放资源
-                    break;
+                    //break;
                 }
-            }
+            //}
         }
     }
 }

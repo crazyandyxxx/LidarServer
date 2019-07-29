@@ -158,6 +158,7 @@ namespace AcquisitionCardTest
             labelCardStatus.Invoke((MethodInvoker)delegate
             {
                 labelCardStatus.Text = currentAccumNum + "/" + accumTimes;
+                if (currentAccumNum > accumTimes) currentAccumNum = accumTimes;
                 acquisitonProgressBar.Value = (int)((float)currentAccumNum / accumTimes *
                                                    (acquisitonProgressBar.Maximum - acquisitonProgressBar.Minimum) +
                                                    acquisitonProgressBar.Minimum);
