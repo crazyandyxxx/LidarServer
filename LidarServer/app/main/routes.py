@@ -110,7 +110,7 @@ def browse():
 @bp.route('/getDeviceStatus')
 @login_required
 def get_device_status():
-    progress = check_acquisition_times()
+    progress = check_acquisition_progress()
     gps = check_gps()
     heading = check_heading()
     return jsonify([

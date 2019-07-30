@@ -44,7 +44,7 @@ namespace AcquisitionSocketServer
                             break;
 
                         case "acqProgress":
-                            resultCode = CheckAcquisitionTimes().ToString();
+                            resultCode = CheckAcquisitionProgress();
                             break;
 
                         case "acqRunning":

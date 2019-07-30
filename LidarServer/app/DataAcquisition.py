@@ -39,7 +39,7 @@ def Stop_acquisition():
     r = (json.loads(s.recv(1024).decode()))
     s.close()
 
-def check_acquisition_times():
+def check_acquisition_progress():
     s = socket.socket()
     s.connect((host, port))
     acq_params = {}
