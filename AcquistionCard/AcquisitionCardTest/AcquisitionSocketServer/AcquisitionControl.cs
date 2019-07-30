@@ -92,6 +92,7 @@ namespace AcquisitionSocketServer
 
         private static int StartAcquisition()
         {
+            GetAcqCard();
             if (CtrlEndPt != null)
             {
                 int len = acquisitionStartCmd.Length;
