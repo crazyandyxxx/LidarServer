@@ -20,10 +20,8 @@
 
 {% block app_scripts %}
     <script>
-        function set_require_progress(progress) {
-            if(progress>=0){    
-                $('#acquisition-progress').text(Math.floor(progress/({{form.Frequency.data}}*{{form.Duration.data}})*100)+"%");
-            }
+        function set_require_progress(data) {    
+            $('#acquisition-progress').text(data.progress+"%  组数"+data.count);
         }
 
         function set_require_gps(progress) {  

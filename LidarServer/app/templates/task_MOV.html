@@ -304,6 +304,7 @@
             createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity);
             map.setCenter(locations[0]);
             map.setFitView();
+            createWallIndicator();
 
             var PRA_data = [
                 {
@@ -321,21 +322,9 @@
 
             Plotly.newPlot('PRADiv', PRA_data, layoutA);
             plotA.on('plotly_hover',plotHover);
-
         });
 
-    var lineIndex = 0;
-    var plotA = document.getElementById('PRADiv');
-    function plotHover(data){
-      var pn='';
-      for(let i=0;i<data.points.length;i++){
-        if(data.points[i].fullData.type==='heatmap'){
-          pn = data.points[i].pointNumber;
-        }
-      }
-      lineIndex = pn[1];
-      object3Dlayer.remove(lines);
-      object3Dlayer.remove(points3D);
+    function createWallIndicator(){
       var center = map.lngLatToGeodeticCoord(locations[lineIndex]);
       lines = new AMap.Object3D.Line();
       var lineGeo = lines.geometry;
@@ -361,6 +350,31 @@
       points3D.borderWeight = 3;
       object3Dlayer.add(lines);
       object3Dlayer.add(points3D);
+    }
+
+
+    var lineIndex = 0;
+    var plotA = document.getElementById('PRADiv');
+    function plotHover(data){
+      var pn='';
+      for(let i=0;i<data.points.length;i++){
+        if(data.points[i].fullData.type==='heatmap'){
+          pn = data.points[i].pointNumber;
+        }
+      }
+      lineIndex = pn[1];
+      var center = map.lngLatToGeodeticCoord(locations[lineIndex]);
+      var height = scal*rangeMax;
+      lines.geometry.vertices = [];
+      lines.geometry.vertices.push(center.x, center.y, 0);
+      lines.geometry.vertices.push(center.x, center.y, -height);
+
+      points3D.geometry.vertices = [];
+      points3D.geometry.vertices.push(center.x, center.y, 0); // 尾部小点
+      points3D.geometry.vertices.push(center.x, center.y, -height); // 空中点
+      object3Dlayer.add(lines);
+      object3Dlayer.add(points3D);
+
     }
 
     function Gps84ToGcj02(lon,lat){
@@ -442,6 +456,7 @@
         };
         object3Dlayer.clear();
         createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity);
+        createWallIndicator();
 
         var heat = {
               z: drawData,
@@ -464,6 +479,7 @@
         vMax = Number(colorMax.value);
         object3Dlayer.clear();
         createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity);
+        createWallIndicator();
 
         var update = {
           zmax:vMax
@@ -475,7 +491,8 @@
         var colorMin = document.getElementById('colorMin'); 
         vMin = Number(colorMin.value);  
         object3Dlayer.clear();
-        createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity); 
+        createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity);
+        createWallIndicator(); 
 
         var update = {
           zmin:vMin
@@ -489,6 +506,7 @@
         rangeMax = Number(zMax.value);  
         object3Dlayer.clear();
         createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity); 
+        createWallIndicator();
         
         layoutA.yaxis.range[1] = rangeMax;
         var update = {
@@ -502,6 +520,7 @@
         rangeMin = Number(zMin.value);  
         object3Dlayer.clear();
         createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity); 
+        createWallIndicator();
         
         layoutA.yaxis.range[0] = rangeMin;
         var update = {
@@ -515,6 +534,7 @@
         colorOpacity = Number(opacity.value);  
         object3Dlayer.clear();
         createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity);  
+        createWallIndicator();
       }
 
       function ChangeRangeScale(){
@@ -522,6 +542,7 @@
         rangeScale = Number(scale.value);  
         object3Dlayer.clear();
         createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity);   
+        createWallIndicator();
       }
 
 </script>

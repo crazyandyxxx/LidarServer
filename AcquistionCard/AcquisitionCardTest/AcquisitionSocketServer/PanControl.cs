@@ -29,6 +29,8 @@ namespace AcquisitionSocketServer
             panPort.DataBits = 8;
             panPort.Parity = Parity.None;
             panPort.StopBits = StopBits.One;
+            panPort.ReadTimeout = 1000;
+            panPort.WriteTimeout = 1000;
             try
             {
                 panPort.Open();
@@ -192,17 +194,23 @@ namespace AcquisitionSocketServer
             {
                 lock (port)
                 {
-                    port.DiscardInBuffer();
-                    port.DiscardOutBuffer();
-                    port.Write(wrData, 0, wrData.Length);
-                    System.Threading.Thread.Sleep(100);
                     try
                     {
-                        if (rdData != null && port.BytesToRead != 0) port.Read(rdData, 0, rdData.Length);
+                        port.Close();
+                        Thread.Sleep(100);
+                        port.Open();
+                        Thread.Sleep(100);
+                        //port.DiscardInBuffer();
+                        //port.DiscardOutBuffer();
+                        port.Write(wrData, 0, wrData.Length);
+                        Thread.Sleep(200);
+                    
+                        if (rdData != null && port.BytesToRead != 0)
+                            port.Read(rdData, 0, rdData.Length);
                     }
                     catch (System.Exception ex)
                     {
-                        Console.WriteLine(port.PortName+"发送失败!");
+                        Console.WriteLine(ex.ToString());
                     }
                 }
             }

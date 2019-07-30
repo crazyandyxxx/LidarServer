@@ -35,9 +35,12 @@ namespace AcquisitionSocketServer
             acquisitionCount = 0;
         }
 
-        private static int CheckAcquisitionTimes()
+        private static string CheckAcquisitionProgress()
         {
-            return currentAccumNum;
+            int progress = 0;
+            if(accumTimes>0)
+                progress = (int)(currentAccumNum * 100.0 / accumTimes);
+            return "{\"progress\":" + progress + ",\"count\":" + acquisitionCount + "}";
         }
 
         private static int CheckAcquisitionRunning()
@@ -46,7 +49,7 @@ namespace AcquisitionSocketServer
             var currentR = new int[rN];
             for (int i = 0; i < rN; i++)
             {
-                currentR[i] = CheckAcquisitionTimes();
+                currentR[i] = currentAccumNum;
                 System.Threading.Thread.Sleep(500);
             }
             if (currentR[1] != currentR[0])
@@ -63,11 +66,16 @@ namespace AcquisitionSocketServer
                 {
                     try
                     {
+                        Console.WriteLine("采集周期启动");
                         WaitPanToAngle();//等待电机转到指定位置
+                        Console.WriteLine("电机就位");
                         StartAcquisition();//开始采集
-                        Thread.Sleep(1000);
+                        Console.WriteLine("开始采集");
+                        Thread.Sleep(500);
                         WaitAcquistionFinish();//等待采集结束
+                        Console.WriteLine("采集结束");
                         CheckAcquisitionChannelData(chA, chB);//读取通道数据
+                        Console.WriteLine("读取通道数据成功");
                         acquisitionCount++;//采集组数递增
                         Console.WriteLine(DateTime.Now + "   " + acquisitionCount+"   "+ currentAccumNum);
                         dbThread = new Thread(UpdateAcquisitionDB);//数据入库
@@ -84,6 +92,12 @@ namespace AcquisitionSocketServer
 
         private static int StartAcquisition()
         {
+            for (int i = 0; i < 2; i++)
+            {
+                GetAcqCard();
+                Thread.Sleep(100);
+            }
+            
             if (CtrlEndPt != null)
             {
                 int len = acquisitionStartCmd.Length;
