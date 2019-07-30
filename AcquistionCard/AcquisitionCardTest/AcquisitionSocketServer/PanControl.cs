@@ -54,8 +54,38 @@ namespace AcquisitionSocketServer
             if (mode == "PPI")
             {
                 var horAng = horStartAng + acquisitionCount % (horN + 1) * horAngStep;
+                //到第一组先回转
+                var horRealEnd = horStartAng + horN * horAngStep;
                 var horTargetAng = horAng;
                 var verAng = verStartAng;
+                int iloop = 0;
+                if (horAng == horStartAng)
+                {
+                    var backAngStep = (horRealEnd - horStartAng) / 3;
+                    for (int i = 0; i < 2; i++)
+                    {
+                        horTargetAng = horRealEnd - i * backAngStep;
+                        if (verAng > 90)
+                        {
+                            horTargetAng += 180;
+                        }
+                        horTargetAng = (horTargetAng + 360) % 360;
+                        ToAngle(horTargetAng, AngleType.Hor, 3, 300);
+                        iloop = 0;
+                        while (iloop < 50)
+                        {
+                            Thread.Sleep(500);
+                            if (IsInPosition(CurrentPosition(AngleType.Hor), horTargetAng))
+                            {
+                                currentHorAng = horTargetAng;
+                                break;
+                            }
+                            iloop++;
+                        }
+                    }
+                }
+
+                horTargetAng = horAng;
                 var verTargetAng = verAng;
                 if (verAng > 90)
                 {
@@ -64,7 +94,7 @@ namespace AcquisitionSocketServer
                 }
                 horTargetAng = (horTargetAng + 360) % 360;
                 ToAngle(horTargetAng, AngleType.Hor, 3, 400);
-                int iloop = 0;
+                iloop = 0;
                 while (iloop < 50)
                 {
                     Thread.Sleep(500);
