@@ -39,7 +39,7 @@ namespace AcquisitionSocketServer
         {
             int progress = 0;
             if(accumTimes>0)
-                progress = (int)(currentAccumNum/accumTimes*100.0);
+                progress = (int)(currentAccumNum * 100.0 / accumTimes);
             return "{\"progress\":" + progress + ",\"count\":" + acquisitionCount + "}";
         }
 
