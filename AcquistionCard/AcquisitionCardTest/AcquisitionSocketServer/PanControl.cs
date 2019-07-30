@@ -58,11 +58,10 @@ namespace AcquisitionSocketServer
                 var horRealEnd = horStartAng + horN * horAngStep;
                 var horTargetAng = horAng;
                 var verAng = verStartAng;
-                int iloop = 0;
                 if (horAng == horStartAng)
                 {
                     var backAngStep = (horRealEnd - horStartAng) / 3;
-                    for (int i = 0; i < 2; i++)
+                    for (int i = 1; i < 3; i++)
                     {
                         horTargetAng = horRealEnd - i * backAngStep;
                         if (verAng > 90)
@@ -71,17 +70,6 @@ namespace AcquisitionSocketServer
                         }
                         horTargetAng = (horTargetAng + 360) % 360;
                         ToAngle(horTargetAng, AngleType.Hor, 3, 300);
-                        iloop = 0;
-                        while (iloop < 50)
-                        {
-                            Thread.Sleep(500);
-                            if (IsInPosition(CurrentPosition(AngleType.Hor), horTargetAng))
-                            {
-                                currentHorAng = horTargetAng;
-                                break;
-                            }
-                            iloop++;
-                        }
                     }
                 }
 
@@ -94,32 +82,9 @@ namespace AcquisitionSocketServer
                 }
                 horTargetAng = (horTargetAng + 360) % 360;
                 ToAngle(horTargetAng, AngleType.Hor, 3, 400);
-                iloop = 0;
-                while (iloop < 50)
-                {
-                    Thread.Sleep(500);
-                    if (IsInPosition(CurrentPosition(AngleType.Hor), horTargetAng))
-                    {
-                        currentHorAng = horAng;
-                        break;
-                    }                  
-                    iloop++;
-                }
                 currentHorAng = horAng;
 
                 ToAngle(verTargetAng, AngleType.Ver, 3, 400);
-                iloop = 0;
-                while (iloop < 50)
-                {
-                    Thread.Sleep(500);
-                    if (IsInPosition(CurrentPosition(AngleType.Ver), verTargetAng))
-                    {
-                        currentVerAng = verAng;
-                        break;
-                    }
-                    
-                    iloop++;
-                }
                 currentVerAng = verAng;
             }
             if (mode == "RHI")
@@ -135,32 +100,9 @@ namespace AcquisitionSocketServer
                 }
                 horTargetAng = (horTargetAng + 360) % 360;
                 ToAngle(horTargetAng, AngleType.Hor, 3, 400);
-                int iloop = 0;
-                while (iloop < 50)
-                {
-                    Thread.Sleep(500);
-                    if (IsInPosition(CurrentPosition(AngleType.Hor), horTargetAng))
-                    {
-                        currentHorAng = horAng;
-                        break;
-                    }
-                    
-                    iloop++;
-                }
                 currentHorAng = horAng;
 
                 ToAngle(verTargetAng, AngleType.Ver, 3, 400);
-                iloop = 0;
-                while (iloop < 50)
-                {
-                    Thread.Sleep(500);
-                    if (IsInPosition(CurrentPosition(AngleType.Ver), verTargetAng))
-                    {
-                        currentVerAng = verAng;
-                        break;
-                    }
-                    iloop++;
-                }
                 currentVerAng = verAng;
             }
         }
@@ -197,7 +139,18 @@ namespace AcquisitionSocketServer
             {
                 SerialPortCommunicate(PanPositionByte, null, panPort);
                 Thread.Sleep(interval);
-            }           
+            }
+
+            int iloop = 0;
+            while (iloop < 50)
+            {
+                Thread.Sleep(500);
+                if (IsInPosition(CurrentPosition(angType), angle))
+                {
+                    break;
+                }
+                iloop++;
+            }
         }
 
         private static float CurrentPosition(AngleType angType)

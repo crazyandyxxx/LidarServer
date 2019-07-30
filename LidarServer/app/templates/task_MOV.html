@@ -368,12 +368,14 @@
       lines.geometry.vertices = [];
       lines.geometry.vertices.push(center.x, center.y, 0);
       lines.geometry.vertices.push(center.x, center.y, -height);
+      lines.needUpdate = true;
 
       points3D.geometry.vertices = [];
       points3D.geometry.vertices.push(center.x, center.y, 0); // 尾部小点
       points3D.geometry.vertices.push(center.x, center.y, -height); // 空中点
-      object3Dlayer.add(lines);
-      object3Dlayer.add(points3D);
+      points3D.needUpdate = true;
+      lines.reDraw();
+      points3D.reDraw();
 
     }
 
