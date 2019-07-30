@@ -1,8 +1,0 @@
-C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\bin\Debug\AcquisitionSocketServer.exe
-C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\bin\Debug\AcquisitionSocketServer.pdb
-C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\bin\Debug\Newtonsoft.Json.dll
-C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\obj\Debug\AcquisitionSocketServer.exe
-C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\obj\Debug\AcquisitionSocketServer.pdb
-C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\obj\Debug\AcquisitionSocketServer.csprojResolveAssemblyReference.cache
-C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\bin\Debug\CyUSB.dll
-C:\Server\AcquistionCard\AcquisitionCardTest\AcquisitionSocketServer\bin\Debug\System.Data.SQLite.dll
