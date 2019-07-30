@@ -62,7 +62,7 @@ namespace AcquisitionSocketServer
                 if (horAng == horStartAng)
                 {
                     var backAngStep = (horRealEnd - horStartAng) / 3;
-                    for (int i = 0; i < 2; i++)
+                    for (int i = 1; i < 3; i++)
                     {
                         horTargetAng = horRealEnd - i * backAngStep;
                         if (verAng > 90)
