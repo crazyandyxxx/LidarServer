@@ -348,7 +348,7 @@
       points3D = new AMap.Object3D.RoundPoints();
       points3D.transparent = true;
       var pointsGeo = points3D.geometry;
-      var height = scal*rangeMax;
+      var height = scal*rangeMax*rangeScale;
       // 连线
       lineGeo.vertices.push(center.x, center.y, 0);
       lineGeo.vertexColors.push(0, 1, 1, 1);
@@ -382,7 +382,7 @@
       }
       lineIndex = pn[1];
       var center = map.lngLatToGeodeticCoord(locations[lineIndex]);
-      var height = scal*rangeMax;
+      var height = scal*rangeMax*rangeScale;
 
       lines.geometry.vertices.splice(0,6,center.x, center.y, 0,center.x, center.y, -height);
       lines.needUpdate = true;
