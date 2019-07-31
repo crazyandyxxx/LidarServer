@@ -20,6 +20,13 @@
     #viewDiv {
       height: 600px;
     }
+    #info {
+      background-color:whitesmoke;
+      z-index: 100;
+      position: absolute; 
+      bottom: 0;
+      right: 0;
+    }
 </style>
 <select  id="channel">
     <option>平行通道距离校正信号</option>
@@ -42,7 +49,17 @@
     比例×<input type="number" id="scale" value="1" class="inputNum">
 </span>
   
-<div id="viewDiv"></div>
+<div id="viewDiv">
+  <div class="input-card" id = "info">  
+    <div>游标当前位置：</div>
+    <div class="input-item">
+      <span id="lnglat"></span>
+    </div>
+    <div class="input-item">
+      <span id="address"></span>
+    </div>
+  </div>
+</div>
 <div id="PRADiv"></div>
 
 {% endblock %}
@@ -339,7 +356,7 @@
       lineGeo.vertexColors.push(0, 1, 1, 1);
 
       pointsGeo.vertices.push(center.x, center.y, 0); // 尾部小点
-      pointsGeo.pointSizes.push(5);
+      pointsGeo.pointSizes.push(8);
       pointsGeo.vertexColors.push(0, 0, 1, 1);
 
       pointsGeo.vertices.push(center.x, center.y, -height); // 空中点
@@ -355,6 +372,7 @@
 
     var lineIndex = 0;
     var plotA = document.getElementById('PRADiv');
+    var geocoder;
     function plotHover(data){
       var pn='';
       for(let i=0;i<data.points.length;i++){
@@ -365,18 +383,30 @@
       lineIndex = pn[1];
       var center = map.lngLatToGeodeticCoord(locations[lineIndex]);
       var height = scal*rangeMax;
-      lines.geometry.vertices = [];
-      lines.geometry.vertices.push(center.x, center.y, 0);
-      lines.geometry.vertices.push(center.x, center.y, -height);
+
+      lines.geometry.vertices.splice(0,6,center.x, center.y, 0,center.x, center.y, -height);
       lines.needUpdate = true;
 
-      points3D.geometry.vertices = [];
-      points3D.geometry.vertices.push(center.x, center.y, 0); // 尾部小点
-      points3D.geometry.vertices.push(center.x, center.y, -height); // 空中点
+      points3D.geometry.vertices.splice(0,6,center.x, center.y, 0,center.x, center.y, -height);
       points3D.needUpdate = true;
       lines.reDraw();
       points3D.reDraw();
 
+      document.getElementById("lnglat").textContent = locations[lineIndex].lng + ',' + locations[lineIndex].lat;
+      if(!geocoder){
+          geocoder = new AMap.Geocoder({
+              city: "010", //城市设为北京，默认：“全国”
+              radius: 1000 //范围，默认：500
+          });
+      } 
+      geocoder.getAddress(locations[lineIndex], function(status, result) {
+          if (status === 'complete'&&result.regeocode) {
+              var address = result.regeocode.formattedAddress;
+              document.getElementById('address').textContent = address;
+          }else{
+              log.error('根据经纬度查询地址失败')
+          }
+      });
     }
 
     function Gps84ToGcj02(lon,lat){

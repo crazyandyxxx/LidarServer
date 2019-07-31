@@ -60,9 +60,12 @@
       <canvas id="canvas" width="50" height="260"></canvas>
   </div>
   <div class="input-card" id = "info">  
-    <h4>左击获取经纬度值：</h4>
+    <div>左击获取经纬度值：</div>
     <div class="input-item">
       <span id="lnglat"></span>
+    </div>
+    <div class="input-item">
+      <span id="address"></span>
     </div>
   </div>
 </div>
@@ -142,8 +145,40 @@ drawTickText();
       var p1 = map.lngLatToGeodeticCoord(ll);
       var ang = (Math.atan2(p1.y-p0.y,p1.x-p0.x)/Math.PI*180+450)%360;
       var an = Math.floor((ang-horAngStart)/horAngStep);
-      document.getElementById("lnglat").textContent = e.lnglat.getLng() + ',' + e.lnglat.getLat()+','+drawData[an][rn].toFixed(2);
+      document.getElementById("lnglat").textContent = e.lnglat.getLng() + ',' + e.lnglat.getLat()+'    '+drawData[an][rn].toFixed(2);
+
+      regeoCode(ll);
     });
+
+    map.on('rightclick', function() {
+      map.remove(marker);
+      marker = null;
+    });
+
+    var geocoder,marker;
+    function regeoCode(lnglat) {
+        if(!geocoder){
+            geocoder = new AMap.Geocoder({
+                city: "010", //城市设为北京，默认：“全国”
+                radius: 1000 //范围，默认：500
+            });
+        }
+
+        if(!marker){
+            marker = new AMap.Marker();
+            map.add(marker);
+        }
+        marker.setPosition(lnglat);
+        
+        geocoder.getAddress(lnglat, function(status, result) {
+            if (status === 'complete'&&result.regeocode) {
+                var address = result.regeocode.formattedAddress;
+                document.getElementById('address').textContent = address;
+            }else{
+                log.error('根据经纬度查询地址失败')
+            }
+        });
+    }
 
     var object3Dlayer = new AMap.Object3DLayer();
     map.add(object3Dlayer);
