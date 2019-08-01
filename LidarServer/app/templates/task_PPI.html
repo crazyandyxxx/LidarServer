@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="../static/main1119.css"/>
   <script src="../static/es5.min.js"></script>
   <script src="../static/maps.js"></script>
-  <script src="../static/loca.js"></script>
+  <script src="../static/html2canvas.min.js"></script>
   <!-- UI组件库 1.0 -->
   <script src="../static/main.js"></script>
 </head>
@@ -33,6 +33,23 @@
       bottom: 60px;
       right: 10px;
     }
+    #setCenter{
+      z-index: 100;
+      position: absolute;
+      right: 31px;
+      top: 70px;
+      border-radius: 3px;
+      background-color: white;
+    }
+    #savePic{
+      z-index: 100;
+      position: absolute;
+      right: 31px;
+      top: 107px;
+      border-radius: 3px;
+      background-color: white;
+    }
+    /* .html2canvas-container { width: 1500px !important; height: 1500px !important; } */
 </style>
  <select class = 'tS' id="timeSeries">
 
@@ -68,6 +85,8 @@
       <span id="address"></span>
     </div>
   </div>
+  <input id="setCenter" type="image" src="../static/setCenter.png" onclick="setMapCenter()"/>
+  <input id="savePic" type="image" src="../static/savePic.png" onclick="saveMap()"/>
 </div>
 
 {% endblock %}
@@ -76,6 +95,30 @@
 
 <script type="text/javascript">
     var task_id = '{{task_id}}';
+
+    function setMapCenter(){
+      map.setCenter(position);
+    }
+
+    function saveMap(){
+      html2canvas(document.getElementById('viewDiv')).then(function(canvas) {
+        var myImage = canvas.toBlob(function(blob){
+        var link = document.createElement("a");
+          if (link.download !== undefined) { // feature detection
+              // Browsers that support HTML5 download attribute
+              var url = URL.createObjectURL(blob);
+              var channel = document.getElementById('channel');
+              var sel1 = document.getElementById('timeSeries');
+              link.setAttribute("href", url);
+              link.setAttribute("download", channel.options[channel.selectedIndex].text+sel1.options[sel1.selectedIndex].text+".png");
+              link.style.visibility = 'hidden';
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+          }
+        });
+      });
+    }
 
     function drawColorbar(n) {
       var canvas = document.getElementById("canvas");
@@ -183,9 +226,9 @@ drawTickText();
     var object3Dlayer = new AMap.Object3DLayer();
     map.add(object3Dlayer);
 
-    var heatmapLayer = new Loca.HeatmapLayer({
-        map: map,
-    });
+    // var heatmapLayer = new Loca.HeatmapLayer({
+    //     map: map,
+    // });
 
     AMapUI.loadUI(['control/BasicControl'], function(BasicControl) {
       var layerCtrl = new BasicControl.LayerSwitcher({
