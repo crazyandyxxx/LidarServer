@@ -7,16 +7,35 @@
   text-align: right;
 }
 .PRDiv{
+  position: relative;
   float:right;
   width:900px;
   z-index: 100;
 }
 .lineDiv{
+  position: relative;
   float:right;
   width:290px;
   margin-left:-50px;
   z-index: 10;
 }
+.saveLine{
+  z-index: 100;
+  position: absolute;
+  right: 60px;
+  top: 42px;
+  border-radius: 3px;
+  background-color: rgb(255, 255, 255);
+}
+.savePic{
+  z-index: 100;
+  position: absolute;
+  right: 10px;
+  top: 42px;
+  border-radius: 3px;
+  background-color: rgb(255, 255, 255);
+}
+
 </style>
 
 <div>
@@ -37,12 +56,14 @@
   色标最小值<input type="number" id="colorMinA" value="0" class="inputNum" onchange="ChangeChannelAMin()">
   色标最大值<input type="number" id="colorMaxA" value="10000" class="inputNum" onchange="ChangeChannelAMax()">
 </span>
-<button onclick="SaveHeatA()">保存图片</button>
-<button onclick="SaveLineA()">保存廓线</button>
 </div>
 <div>
-    <div class = 'lineDiv' id='lineADiv'></div>
-    <div class = 'PRDiv' id="PRADiv"><!-- Plotly chart will be drawn inside this DIV --></div>
+    <div class = 'lineDiv' id='lineADiv'>  
+        <input class="saveLine" type="image" title="保存廓线" src="../static/save.png" onclick="SaveLineA()"/>
+    </div>
+    <div class = 'PRDiv' id="PRADiv"><!-- Plotly chart will be drawn inside this DIV -->
+      <input class="savePic" type="image" title="保存图片" src="../static/save.png" onclick="SaveHeatA()"/>
+    </div>
 </div>
 
 <div style="clear:both">
@@ -67,8 +88,12 @@
   <button onclick="SaveLineB()">保存廓线</button>
 </div>
   <div>
-      <div class = 'lineDiv' id='lineBDiv'></div>
-      <div class = 'PRDiv' id="PRBDiv"><!-- Plotly chart will be drawn inside this DIV --></div>
+      <div class = 'lineDiv' id='lineBDiv'>
+        <input class="saveLine" type="image" title="保存廓线" src="../static/save.png" onclick="SaveLineB()"/>
+      </div>
+      <div class = 'PRDiv' id="PRBDiv"><!-- Plotly chart will be drawn inside this DIV -->
+        <input class="savePic" type="image" title="保存图片" src="../static/save.png" onclick="SaveHeatB()"/>
+      </div>
   </div>
 
 {% endblock %}
