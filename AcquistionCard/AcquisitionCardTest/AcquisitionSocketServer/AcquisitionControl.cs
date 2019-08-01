@@ -67,15 +67,20 @@ namespace AcquisitionSocketServer
                     try
                     {
                         Console.WriteLine("采集周期启动");
+
                         WaitPanToAngle();//等待电机转到指定位置
                         Console.WriteLine("电机就位");
+
                         StartAcquisition();//开始采集
                         Console.WriteLine("开始采集");
-                        Thread.Sleep(500);
+
+                        Thread.Sleep(200);
                         WaitAcquistionFinish();//等待采集结束
                         Console.WriteLine("采集结束");
+
                         CheckAcquisitionChannelData(chA, chB);//读取通道数据
                         Console.WriteLine("读取通道数据成功");
+
                         acquisitionCount++;//采集组数递增
                         Console.WriteLine(DateTime.Now + "   " + acquisitionCount+"   "+ currentAccumNum);
                         dbThread = new Thread(UpdateAcquisitionDB);//数据入库
@@ -92,7 +97,7 @@ namespace AcquisitionSocketServer
 
         private static int StartAcquisition()
         {
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < 1; i++)
             {
                 GetAcqCard();
                 Thread.Sleep(100);
@@ -121,7 +126,7 @@ namespace AcquisitionSocketServer
 
                 MyDevice.BulkInEndPt.XferData(ref buf, ref len);
                 currentAccumNum = (int)BitConverter.ToUInt32(buf, 1);
-                Thread.Sleep(500);
+                Thread.Sleep(200);
                 if (currentAccumNum >= accumTimes) break;
             }
         }

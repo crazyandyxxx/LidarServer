@@ -40,9 +40,9 @@ namespace AcquisitionSocketServer
                 Console.WriteLine("转台串口打开失败!");
                 return;
             }
-            Thread.Sleep(200);
+            Thread.Sleep(100);
             currentVerAng = CurrentPosition(AngleType.Ver);
-            Thread.Sleep(200);
+            Thread.Sleep(100);
             currentHorAng = CurrentPosition(AngleType.Hor);
         }
 
@@ -69,7 +69,7 @@ namespace AcquisitionSocketServer
                             horTargetAng += 180;
                         }
                         horTargetAng = (horTargetAng + 360) % 360;
-                        ToAngle(horTargetAng, AngleType.Hor, 3, 300);
+                        ToAngle(horTargetAng, AngleType.Hor, 3, 200);
                     }
                 }
 
@@ -81,10 +81,10 @@ namespace AcquisitionSocketServer
                     horTargetAng += 180; 
                 }
                 horTargetAng = (horTargetAng + 360) % 360;
-                ToAngle(horTargetAng, AngleType.Hor, 3, 400);
+                ToAngle(horTargetAng, AngleType.Hor, 3, 200);
                 currentHorAng = horAng;
 
-                ToAngle(verTargetAng, AngleType.Ver, 3, 400);
+                ToAngle(verTargetAng, AngleType.Ver, 3, 200);
                 currentVerAng = verAng;
             }
             if (mode == "RHI")
@@ -99,10 +99,10 @@ namespace AcquisitionSocketServer
                     horTargetAng += 180;
                 }
                 horTargetAng = (horTargetAng + 360) % 360;
-                ToAngle(horTargetAng, AngleType.Hor, 3, 400);
+                ToAngle(horTargetAng, AngleType.Hor, 3, 200);
                 currentHorAng = horAng;
 
-                ToAngle(verTargetAng, AngleType.Ver, 3, 400);
+                ToAngle(verTargetAng, AngleType.Ver, 3, 200);
                 currentVerAng = verAng;
             }
         }
@@ -142,9 +142,9 @@ namespace AcquisitionSocketServer
             }
 
             int iloop = 0;
-            while (iloop < 50)
+            while (iloop < 200)
             {
-                Thread.Sleep(500);
+                Thread.Sleep(100);
                 if (IsInPosition(CurrentPosition(angType), angle))
                 {
                     break;
@@ -179,15 +179,14 @@ namespace AcquisitionSocketServer
                 {
                     try
                     {
-                        port.Close();
-                        Thread.Sleep(100);
-                        port.Open();
-                        Thread.Sleep(100);
-                        //port.DiscardInBuffer();
-                        //port.DiscardOutBuffer();
+                        //port.Close();
+                        //Thread.Sleep(100);
+                        //port.Open();
+                        //Thread.Sleep(100);
+                        port.DiscardInBuffer();
+                        port.DiscardOutBuffer();
                         port.Write(wrData, 0, wrData.Length);
-                        Thread.Sleep(200);
-                    
+                        Thread.Sleep(100);                   
                         if (rdData != null && port.BytesToRead != 0)
                             port.Read(rdData, 0, rdData.Length);
                     }
