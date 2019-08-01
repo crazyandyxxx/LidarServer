@@ -27,6 +27,35 @@
       bottom: 0;
       right: 0;
     }
+    .PRDiv{
+      position: relative;
+      float:right;
+      width:900px;
+      z-index: 100;
+    }
+    .lineDiv{
+      position: relative;
+      float:right;
+      width:290px;
+      margin-left:-50px;
+      z-index: 10;
+    }
+    .saveLine{
+      z-index: 100;
+      position: absolute;
+      right: 60px;
+      top: 42px;
+      border-radius: 3px;
+      background-color: rgb(255, 255, 255);
+    }
+    .savePic{
+      z-index: 100;
+      position: absolute;
+      right: 10px;
+      top: 42px;
+      border-radius: 3px;
+      background-color: rgb(255, 255, 255);
+    }
 </style>
 <select  id="channel">
     <option>平行通道距离校正信号</option>
@@ -60,7 +89,14 @@
     </div>
   </div>
 </div>
-<div id="PRADiv"></div>
+<div>
+  <div class = 'lineDiv' id='lineADiv'>  
+      <input class="saveLine" type="image" title="保存廓线" src="../static/save.png" onclick="SaveLineA()"/>
+  </div>
+  <div class = 'PRDiv' id="PRADiv"><!-- Plotly chart will be drawn inside this DIV -->
+    <input class="savePic" type="image" title="保存图片" src="../static/save.png" onclick="SaveHeatA()"/>
+  </div>
+</div>
 
 {% endblock %}
 
@@ -254,24 +290,54 @@
     var locations = [];
     var drawData = [];
     var timeat=[];
-    var heights = [];
+    var height = [];
     var lines, points3D;
+    var drawName = '平行通道距离校正信号';
     var layoutA = {
-        xaxis: {
+          xaxis: {
             title: '时间',
             showline: true,
             tickmode:'auto',
+            range:[],
             showspikes: true,
             spikemode: 'across'
-        },
-        yaxis: {
-            title: '距离(m)',
+          },
+          yaxis: {
+            title: '距离(km)',
             showline: true,
-            range:[0,3000],
-            // fixedrange:true
-        }
+            range:[0,3]
+          }
+        };
+    var layoutLineA = {
+          xaxis: {
+            title: '强度',
+            showline: true,
+            tickmode:'auto',
+            showexponent:"last",
+            exponentformat:"power"
+          },
+          yaxis: {
+            showline: true,
+            range:[0,3],
+            ticks:'outside'
+          },
+          annotations: [{
+          showarrow: false,
+          text: "",
+          font: {
+            color: 'black'
+          },
+          xref: 'paper',
+          yref: 'paper',
+          x: 0.5,
+          y: 0.5
+        }]
+      };
+    var layoutConfig = {
+      displayModeBar: false,
+      responsive: true
     };
-
+    var PRA_data ={},traceA={},tracePbl={};
     $.post('{{ url_for('main.get_mov_data') }}', { 'task id': task_id},
           function(data,status){
             var channel = document.getElementById('channel');
@@ -299,7 +365,7 @@
             resolution = data.result[0].resolution;
             var leng = data.result[0].raw_A.length;        
             for(let i = 0;i<leng;i++){
-                heights.push((i+1)*resolution);
+                height.push((i+1)*resolution/1000);
             };
             for(let i=0; i<data.result.length;i++){
                 if(data.result[i].longitude>-180){
@@ -323,21 +389,48 @@
             map.setFitView();
             createWallIndicator();
 
-            var PRA_data = [
-                {
-                z: drawData,
-                x: timeat,
-                y: heights,
-                zmin: 0,
-                zmax: 10000,
-                type: 'heatmap',
-                transpose: true,
-                colorscale:createColorScale(11),
-                colorbar:{thickness:15,xpad:5}
-                }
-            ];
+            PRA_data = {
+              z: drawData,
+              x: timeat,
+              y: height,
+              zmin: 0,
+              zmax: 10000,
+              type: 'heatmap',
+              transpose: true,
+              colorscale:createColorScale(11),
+              colorbar:{
+                thickness:15,
+                xpad:5,
+                showexponent:"last",
+                exponentformat:"power"
+              }
+            };
 
-            Plotly.newPlot('PRADiv', PRA_data, layoutA);
+            traceA = {
+              x: drawData[0].slice(layoutLineA.yaxis.range[0]/resolution*1000,layoutLineA.yaxis.range[1]/resolution*1000),
+              y: height,
+              mode: 'lines',
+              line: {
+                color: 'black',
+                width: 2
+              }
+            };
+
+            tracePbl = {
+              x:timeat,
+              y:rdata.pbl,
+              mode:'markers',
+              type:'scatter',
+              marker:{color:'black'},
+              showlegend:false,
+              visible:false
+            };
+
+            layoutA.xaxis.range = [timeat[0],timeat[timeat.length-1]];
+            layoutLineA.annotations[0].text = timeat[lineIndex];
+            Plotly.newPlot('PRADiv', [PRA_data,tracePbl], layoutA,layoutConfig);
+            Plotly.newPlot('lineADiv',[traceA],layoutLineA,layoutConfig);
+
             plotA.on('plotly_hover',plotHover);
         });
 
@@ -382,12 +475,12 @@
       }
       lineIndex = pn[1];
       var center = map.lngLatToGeodeticCoord(locations[lineIndex]);
-      var height = scal*rangeMax*rangeScale;
+      var z = scal*rangeMax*rangeScale;
 
-      lines.geometry.vertices.splice(0,6,center.x, center.y, 0,center.x, center.y, -height);
+      lines.geometry.vertices.splice(0,6,center.x, center.y, 0,center.x, center.y, -z);
       lines.needUpdate = true;
 
-      points3D.geometry.vertices.splice(0,6,center.x, center.y, 0,center.x, center.y, -height);
+      points3D.geometry.vertices.splice(0,6,center.x, center.y, 0,center.x, center.y, -z);
       points3D.needUpdate = true;
       lines.reDraw();
       points3D.reDraw();
@@ -407,6 +500,13 @@
               log.error('根据经纬度查询地址失败')
           }
       });
+
+      traceA.x = drawData[lineIndex].slice(layoutLineA.yaxis.range[0]/resolution*1000,layoutLineA.yaxis.range[1]/resolution*1000);
+      traceA.y = height.slice(layoutLineA.yaxis.range[0]/resolution*1000,layoutLineA.yaxis.range[1]/resolution*1000);
+
+
+      layoutLineA.annotations[0].text = timeat[lineIndex];
+      Plotly.react('lineADiv',[traceA],layoutLineA);
     }
 
     function Gps84ToGcj02(lon,lat){
@@ -493,7 +593,7 @@
         var heat = {
               z: drawData,
               x: timeat,
-              y: heights,
+              y: height,
               zmin: vMin,
               zmax: vMax,
               type: 'heatmap',
