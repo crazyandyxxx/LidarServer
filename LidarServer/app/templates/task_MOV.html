@@ -79,7 +79,7 @@
 </span>
   
 <div id="viewDiv">
-  <div class="input-card" id = "info">  
+  <!-- <div class="input-card" id = "info">  
     <div>游标当前位置：</div>
     <div class="input-item">
       <span id="lnglat"></span>
@@ -87,7 +87,7 @@
     <div class="input-item">
       <span id="address"></span>
     </div>
-  </div>
+  </div> -->
 </div>
 <div>
   <div class = 'lineDiv' id='lineADiv'>  
@@ -293,6 +293,7 @@
     var height = [];
     var lines, points3D;
     var drawName = '平行通道距离校正信号';
+    var poistionLabel;
     var layoutA = {
           xaxis: {
             title: '时间',
@@ -432,6 +433,18 @@
             Plotly.newPlot('lineADiv',[traceA],layoutLineA,layoutConfig);
 
             plotA.on('plotly_hover',plotHover);
+
+            poistionLabel = new AMap.Text({
+                                  verticalAlign:'bottom',
+                                  position:locations[lineIndex],
+                                  height:rangeMax*scal,
+                                  map:map,
+                                  style:{
+                                    'background-color':'#ccccff',
+                                    'border-color':'white',
+                                    'font-size':'12px'
+                                  }
+                                }) 
         });
 
     function createWallIndicator(){
@@ -485,7 +498,9 @@
       lines.reDraw();
       points3D.reDraw();
 
-      document.getElementById("lnglat").textContent = locations[lineIndex].lng + ',' + locations[lineIndex].lat;
+      var distance = (AMap.GeometryUtil.distanceOfLine(locations.slice(0,lineIndex))/1000).toFixed(1);
+
+      // document.getElementById("lnglat").textContent = locations[lineIndex].lng + ',' + locations[lineIndex].lat;
       if(!geocoder){
           geocoder = new AMap.Geocoder({
               city: "010", //城市设为北京，默认：“全国”
@@ -495,7 +510,15 @@
       geocoder.getAddress(locations[lineIndex], function(status, result) {
           if (status === 'complete'&&result.regeocode) {
               var address = result.regeocode.formattedAddress;
-              document.getElementById('address').textContent = address;
+              // document.getElementById('address').textContent = address;
+              poistionLabel.setPosition(locations[lineIndex]);
+              poistionLabel.setLabel({
+                  offset: new AMap.Pixel(10, 0),  //设置文本标注偏移量
+                  content: "<div>当前位置"+locations[lineIndex].lng + ',' + locations[lineIndex].lat+"</div>"+
+                           "<div>距起点"+distance+"km</div>"+
+                           "<div class='info'>"+address+"</div>", //设置文本标注内容
+                  direction: 'right' //设置文本标注方位
+              });
           }else{
               log.error('根据经纬度查询地址失败')
           }
