@@ -376,7 +376,7 @@
                     rdata.raw_B.push(data.result[i].raw_B);
                     rdata.ext.push(data.result[i].ext);
                     rdata.dep.push(data.result[i].dep);
-                    rdata.pbl.push(data.result[i].pbl);
+                    rdata.pbl.push(data.result[i].pbl/1000);
                     var longitude = data.result[i].longitude;
                     var latitude = data.result[i].latitude;
                     var altitude = data.result[i].altitude;
@@ -553,10 +553,10 @@
     }
 
     function SelectChannel(){
-        drawData = rdata.prr_A;
-        var line = {};
         var channel = document.getElementById('channel');
-        switch(channel.options[channel.selectedIndex].text){
+        drawName = channel.options[channel.selectedIndex].text;
+        tracePbl.visible = false;
+        switch(drawName){
           case '平行通道距离校正信号':
             drawData = rdata.prr_A;
             break;
@@ -576,34 +576,18 @@
             drawData = rdata.raw_B;
             break;
           case '污染边界层':
-            drawData = rdata.prr_A;
-            line = {
-              x:timeat,
-              y:rdata.pbl,
-              mode:'markers',
-              type:'scatter',
-              marker:{color:'black'}
-            };
+            tracePbl.visible = true;
             break;
         };
         object3Dlayer.clear();
         createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity);
         createWallIndicator();
 
-        var heat = {
-              z: drawData,
-              x: timeat,
-              y: height,
-              zmin: vMin,
-              zmax: vMax,
-              type: 'heatmap',
-              transpose: true,
-              colorscale:createColorScale(11),
-              colorbar:{thickness:15,xpad:5}
-            };
+        PRA_data.z = drawData;
+        traceA.x = drawData[lineIndex].slice(layoutLineA.yaxis.range[0]/resolution*1000,layoutLineA.yaxis.range[1]/resolution*1000);
         
-        var data = [heat,line];
-        Plotly.react('PRADiv',data,layoutA);
+        Plotly.react('PRADiv',[PRA_data,tracePbl],layoutA);
+        Plotly.react('lineADiv',[traceA],layoutLineA);
       }
 
       function ChangeMaxValue(){
@@ -640,11 +624,15 @@
         createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity); 
         createWallIndicator();
         
-        layoutA.yaxis.range[1] = rangeMax;
+        layoutA.yaxis.range[1] = rangeMax/1000;
+        layoutLineA.yaxis.range[1] = rangeMax/1000;
         var update = {
-          'yaxis.range[1]':rangeMax
+          'yaxis.range[1]':rangeMax/1000
         };
         Plotly.relayout('PRADiv',update);
+        traceA.x = drawData[lineIndex].slice(layoutLineA.yaxis.range[0]/resolution*1000,layoutLineA.yaxis.range[1]/resolution*1000);
+        traceA.y = height.slice(layoutLineA.yaxis.range[0]/resolution*1000,layoutLineA.yaxis.range[1]/resolution*1000);
+        Plotly.react('lineADiv',[traceA],layoutLineA);
       }
 
       function ChangeRangeMin(){
@@ -654,11 +642,15 @@
         createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity); 
         createWallIndicator();
         
-        layoutA.yaxis.range[0] = rangeMin;
+        layoutA.yaxis.range[0] = rangeMin/1000;
+        layoutLineA.yaxis.range[0] = rangeMin/1000;
         var update = {
-          'yaxis.range[0]':rangeMin
+          'yaxis.range[0]':rangeMin/1000
         };
         Plotly.relayout('PRADiv',update);
+        traceA.x = drawData[lineIndex].slice(layoutLineA.yaxis.range[0]/resolution*1000,layoutLineA.yaxis.range[1]/resolution*1000);
+        traceA.y = height.slice(layoutLineA.yaxis.range[0]/resolution*1000,layoutLineA.yaxis.range[1]/resolution*1000);
+        Plotly.react('lineADiv',[traceA],layoutLineA);
       }
 
       function ChangeColorOpacity(){
@@ -675,6 +667,34 @@
         object3Dlayer.clear();
         createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity);   
         createWallIndicator();
+      }
+
+      function SaveHeatA(){
+        Plotly.downloadImage('PRADiv', {format: 'png', width: 1000, height: 500, filename: drawName+'从'
+                          +timeat[0]+'至'+timeat[timeat.length-1]});
+      }
+
+      function SaveLineA(){
+        let csvContent = "";
+        csvContent += 'Data Length,'+drawData[lineIndex].length+'\r\n';
+          csvContent += 'Resolution,'+resolution+'\r\n';
+          csvContent += drawData[lineIndex].join(',')+'\r\n';
+          var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+          if (navigator.msSaveBlob) { // IE 10+
+              navigator.msSaveBlob(blob, drawNameA+timeat[lineIndex]+".csv");
+          } else {
+              var link = document.createElement("a");
+              if (link.download !== undefined) { // feature detection
+                  // Browsers that support HTML5 download attribute
+                  var url = URL.createObjectURL(blob);
+                  link.setAttribute("href", url);
+                  link.setAttribute("download", drawName+timeat[lineIndex]+".csv");
+                  link.style.visibility = 'hidden';
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+              }
+          }
       }
 
 </script>
