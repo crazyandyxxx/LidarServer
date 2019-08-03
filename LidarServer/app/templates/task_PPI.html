@@ -183,11 +183,13 @@ drawTickText();
     map.on('click', function(e) {
       var ll = new AMap.LngLat(e.lnglat.getLng(), e.lnglat.getLat());
       var dis = AMap.GeometryUtil.distance(ll, position);
-      var rn = Math.floor(dis/resolution);
+      var rn = Math.round(dis/resolution);
       var p0 = map.lngLatToGeodeticCoord(position);
       var p1 = map.lngLatToGeodeticCoord(ll);
       var ang = (Math.atan2(p1.y-p0.y,p1.x-p0.x)/Math.PI*180+450)%360;
-      var an = Math.floor((ang-horAngStart)/horAngStep);
+      var angDiff = ang-horAngStart;
+      angDiff<0 && (angDiff+=360);
+      var an = Math.floor(angDiff/horAngStep);
       document.getElementById("lnglat").textContent = e.lnglat.getLng() + ',' + e.lnglat.getLat()+'    '+drawData[an][rn].toFixed(2);
 
       regeoCode(ll);

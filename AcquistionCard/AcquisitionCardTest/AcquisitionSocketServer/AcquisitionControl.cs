@@ -97,11 +97,11 @@ namespace AcquisitionSocketServer
 
         private static int StartAcquisition()
         {
-            for (int i = 0; i < 1; i++)
-            {
-                GetAcqCard();
-                Thread.Sleep(100);
-            }
+            //for (int i = 0; i < 1; i++)
+            //{
+            //    GetAcqCard();
+            //    Thread.Sleep(100);
+            //}
             
             if (CtrlEndPt != null)
             {
