@@ -56,6 +56,20 @@
       border-radius: 3px;
       background-color: rgb(255, 255, 255);
     }
+    .close-btn {
+        position: absolute;
+        top: -6px;
+        right: -8px;
+        width: 15px;
+        height: 15px;
+        font-size: 12px;
+        background: #ccc;
+        border-radius: 50%;
+        color: #fff;
+        text-align: center;
+        line-height: 15px;
+        box-shadow: -1px 1px 1px rgba(10, 10, 10, .2);
+    }
 </style>
 <select  id="channel">
     <option>平行通道距离校正信号</option>
@@ -435,16 +449,12 @@
             plotA.on('plotly_hover',plotHover);
 
             poistionLabel = new AMap.Text({
-                                  verticalAlign:'bottom',
                                   position:locations[lineIndex],
-                                  height:rangeMax*scal,
-                                  map:map,
-                                  style:{
-                                    'background-color':'#ccccff',
-                                    'border-color':'white',
-                                    'font-size':'12px'
-                                  }
+                                  height:rangeMax*scal*rangeScale,
+                                  map:map
                                 }) 
+
+            setPositionLabel();
         });
 
     function createWallIndicator(){
@@ -475,6 +485,28 @@
       object3Dlayer.add(points3D);
     }
 
+    map.on('mousemove', function (ev) {
+      var pixel = ev.pixel;
+      var px = new AMap.Pixel(pixel.x, pixel.y);
+      var obj = map.getObject3DByContainerPos(px, [object3Dlayer], false) || {};
+
+      points3D.geometry.vertexColors.splice(4,4,2 * 0.029, 2 * 0.015, 2 * 0.01, 1);
+      if(obj.object==points3D){
+        points3D.geometry.vertexColors.splice(4,4,0, 1, 0, 1);
+      }
+      points3D.needUpdate = true;
+      points3D.reDraw();
+    });
+
+    map.on('click', function (ev) {
+      var pixel = ev.pixel;
+      var px = new AMap.Pixel(pixel.x, pixel.y);
+      var obj = map.getObject3DByContainerPos(px, [object3Dlayer], false) || {};
+
+      if(obj.object==points3D){
+        poistionLabel.show();
+      }
+    });
 
     var lineIndex = 0;
     var plotA = document.getElementById('PRADiv');
@@ -498,6 +530,17 @@
       lines.reDraw();
       points3D.reDraw();
 
+      setPositionLabel();
+
+      traceA.x = drawData[lineIndex].slice(layoutLineA.yaxis.range[0]/resolution*1000,layoutLineA.yaxis.range[1]/resolution*1000);
+      traceA.y = height.slice(layoutLineA.yaxis.range[0]/resolution*1000,layoutLineA.yaxis.range[1]/resolution*1000);
+
+
+      layoutLineA.annotations[0].text = timeat[lineIndex];
+      Plotly.react('lineADiv',[traceA],layoutLineA);
+    }
+
+    function setPositionLabel(){
       var distance = (AMap.GeometryUtil.distanceOfLine(locations.slice(0,lineIndex))/1000).toFixed(1);
 
       // document.getElementById("lnglat").textContent = locations[lineIndex].lng + ',' + locations[lineIndex].lat;
@@ -514,22 +557,20 @@
               poistionLabel.setPosition(locations[lineIndex]);
               poistionLabel.setLabel({
                   offset: new AMap.Pixel(10, 0),  //设置文本标注偏移量
-                  content: "<div>当前位置"+locations[lineIndex].lng + ',' + locations[lineIndex].lat+"</div>"+
+                  content: "<div><div>当前位置"+locations[lineIndex].lng + ',' + locations[lineIndex].lat+"</div>"+
                            "<div>距起点"+distance+"km</div>"+
-                           "<div class='info'>"+address+"</div>", //设置文本标注内容
+                           "<div class='info'>"+address+"</div>"+
+                           "<div class='close-btn' onclick='hideMarker()'>X</div></div>", //设置文本标注内容
                   direction: 'right' //设置文本标注方位
               });
           }else{
               log.error('根据经纬度查询地址失败')
           }
       });
+    }
 
-      traceA.x = drawData[lineIndex].slice(layoutLineA.yaxis.range[0]/resolution*1000,layoutLineA.yaxis.range[1]/resolution*1000);
-      traceA.y = height.slice(layoutLineA.yaxis.range[0]/resolution*1000,layoutLineA.yaxis.range[1]/resolution*1000);
-
-
-      layoutLineA.annotations[0].text = timeat[lineIndex];
-      Plotly.react('lineADiv',[traceA],layoutLineA);
+    function hideMarker(){
+      poistionLabel.hide();
     }
 
     function Gps84ToGcj02(lon,lat){
@@ -646,6 +687,7 @@
         object3Dlayer.clear();
         createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity); 
         createWallIndicator();
+        poistionLabel.setHeight(rangeMax*scal*rangeScale);
         
         layoutA.yaxis.range[1] = rangeMax/1000;
         layoutLineA.yaxis.range[1] = rangeMax/1000;
@@ -690,6 +732,7 @@
         object3Dlayer.clear();
         createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity);   
         createWallIndicator();
+        poistionLabel.setHeight(rangeMax*scal*rangeScale);
       }
 
       function SaveHeatA(){
