@@ -41,11 +41,43 @@
       border-radius: 3px;
       background-color: white;
     }
-    #savePic{
+    #addMarker{
       z-index: 100;
       position: absolute;
       right: 31px;
       top: 107px;
+      border-radius: 3px;
+      background-color: white;
+    }
+    #addRuler{
+      z-index: 100;
+      position: absolute;
+      right: 31px;
+      top: 144px;
+      border-radius: 3px;
+      background-color: white;
+    }
+    #addMeasurer{
+      z-index: 100;
+      position: absolute;
+      right: 31px;
+      top: 181px;
+      border-radius: 3px;
+      background-color: white;
+    }
+    #clearOverlay{
+      z-index: 100;
+      position: absolute;
+      right: 31px;
+      top: 218px;
+      border-radius: 3px;
+      background-color: white;
+    }
+    #savePic{
+      z-index: 100;
+      position: absolute;
+      right: 31px;
+      top: 255px;
       border-radius: 3px;
       background-color: white;
     }
@@ -77,16 +109,22 @@
       <canvas id="canvas" width="50" height="260"></canvas>
   </div>
   <div class="input-card" id = "info">  
-    <div>左击获取经纬度值：</div>
     <div class="input-item">
-      <span id="lnglat"></span>
+      <span id="angleRange"></span>
     </div>
     <div class="input-item">
-      <span id="address"></span>
+      <span id="angleStep"></span>
+    </div>
+    <div class="input-item">
+      <span id="angleVer"></span>
     </div>
   </div>
-  <input id="setCenter" type="image" src="../static/setCenter.png" onclick="setMapCenter()"/>
-  <input id="savePic" type="image" src="../static/savePic.png" onclick="saveMap()"/>
+  <input id="setCenter" type="image" title="居中" src="../static/setCenter.png" onclick="setMapCenter()"/>
+  <input id="addMarker" type="image" title="添加标记" src="../static/marker.png" onclick="addMapMarker()"/>
+  <input id="addRuler" type="image" title="距离测量" src="../static/ruler.png" onclick="addMapRuler()"/>
+  <input id="addMeasurer" type="image" title="面积测量" src="../static/measurer.png" onclick="addMapMeasurer()"/>
+  <input id="clearOverlay" type="image" title="清除" src="../static/clear.png" onclick="clearMapOverlay()"/>
+  <input id="savePic" type="image" title="保存图片" src="../static/savePic.png" onclick="saveMap()"/>
 </div>
 
 {% endblock %}
@@ -179,51 +217,8 @@ drawTickText();
         pitch:0,
         center:[116.396132,39.900444]
     });
-    
-    map.on('click', function(e) {
-      var ll = new AMap.LngLat(e.lnglat.getLng(), e.lnglat.getLat());
-      var dis = AMap.GeometryUtil.distance(ll, position);
-      var rn = Math.round(dis/resolution);
-      var p0 = map.lngLatToGeodeticCoord(position);
-      var p1 = map.lngLatToGeodeticCoord(ll);
-      var ang = (Math.atan2(p1.y-p0.y,p1.x-p0.x)/Math.PI*180+450)%360;
-      var angDiff = ang-horAngStart;
-      angDiff<0 && (angDiff+=360);
-      var an = Math.floor(angDiff/horAngStep);
-      document.getElementById("lnglat").textContent = e.lnglat.getLng() + ',' + e.lnglat.getLat()+'    '+drawData[an][rn].toFixed(2);
 
-      regeoCode(ll);
-    });
-
-    map.on('rightclick', function() {
-      map.remove(marker);
-      marker = null;
-    });
-
-    var geocoder,marker;
-    function regeoCode(lnglat) {
-        if(!geocoder){
-            geocoder = new AMap.Geocoder({
-                city: "010", //城市设为北京，默认：“全国”
-                radius: 1000 //范围，默认：500
-            });
-        }
-
-        if(!marker){
-            marker = new AMap.Marker();
-            map.add(marker);
-        }
-        marker.setPosition(lnglat);
-        
-        geocoder.getAddress(lnglat, function(status, result) {
-            if (status === 'complete'&&result.regeocode) {
-                var address = result.regeocode.formattedAddress;
-                document.getElementById('address').textContent = address;
-            }else{
-                log.error('根据经纬度查询地址失败')
-            }
-        });
-    }
+    var geocoder;
 
     var object3Dlayer = new AMap.Object3DLayer();
     map.add(object3Dlayer);
@@ -512,8 +507,70 @@ drawTickText();
             createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);
             map.setCenter(position);
             map.setFitView();
+
+            document.getElementById('angleRange').textContent = "扫描范围"+horAngStart+" - "+horAngEnd;
+            document.getElementById('angleStep').textContent = "扫描步长"+horAngStep;
+            document.getElementById('angleVer').textContent = "垂直角度"+verAng;
         });
     });
+
+    var mouseTool = new AMap.MouseTool(map); 
+
+    function addMapMarker(){
+      mouseTool.marker();
+    }
+
+    function clearMapOverlay(){
+      mouseTool.close(true);
+    }
+
+    function addMapRuler(){
+      mouseTool.rule();
+    }
+
+    function addMapMeasurer(){
+      mouseTool.measureArea();
+    }
+    
+    var overlays = [];
+    mouseTool.on('draw',function(e){
+        var overlay = e.obj;  
+        if(overlay.CLASS_NAME=='AMap.Marker'){
+          var location = overlay.getPosition();
+          var dis = AMap.GeometryUtil.distance(location, position);
+          var rn = Math.round(dis/resolution/Math.cos(verAng/180*Math.PI));
+          var p0 = map.lngLatToGeodeticCoord(position);
+          var p1 = map.lngLatToGeodeticCoord(location);
+          var ang = (Math.atan2(p1.y-p0.y,p1.x-p0.x)/Math.PI*180+450)%360;
+          var angDiff = ang-horAngStart;
+          angDiff<0 && (angDiff+=360);
+          var an = Math.floor(angDiff/horAngStep);
+
+          if(!geocoder){
+              geocoder = new AMap.Geocoder({
+                  city: "010", //城市设为北京，默认：“全国”
+                  radius: 1000 //范围，默认：500
+              });
+          } 
+          geocoder.getAddress(location, function(status, result) {
+              if (status === 'complete'&&result.regeocode) {
+                  var address = result.regeocode.formattedAddress;
+                  overlay.setLabel({
+                      offset: new AMap.Pixel(0, -3),  //设置文本标注偏移量
+                      content: "<div><div>当前位置"+location.lng + ',' + location.lat+"</div>"+
+                              "<div class='info'>"+address+"</div>"+
+                              "<div class='info'>距离"+Math.round(dis)+"</div>"+
+                              "<div class='info'>角度"+Math.round(ang)+"</div>"+
+                              "<div class='info'>数值"+drawData[an][rn].toFixed(2)+"</div>",
+                      direction: 'top' //设置文本标注方位
+                  });
+              }else{
+                  log.error('根据经纬度查询地址失败')
+              }
+          });
+
+        }
+    }) 
     
     function Gps84ToGcj02(lon,lat){
       if (outOfChina(lon, lat)) {

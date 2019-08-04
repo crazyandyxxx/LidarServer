@@ -489,14 +489,16 @@
       var pixel = ev.pixel;
       var px = new AMap.Pixel(pixel.x, pixel.y);
       var obj = map.getObject3DByContainerPos(px, [object3Dlayer], false) || {};
-
-      points3D.geometry.vertexColors.splice(4,4,2 * 0.029, 2 * 0.015, 2 * 0.01, 1);
-      if(obj.object==points3D){
-        points3D.geometry.vertexColors.splice(4,4,0, 1, 0, 1);
+      if(points3D!=undefined){
+        points3D.geometry.vertexColors.splice(4,4,2 * 0.029, 2 * 0.015, 2 * 0.01, 1);
+        if(obj.object==points3D){
+          points3D.geometry.vertexColors.splice(4,4,0, 1, 0, 1);
+        }
+        points3D.needUpdate = true;
+        points3D.reDraw();
       }
-      points3D.needUpdate = true;
-      points3D.reDraw();
     });
+  
 
     map.on('click', function (ev) {
       var pixel = ev.pixel;
@@ -557,9 +559,8 @@
               poistionLabel.setPosition(locations[lineIndex]);
               poistionLabel.setLabel({
                   offset: new AMap.Pixel(10, 0),  //设置文本标注偏移量
-                  content: "<div><div>当前位置"+locations[lineIndex].lng + ',' + locations[lineIndex].lat+"</div>"+
-                           "<div>距起点"+distance+"km</div>"+
-                           "<div class='info'>"+address+"</div>"+
+                  content: "<div><div>当前位置"+locations[lineIndex].lng + ',' + locations[lineIndex].lat+"</div>"+                          
+                           "<div class='info'>"+address+"</div>"+"<div>距起点"+distance+"km</div>"+
                            "<div class='close-btn' onclick='hideMarker()'>X</div></div>", //设置文本标注内容
                   direction: 'right' //设置文本标注方位
               });
