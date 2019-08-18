@@ -36,6 +36,8 @@
           <option>退偏比</option>
           <option>平行通道原始信号</option>
           <option>垂直通道原始信号</option>
+          <option>PM10</option>
+          <option>PM2.5</option>
         </select>
         <span>
           &nbsp;&nbsp;&nbsp;&nbsp;从<input type="number" id="zMin" value="0" class="inputNum" max="30000" min="15">
@@ -306,9 +308,52 @@ drawTickText();
         }
         return c;
   }
+    
+    function prepareData(data){
+      rdata.raw_A = [];
+      rdata.raw_B = [];
+      rdata.prr_A = [];
+      rdata.prr_B = [];
+      rdata.ext = [];
+      rdata.dep = [];
+      rdata.pm10 = [];
+      rdata.pm25 = [];
+      resolution = data.result[0].resolution;
+      horAng = data.result[0].horAngle;
+      verAngStart = data.result[0].verAngle;
+      verAngEnd = data.result[data.result.length-1].verAngle;
+      verAngStep = data.result[1].verAngle - data.result[0].verAngle;
+      let lonArr = [];
+      let latArr = [];
+      let altArr = [];
+      for(let i=0; i<data.result.length;i++){
+        if(data.result[i].longitude>0){
+          lonArr.push(data.result[i].longitude);
+          latArr.push(data.result[i].latitude);
+          altArr.push(data.result[i].altitude);
+      }; 
+      };
+      lonArr.sort(function(a,b){return a-b});
+      latArr.sort(function(a,b){return a-b});
+      altArr.sort(function(a,b){return a-b});
+      longitude = lonArr[Math.floor(lonArr.length/2)];
+      latitude = latArr[Math.floor(lonArr.length/2)];
+      altitude = altArr[Math.floor(lonArr.length/2)];
+      position = Gps84ToGcj02(longitude,latitude);
+      for(let i=0; i<data.result.length;i++){
+        rdata.prr_A.push(data.result[i].prr_A);
+        rdata.prr_B.push(data.result[i].prr_B);
+        rdata.raw_A.push(data.result[i].raw_A);
+        rdata.raw_B.push(data.result[i].raw_B);
+        rdata.ext.push(data.result[i].ext);
+        rdata.dep.push(data.result[i].dep);
+        rdata.pm10.push(data.result[i].ext.map(x => x>0? 243*Math.pow(x,1.13) : 0));
+        rdata.pm25.push(data.result[i].ext.map(x => x>0? 121.5*Math.pow(x,1.13) : 0));
+      };
+    }
 
     $.post('{{ url_for('main.get_rhi_data') }}', { 'task id': task_id, 'content':'list' },
-        function(data,status){
+      function(data,status){
         var sel1 = document.getElementById('timeSeries');
         sel1.addEventListener("change", SelectTime);
         var channel = document.getElementById('channel');
@@ -325,49 +370,14 @@ drawTickText();
             sel1.options.add(new Option(data.result[i].timestamp+""));
         };
         $.post('{{ url_for('main.get_rhi_data') }}', { 'task id': task_id, 'content':'timedata', 'time': sel1.options[0].text},
-            function(data,status){
-            rdata.raw_A = [];
-            rdata.raw_B = [];
-            rdata.prr_A = [];
-            rdata.prr_B = [];
-            rdata.ext = [];
-            rdata.dep = [];
-            resolution = data.result[0].resolution;
-            horAng = data.result[0].horAngle;
-            verAngStart = data.result[0].verAngle;
-            verAngEnd = data.result[data.result.length-1].verAngle;
-            verAngStep = data.result[1].verAngle - data.result[0].verAngle;
-            let lonArr = [];
-            let latArr = [];
-            let altArr = [];
-            for(let i=0; i<data.result.length;i++){
-              if(data.result[i].longitude>0){
-                lonArr.push(data.result[i].longitude);
-                latArr.push(data.result[i].latitude);
-                altArr.push(data.result[i].altitude);
-            }; 
-            };
-            lonArr.sort(function(a,b){return a-b});
-            latArr.sort(function(a,b){return a-b});
-            altArr.sort(function(a,b){return a-b});
-            longitude = lonArr[Math.floor(lonArr.length/2)];
-            latitude = latArr[Math.floor(lonArr.length/2)];
-            altitude = altArr[Math.floor(lonArr.length/2)];
-            position = Gps84ToGcj02(longitude,latitude);
-            for(let i=0; i<data.result.length;i++){
-                rdata.prr_A.push(data.result[i].prr_A);
-                rdata.prr_B.push(data.result[i].prr_B);
-                rdata.raw_A.push(data.result[i].raw_A);
-                rdata.raw_B.push(data.result[i].raw_B);
-                rdata.ext.push(data.result[i].ext);
-                rdata.dep.push(data.result[i].dep);
-            };
-            drawData = rdata.prr_A;
-            createPie(position,drawData,resolution,rangeMax,horAng,verAngStart,verAngEnd,verAngStep,vMin,vMax,colorOpacity);
-            map.setCenter(position);
-            map.setFitView();
-        });
-    });
+          function(data,status){
+              prepareData(data);
+              drawData = rdata.prr_A;
+              createPie(position,drawData,resolution,rangeMax,horAng,verAngStart,verAngEnd,verAngStep,vMin,vMax,colorOpacity);
+              map.setCenter(position);
+              map.setFitView();
+          });
+      });
     
     function Gps84ToGcj02(lon,lat){
       if (outOfChina(lon, lat)) {
@@ -413,99 +423,47 @@ drawTickText();
     }
 
     function SelectTime(){
-        var sel1 = document.getElementById('timeSeries');
-        var index = sel1.selectedIndex;
-        $.post('{{ url_for('main.get_rhi_data') }}', { 'task id': task_id, 'content':'timedata', 'time': sel1.options[index].text},
-        function(data,status){
-          rdata.raw_A = [];
-          rdata.raw_B = [];
-          rdata.prr_A = [];
-          rdata.prr_B = [];
-          rdata.ext = [];
-          rdata.dep = [];
-          resolution = data.result[0].resolution;
-          horAngle = data.result[0].horAngle;
-          verStartAng = data.result[0].verAngle;
-          verEndAng = data.result[data.result.length-1].verAngle;
-          verAngStep = data.result[1].verAngle - data.result[0].verAngle;
-          let lonArr = [];
-          let latArr = [];
-          let altArr = [];
-          for(let i=0; i<data.result.length;i++){
-            if(data.result[i].longitude>0){
-              lonArr.push(data.result[i].longitude);
-              latArr.push(data.result[i].latitude);
-              altArr.push(data.result[i].altitude);
-          }; 
-          };
-          lonArr.sort(function(a,b){return a-b});
-          latArr.sort(function(a,b){return a-b});
-          altArr.sort(function(a,b){return a-b});
-          longitude = lonArr[Math.floor(lonArr.length/2)];
-          latitude = latArr[Math.floor(lonArr.length/2)];
-          altitude = altArr[Math.floor(lonArr.length/2)];
-          position = Gps84ToGcj02(longitude,latitude);
-          for(let i=0; i<data.result.length;i++){
-            rdata.prr_A.push(data.result[i].prr_A);
-            rdata.prr_B.push(data.result[i].prr_B);
-            rdata.raw_A.push(data.result[i].raw_A);
-            rdata.raw_B.push(data.result[i].raw_B);
-            rdata.ext.push(data.result[i].ext);
-            rdata.dep.push(data.result[i].dep);
-          };
-          drawData = rdata.prr_A;
-          var channel = document.getElementById('channel');
-          switch(channel.options[channel.selectedIndex].text){
-            case '平行通道距离校正信号':
-              drawData = rdata.prr_A;
-              break;
-            case '垂直通道距离校正信号':
-              drawData = rdata.prr_B;
-              break;
-            case '消光系数':
-              drawData = rdata.ext;
-              break;
-            case '退偏比':
-              drawData = rdata.dep;
-              break;
-            case '平行通道原始信号':
-              drawData = rdata.raw_A;
-              break;
-            case '垂直通道原始信号':
-              drawData = rdata.raw_B;
-              break;
-          };
-          object3Dlayer.clear();
-          createPie(position,drawData,resolution,rangeMax,horAng,verAngStart,verAngEnd,verAngStep,vMin,vMax,colorOpacity);
-        });      
-      }
+      var sel1 = document.getElementById('timeSeries');
+      var index = sel1.selectedIndex;
+      $.post('{{ url_for('main.get_rhi_data') }}', { 'task id': task_id, 'content':'timedata', 'time': sel1.options[index].text},
+      function(data,status){
+        prepareData(data);
+        SelectChannel();
+      });      
+    }
 
-      function SelectChannel(){
-        drawData = rdata.prr_A;
-        var channel = document.getElementById('channel');
-        switch(channel.options[channel.selectedIndex].text){
-          case '平行通道距离校正信号':
-            drawData = rdata.prr_A;
-            break;
-          case '垂直通道距离校正信号':
-            drawData = rdata.prr_B;
-            break;
-          case '消光系数':
-            drawData = rdata.ext;
-            break;
-          case '退偏比':
-            drawData = rdata.dep;
-            break;
-          case '平行通道原始信号':
-            drawData = rdata.raw_A;
-            break;
-          case '垂直通道原始信号':
-            drawData = rdata.raw_B;
-            break;
-        };
-        object3Dlayer.clear();
-        createPie(position,drawData,resolution,rangeMax,horAng,verAngStart,verAngEnd,verAngStep,vMin,vMax,colorOpacity);
-      }
+    function SelectChannel(){
+      drawData = rdata.prr_A;
+      var channel = document.getElementById('channel');
+      switch(channel.options[channel.selectedIndex].text){
+        case '平行通道距离校正信号':
+          drawData = rdata.prr_A;
+          break;
+        case '垂直通道距离校正信号':
+          drawData = rdata.prr_B;
+          break;
+        case '消光系数':
+          drawData = rdata.ext;
+          break;
+        case '退偏比':
+          drawData = rdata.dep;
+          break;
+        case '平行通道原始信号':
+          drawData = rdata.raw_A;
+          break;
+        case '垂直通道原始信号':
+          drawData = rdata.raw_B;
+          break;
+        case 'PM10':
+          drawData = rdata.pm10;
+          break;
+        case 'PM2.5':
+          drawData = rdata.pm25;
+          break;
+      };
+      object3Dlayer.clear();
+      createPie(position,drawData,resolution,rangeMax,horAng,verAngStart,verAngEnd,verAngStep,vMin,vMax,colorOpacity);
+    }
 
       function ChangeMaxValue(){
         var colorMax = document.getElementById('colorMax');

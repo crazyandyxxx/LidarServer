@@ -79,6 +79,8 @@
     <option>污染边界层</option>
     <option>平行通道原始信号</option>
     <option>垂直通道原始信号</option>
+    <option>PM10</option>
+    <option>PM2.5</option>
 </select>
 <span>
     &nbsp;&nbsp;&nbsp;&nbsp;从<input type="number" id="zMin" value="0" class="inputNum" max="30000" min="15">
@@ -93,21 +95,12 @@
 </span>
   
 <div id="viewDiv">
-  <!-- <div class="input-card" id = "info">  
-    <div>游标当前位置：</div>
-    <div class="input-item">
-      <span id="lnglat"></span>
-    </div>
-    <div class="input-item">
-      <span id="address"></span>
-    </div>
-  </div> -->
 </div>
 <div>
   <div class = 'lineDiv' id='lineADiv'>  
       <input class="saveLine" type="image" title="保存廓线" src="../static/save.png" onclick="SaveLineA()"/>
   </div>
-  <div class = 'PRDiv' id="PRADiv"><!-- Plotly chart will be drawn inside this DIV -->
+  <div class = 'PRDiv' id="PRADiv">
     <input class="savePic" type="image" title="保存图片" src="../static/save.png" onclick="SaveHeatA()"/>
   </div>
 </div>
