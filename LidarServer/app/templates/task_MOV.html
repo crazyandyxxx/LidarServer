@@ -346,6 +346,42 @@
       responsive: true
     };
     var PRA_data ={},traceA={},tracePbl={};
+
+    function prepareData(data){
+      rdata.raw_A = [];
+      rdata.raw_B = [];
+      rdata.prr_A = [];
+      rdata.prr_B = [];
+      rdata.ext = [];
+      rdata.dep = [];
+      rdata.pbl = [];
+      rdata.pm10 = [];
+      rdata.pm25 = [];
+      resolution = data.result[0].resolution;
+      var leng = data.result[0].raw_A.length;        
+      for(let i = 0;i<leng;i++){
+          height.push((i+1)*resolution/1000);
+      };
+      for(let i=0; i<data.result.length;i++){
+          if(data.result[i].longitude>-180){
+              timeat.push(data.result[i].timestamp);
+              rdata.prr_A.push(data.result[i].prr_A);
+              rdata.prr_B.push(data.result[i].prr_B);
+              rdata.raw_A.push(data.result[i].raw_A);
+              rdata.raw_B.push(data.result[i].raw_B);
+              rdata.ext.push(data.result[i].ext);
+              rdata.dep.push(data.result[i].dep);
+              rdata.pbl.push(data.result[i].pbl/1000);
+              rdata.pm10.push(data.result[i].ext.map(x => x>0? 243*Math.pow(x,1.13) : 0));
+              rdata.pm25.push(data.result[i].ext.map(x => x>0? 121.5*Math.pow(x,1.13) : 0));
+              var longitude = data.result[i].longitude;
+              var latitude = data.result[i].latitude;
+              var altitude = data.result[i].altitude;
+              locations.push(Gps84ToGcj02(longitude,latitude));
+          }             
+      };
+    }
+
     $.post('{{ url_for('main.get_mov_data') }}', { 'task id': task_id},
           function(data,status){
             var channel = document.getElementById('channel');
@@ -363,34 +399,7 @@
             var scale = document.getElementById('scale');
             scale.addEventListener("change", ChangeRangeScale);
 
-            rdata.raw_A = [];
-            rdata.raw_B = [];
-            rdata.prr_A = [];
-            rdata.prr_B = [];
-            rdata.ext = [];
-            rdata.dep = [];
-            rdata.pbl = [];
-            resolution = data.result[0].resolution;
-            var leng = data.result[0].raw_A.length;        
-            for(let i = 0;i<leng;i++){
-                height.push((i+1)*resolution/1000);
-            };
-            for(let i=0; i<data.result.length;i++){
-                if(data.result[i].longitude>-180){
-                    timeat.push(data.result[i].timestamp);
-                    rdata.prr_A.push(data.result[i].prr_A);
-                    rdata.prr_B.push(data.result[i].prr_B);
-                    rdata.raw_A.push(data.result[i].raw_A);
-                    rdata.raw_B.push(data.result[i].raw_B);
-                    rdata.ext.push(data.result[i].ext);
-                    rdata.dep.push(data.result[i].dep);
-                    rdata.pbl.push(data.result[i].pbl/1000);
-                    var longitude = data.result[i].longitude;
-                    var latitude = data.result[i].latitude;
-                    var altitude = data.result[i].altitude;
-                    locations.push(Gps84ToGcj02(longitude,latitude));
-                }             
-            };
+            prepareData(data);
             drawData = rdata.prr_A;
             createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity);
             map.setCenter(locations[0]);
@@ -633,6 +642,12 @@
           case '垂直通道原始信号':
             drawData = rdata.raw_B;
             break;
+          case 'PM10':
+            drawData = rdata.pm10;
+            break;
+          case 'PM2.5':
+            drawData = rdata.pm25;
+            break;
           case '污染边界层':
             tracePbl.visible = true;
             break;
@@ -748,7 +763,7 @@
                   // Browsers that support HTML5 download attribute
                   var url = URL.createObjectURL(blob);
                   link.setAttribute("href", url);
-                  link.setAttribute("download", drawName+timeat[lineIndex]+".csv");
+                  link.setAttribute("download", drawName+"_"+timeat[lineIndex]+".csv");
                   link.style.visibility = 'hidden';
                   document.body.appendChild(link);
                   link.click();

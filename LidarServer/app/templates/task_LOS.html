@@ -47,6 +47,8 @@
   <option>污染边界层</option>
   <option>平行通道原始信号</option>
   <option>垂直通道原始信号</option>
+  <option>PM10</option>
+  <option>PM2.5</option>
 </select>
 <span>
   &nbsp;&nbsp;&nbsp;&nbsp;从<input type="number" id="zMinA" value="0" class="inputNum" max="30000" min="15" onchange="ChangeChannelARangeMin()">
@@ -75,6 +77,8 @@
     <option>污染边界层</option>
     <option>平行通道原始信号</option>
     <option>垂直通道原始信号</option>
+    <option>PM10</option>
+    <option>PM2.5</option>
   </select>
   <span>
     &nbsp;&nbsp;&nbsp;&nbsp;从<input type="number" id="zMinB" value="0" class="inputNum" max="30000" min="15" onchange="ChangeChannelBRangeMin()">
@@ -110,6 +114,8 @@
     var lineExt = [];
     var lineDep = [];
     var linePbl = [];
+    var linePM10 = [];
+    var linePM25 = [];
     var AMin = 0;
     var AMax = 10000;
     var BMin = 0;
@@ -221,6 +227,8 @@
             lineExt.push(data.result[i].ext);
             lineDep.push(data.result[i].dep);
             linePbl.push(data.result[i].pbl/1000);
+            linePM10.push(data.result[i].ext.map(x => x>0? 243*Math.pow(x,1.13) : 0));
+            linePM25.push(data.result[i].ext.map(x => x>0? 121.5*Math.pow(x,1.13) : 0));
           };
           drawDataA = linePRA;
           PRA_data = {
@@ -403,6 +411,12 @@
           case '垂直通道原始信号':
             drawDataA = lineB;
             break;
+          case 'PM10':
+            drawDataA = linePM10;
+            break;
+          case 'PM2.5':
+            drawDataA = linePM25;
+            break;
           case '污染边界层':
             tracePblA.visible = true;
             break;
@@ -473,7 +487,7 @@
         csvContent += drawDataA[lineIndex].join(',')+'\r\n';
         var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
 	      if (navigator.msSaveBlob) { // IE 10+
-	          navigator.msSaveBlob(blob, drawNameA+timeat[lineIndex]+".csv");
+	          navigator.msSaveBlob(blob, drawNameA+"_"+timeat[lineIndex]+".csv");
 	      } else {
 	          var link = document.createElement("a");
 	          if (link.download !== undefined) { // feature detection
@@ -512,6 +526,11 @@
           case '垂直通道原始信号':
             drawDataB = lineB;
             break;
+          case 'PM10':
+            drawDataB = linePM10;
+            break;
+          case 'PM2.5':
+            drawDataB = linePM25;
           case '污染边界层':
             tracePblB.visible = true;
         };
@@ -588,7 +607,7 @@
 	              // Browsers that support HTML5 download attribute
 	              var url = URL.createObjectURL(blob);
 	              link.setAttribute("href", url);
-	              link.setAttribute("download", drawNameB+timeat[lineIndex]+".csv");
+	              link.setAttribute("download", drawNameB+"_"+timeat[lineIndex]+".csv");
 	              link.style.visibility = 'hidden';
 	              document.body.appendChild(link);
 	              link.click();

@@ -150,7 +150,7 @@
               var channel = document.getElementById('channel');
               var sel1 = document.getElementById('timeSeries');
               link.setAttribute("href", url);
-              link.setAttribute("download", channel.options[channel.selectedIndex].text+sel1.options[sel1.selectedIndex].text+".png");
+              link.setAttribute("download", channel.options[channel.selectedIndex].text+"_"+sel1.options[sel1.selectedIndex].text+".png");
               link.style.visibility = 'hidden';
               document.body.appendChild(link);
               link.click();
