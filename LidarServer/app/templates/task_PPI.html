@@ -25,6 +25,8 @@
       z-index: 100;
       position: absolute; 
       bottom: 0;
+      /* left: 50%;
+      transform: translate(-50%,0%) */
       right: 0;
     }
     #colorbar{
@@ -110,14 +112,15 @@
   <div id="colorbar">
       <canvas id="canvas" width="50" height="260"></canvas>
   </div>
-  <div class="input-card" id = "info">  
-    <div class="input-item">
+  <div class="input-card" id = "info"> 
+    <div>
+      <span id="timeStamp"></span> 
+    </div>
+    <div>
       <span id="angleRange"></span>
-    </div>
-    <div class="input-item">
+      <span>&nbsp;&nbsp;</span>
       <span id="angleStep"></span>
-    </div>
-    <div class="input-item">
+      <span>&nbsp;&nbsp;</span>
       <span id="angleVer"></span>
     </div>
   </div>
@@ -520,6 +523,7 @@ drawTickText();
             document.getElementById('angleRange').textContent = "扫描范围"+horAngStart+" - "+horAngEnd;
             document.getElementById('angleStep').textContent = "扫描步长"+horAngStep;
             document.getElementById('angleVer').textContent = "垂直角度"+verAng;
+            document.getElementById('timeStamp').textContent = sel1.options[0].text+"--"+data.result[data.result.length-1].timestamp;
         });
     });
 
@@ -631,6 +635,7 @@ drawTickText();
         function(data,status){
           prepareData(data);
           SelectChannel();
+          document.getElementById('timeStamp').textContent = sel1.options[index].text+"--"+data.result[data.result.length-1].timestamp;
         });      
       }
 
