@@ -84,7 +84,6 @@
         <input type="radio" name="exportType" id="txt"> 文本文件
         <span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
         <input type="radio" name="exportType" id="db" > 数据库文件
-        <button id="confirmType">确定</button>
       </div>
     </div>
 {% endblock %}
@@ -140,12 +139,6 @@
            function(data,status){
             tbody.empty();
             if(status == "success"){
-              // for(let i=0; i<data.result.length;i++){
-              //   $('<tr>').append(
-              //     $('<td>').text(data.result[i].start_time+' - '+data.result[i].end_time),
-              //     $('<td>').text(mode[data.result[i].mode]),
-              //     $('<td>').text(data.result[i].data_num)).appendTo(tbody);
-              // };
               var taskdata=[];
               srId = {};
               for(let i=0; i<data.result.length;i++){
@@ -203,21 +196,35 @@
     window.open("{{ url_for('main.browse_task', task_id=task_id) }}"+task_id);
   }
   function ExportTask(task_id,task_mode){
-    // switch(task_mode){
-    //   case '水平切面':
-    //     ExportPPI(task_id);
-    //     break;
-    // }
+    var typeTxt = document.getElementById("txt");
+    var typeDB = document.getElementById("db");
+    typeTxt.checked = false;
+    typeDB.checked = false;
     var modal = document.getElementById("myModal");
-    // Get the <span> element that closes the modal
     var span = document.getElementsByClassName("close")[0];
-    // When the user clicks the button, open the modal 
     modal.style.display = "block";
-    // When the user clicks on <span> (x), close the modal
     span.onclick = function() {
       modal.style.display = "none";
     }
+    typeTxt.onclick = function(){
+      modal.style.display = "none";
+      switch(task_mode){
+        case '水平切面':
+          ExportPPI(task_id);
+          break;
+      }
+    }
+    typeDB.onclick = function(){
+      modal.style.display = "none";
+      switch(task_mode){
+        case '水平切面':
+          ExportDBPPI(task_id);
+          break;
+      }
+    }
   }
+
+
   function DeleteTask(task_id){
     var r = confirm("数据删除将不可恢复！");
     if (r == true) {
@@ -226,6 +233,9 @@
               checkTask();
             });
     } 
+  }
+  function ExportDBPPI(task_id){
+
   }
   function ExportPPI(task_id){
     $.post('{{ url_for('main.get_ppi_data') }}', { 'task id': task_id, 'content':'list' },
