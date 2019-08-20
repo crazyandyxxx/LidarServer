@@ -2,6 +2,50 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
+<style type="text/css">
+  /* The Modal (background) */
+  .modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+  }
+  
+  /* Modal Content */
+  .modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 40%;
+  }
+  
+  /* The Close Button */
+  .close {
+    color: #aaaaaa;
+    float:right;
+    font-size: 28px;
+    font-weight: bold;
+  }
+  
+  .close:hover,
+  .close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  #confirmType{
+    float:right;
+  }
+</style>
+
     <input type="text" name="datetimes" size="40"/>
     <select  id="type" onchange="selectScanType()"> 
       <option>全部</option>
@@ -12,24 +56,37 @@
     </select>
     <input type="button" value="检索" size="20" onclick="checkTask()">
     <div class="panel panel-default">
-            <!-- Default panel contents -->
-            <div class="panel-heading">检索结果</div>
-          
-            <!-- Table -->
-            <table class="table table-hover" id="task-table">
-                <thead>
-                  <tr>
-                    <th data-field="serialN">序号</th>
-                    <th data-field="timespan">起止时间</th>
-                    <th data-field="mode">扫描类型</th>
-                    <th data-field="datanum">数据量</th>
-                    <th data-field="export" data-formatter="LinkFormatter">操作</th> 
-                  </tr>
-                </thead>
-                <tbody id = task-rows>
-                </tbody>
-              </table>
-          </div>
+      <!-- Default panel contents -->
+      <div class="panel-heading">检索结果</div>
+    
+      <!-- Table -->
+      <table class="table table-hover" id="task-table">
+          <thead>
+            <tr>
+              <th data-field="serialN">序号</th>
+              <th data-field="timespan">起止时间</th>
+              <th data-field="mode">扫描类型</th>
+              <th data-field="datanum">数据量</th>
+              <th data-field="export" data-formatter="LinkFormatter">操作</th> 
+            </tr>
+          </thead>
+          <tbody id = task-rows>
+          </tbody>
+      </table>
+    </div>
+
+    <!-- The Modal -->
+    <div id="myModal" class="modal">
+      <!-- Modal content -->
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <p>选择数据格式</p>
+        <input type="radio" name="exportType" id="txt"> 文本文件
+        <span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <input type="radio" name="exportType" id="db" > 数据库文件
+        <button id="confirmType">确定</button>
+      </div>
+    </div>
 {% endblock %}
 
 {% block app_scripts %}
@@ -146,8 +203,19 @@
     window.open("{{ url_for('main.browse_task', task_id=task_id) }}"+task_id);
   }
   function ExportTask(task_id,task_mode){
-    if(task_mode==='水平切面'){
-      ExportPPI(task_id);
+    // switch(task_mode){
+    //   case '水平切面':
+    //     ExportPPI(task_id);
+    //     break;
+    // }
+    var modal = document.getElementById("myModal");
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close")[0];
+    // When the user clicks the button, open the modal 
+    modal.style.display = "block";
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function() {
+      modal.style.display = "none";
     }
   }
   function DeleteTask(task_id){
