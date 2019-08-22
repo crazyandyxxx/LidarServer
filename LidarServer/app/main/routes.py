@@ -341,12 +341,15 @@ def get_rhi_data():
 def export_task(task_id):
     if request.method == 'GET':
         con = sqlite3.connect(Config.DB_PATH)
-        cursor = con.execute('select * from task_data where task_id="'+task_id+'"')
         si = io.StringIO()
         cw = csv.writer(si)
+        cursor = con.execute('select * from task where id="'+task_id+'"')
+        cw.writerow(cursor.fetchone())
+        cursor = con.execute('select * from task_data where task_id="'+task_id+'"')  
         cw.writerows(cursor.fetchall())
+        con.close()
         output = make_response(si.getvalue())
-        output.headers["Content-Disposition"] = "attachment; filename=export.csv"
+        output.headers["Content-Disposition"] = "attachment; filename=export.ldb"
         output.headers["Content-type"] = "text/csv"
         return output
 
