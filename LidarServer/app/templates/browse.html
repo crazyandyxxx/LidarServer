@@ -206,6 +206,7 @@
     span.onclick = function() {
       modal.style.display = "none";
     }
+
     typeTxt.onclick = function(){
       modal.style.display = "none";
       switch(task_mode){
@@ -214,13 +215,10 @@
           break;
       }
     }
+
     typeDB.onclick = function(){
       modal.style.display = "none";
-      switch(task_mode){
-        case '水平切面':
-          ExportDBPPI(task_id);
-          break;
-      }
+      ExportDB(task_id);
     }
   }
 
@@ -234,8 +232,11 @@
             });
     } 
   }
-  function ExportDBPPI(task_id){
-
+  function ExportDB(task_id){
+    $.post('{{ url_for('main.export_task') }}', { 'task id': task_id },
+      function(data,status){
+        let task = data;
+      });
   }
   function ExportPPI(task_id){
     $.post('{{ url_for('main.get_ppi_data') }}', { 'task id': task_id, 'content':'list' },

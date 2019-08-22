@@ -1,15 +1,18 @@
 from datetime import datetime
 from flask import render_template, flash, redirect, url_for, request, g, \
-    jsonify, current_app, send_file
+    jsonify, current_app, send_file, make_response
 from flask_login import current_user, login_required
 from app import db
 from app.main.forms import AcquireForm
 from app.main import bp
-# from app.DataAcquisition import start_acquisition, Stop_acquisition, check_acquisition_times, check_acquisition_running
 from app.dataAcquisition import *
 from app.models import Task, TaskData
 import uuid
 from app.algorithm import *
+from app import Config
+import csv
+import io
+import sqlite3
 
 @bp.before_app_request
 def before_request():
@@ -332,4 +335,20 @@ def get_rhi_data():
                 data['resolution'] = resolution
                 results.append(data)
         return jsonify(result=results)
+
+@bp.route('/task/export', methods=['POST'])
+@login_required
+def export_task():
+    results = []
+    if request.method == 'POST':
+        task_id = request.values.get('task id', 0)
+        con = sqlite3.connect(Config.DB_PATH)
+        cursor = con.execute('select * from task_data where task_id="'+task_id+'"')
+        si = io.StringIO()
+        cw = csv.writer(si)
+        cw.writerows(cursor.fetchall())
+        output = make_response(si.getvalue())
+        output.headers["Content-Disposition"] = "attachment; filename=export.csv"
+        output.headers["Content-type"] = "text/csv"
+        return output
 
