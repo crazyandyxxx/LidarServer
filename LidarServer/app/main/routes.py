@@ -336,12 +336,10 @@ def get_rhi_data():
                 results.append(data)
         return jsonify(result=results)
 
-@bp.route('/task/export', methods=['POST'])
+@bp.route('/task/export/<task_id>', methods=['GET', 'POST'])
 @login_required
-def export_task():
-    results = []
-    if request.method == 'POST':
-        task_id = request.values.get('task id', 0)
+def export_task(task_id):
+    if request.method == 'GET':
         con = sqlite3.connect(Config.DB_PATH)
         cursor = con.execute('select * from task_data where task_id="'+task_id+'"')
         si = io.StringIO()
