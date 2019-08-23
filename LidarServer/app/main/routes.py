@@ -9,7 +9,6 @@ from app.dataAcquisition import *
 from app.models import Task, TaskData
 import uuid
 from app.algorithm import *
-from app import Config
 import pickle
 import io
 
@@ -349,7 +348,7 @@ def export_task():
                     'ver_end_angle','ver_step','hor_start_angle','hor_end_angle','hor_step','complete']
         data['taskinfo'] = {col: getattr(task, col) for col in colinfo}
         coldata = ['task_id','timestamp','longitude','latitude','altitude','ver_angle','hor_angle','raw_A','raw_B']
-        data['taskdata'] = []
+        data['taskdata'] = [{col: getattr(task, col) for col in coldata} for task in task_dat]
         out_s = io.BytesIO()
         pickle.dump(data, out_s)
         out_s.seek(0)
