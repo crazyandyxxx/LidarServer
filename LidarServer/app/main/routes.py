@@ -10,9 +10,8 @@ from app.models import Task, TaskData
 import uuid
 from app.algorithm import *
 from app import Config
-import csv
+import pickle
 import io
-import sqlite3
 
 @bp.before_app_request
 def before_request():
@@ -342,34 +341,29 @@ def get_rhi_data():
 def export_task():
     if request.method == 'GET':
         task_id = request.args.get('task_id')
-        con = sqlite3.connect(Config.DB_PATH)
-        si = io.StringIO()
-        cw = csv.writer(si)
-        cursor = con.execute('select * from task where id="'+task_id+'"')
-        cw.writerow(cursor.fetchone())
-        cursor = con.execute('select * from task_data where task_id="'+task_id+'"')  
-        cw.writerows(cursor.fetchall())
-        con.close()
-        output = make_response(si.getvalue())
-        output.headers["Content-Disposition"] = "attachment; filename=export.ldb"
-        output.headers["Content-type"] = "text/csv"
-        return output
+        task = Task.query.filter_by(id = task_id).first()
+        task_dat = TaskData.query.filter_by(task_id=task_id).all()
+        data = {}
+        colinfo = ['id','start_time','end_time','mode','data_num','description', \
+                   'laser_freq','duration','resolution','bin_length','ver_start_angle', \
+                    'ver_end_angle','ver_step','hor_start_angle','hor_end_angle','hor_step','complete']
+        data['taskinfo'] = {col: getattr(task, col) for col in colinfo}
+        coldata = ['task_id','timestamp','longitude','latitude','altitude','ver_angle','hor_angle','raw_A','raw_B']
+        data['taskdata'] = []
+        out_s = io.BytesIO()
+        pickle.dump(data, out_s)
+        out_s.seek(0)
+        return send_file(
+                    out_s,
+                    as_attachment=True,
+                    attachment_filename='export.ldb',
+                    mimetype='application/octet-stream'
+                )
 
 @bp.route('/task/import', methods=['POST'])
 @login_required
 def import_task():
     if request.method == 'POST':
         task_id = request.args.get('task_id')
-        con = sqlite3.connect(Config.DB_PATH)
-        si = io.StringIO()
-        cw = csv.writer(si)
-        cursor = con.execute('select * from task where id="'+task_id+'"')
-        cw.writerow(cursor.fetchone())
-        cursor = con.execute('select * from task_data where task_id="'+task_id+'"')  
-        cw.writerows(cursor.fetchall())
-        con.close()
-        output = make_response(si.getvalue())
-        output.headers["Content-Disposition"] = "attachment; filename=export.ldb"
-        output.headers["Content-type"] = "text/csv"
-        return output
+        return task_id
 
