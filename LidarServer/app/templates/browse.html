@@ -54,7 +54,8 @@
       <option>定点扫描</option>
       <option>走航扫描</option>
     </select>
-    <input type="button" value="检索" size="20" onclick="checkTask()">
+    <input type="button" value="   检索   " size="30" onclick="checkTask()">
+    <input type="button" value="   导入   " size="30" onclick="ImportTask()">
     <div class="panel panel-default">
       <!-- Default panel contents -->
       <div class="panel-heading">检索结果</div>
@@ -193,7 +194,7 @@
           "<a class='view' href='javascript:void(0)' onclick='DeleteTask(\""+srId[row.serialN]+"\"); return false;'>删除</a>";
   }
   function ViewTask(task_id){
-    window.open("{{ url_for('main.browse_task', task_id=task_id) }}"+task_id);
+    window.open("{{ url_for('main.browse_task') }}"+"?task_id="+task_id);
   }
   function ExportTask(task_id,task_mode){
     var typeTxt = document.getElementById("txt");
@@ -234,7 +235,7 @@
   }
   function ExportDB(task_id){
     var link = document.createElement("a");
-    var url = "{{ url_for('main.export_task', task_id=task_id) }}"+task_id
+    var url = "{{ url_for('main.export_task') }}"+"?task_id="+task_id
     link.setAttribute("href", url);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
@@ -324,5 +325,22 @@
       };
     });
   }
+
+  function ImportTask(){
+    var input = document.createElement('input');
+    input.type = "file";
+    input.accept = '.ldb'
+    input.style.visibility='hidden';
+    input.onchange = function(e){
+      let file = e.target.files[0];
+      let formData = new FormData();
+      formData.append("task_file", file);
+      fetch("{{ url_for('main.import_task') }}", {method: "POST", body: formData});
+    };
+    document.body.appendChild(input);
+    input.click();
+    document.body.removeChild(input);
+  }
+  
     </script>
 {% endblock %}

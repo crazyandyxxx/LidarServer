@@ -130,10 +130,11 @@ def get_device_status():
             'data': heading
         }])
 
-@bp.route('/task/<task_id>', methods=['GET', 'POST'])
+@bp.route('/task', methods=['GET', 'POST'])
 @login_required
-def browse_task(task_id):
+def browse_task():
     if request.method == 'GET':
+        task_id = request.args.get('task_id')
         mode = Task.query.filter_by(id = task_id).first().mode
         if mode=='PPI':
             return render_template('task_PPI.html', title=('水平切面浏览'), task_id=task_id)
@@ -336,10 +337,29 @@ def get_rhi_data():
                 results.append(data)
         return jsonify(result=results)
 
-@bp.route('/task/export/<task_id>', methods=['GET', 'POST'])
+@bp.route('/task/export', methods=['GET', 'POST'])
 @login_required
-def export_task(task_id):
+def export_task():
     if request.method == 'GET':
+        task_id = request.args.get('task_id')
+        con = sqlite3.connect(Config.DB_PATH)
+        si = io.StringIO()
+        cw = csv.writer(si)
+        cursor = con.execute('select * from task where id="'+task_id+'"')
+        cw.writerow(cursor.fetchone())
+        cursor = con.execute('select * from task_data where task_id="'+task_id+'"')  
+        cw.writerows(cursor.fetchall())
+        con.close()
+        output = make_response(si.getvalue())
+        output.headers["Content-Disposition"] = "attachment; filename=export.ldb"
+        output.headers["Content-type"] = "text/csv"
+        return output
+
+@bp.route('/task/import', methods=['POST'])
+@login_required
+def import_task():
+    if request.method == 'POST':
+        task_id = request.args.get('task_id')
         con = sqlite3.connect(Config.DB_PATH)
         si = io.StringIO()
         cw = csv.writer(si)
