@@ -37,7 +37,6 @@ namespace AcquisitionSocketServer
         private static void GPSDataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             string resp = gpsPort.ReadLine();
-            if (!resp.StartsWith("$GNGGA")) resp = gpsPort.ReadLine();
             if (resp.StartsWith("$GNGGA"))
             {
                 string[] values = resp.Split(',');
