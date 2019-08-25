@@ -362,7 +362,26 @@ def export_task():
 @bp.route('/task/import', methods=['POST'])
 @login_required
 def import_task():
+    results=[]
     if request.method == 'POST':
-        task_id = request.args.get('task_id')
-        return task_id
+        task_file = request.files['task_file']
+        data = pickle.load(task_file)
+        taskinfo = data['taskinfo']
+        taskdata = data['taskdata']
+        task = Task(id=taskinfo['id'], mode=taskinfo['mode'], start_time=taskinfo['start_time'], \
+                    end_time=taskinfo['end_time'],description=taskinfo['description'],laser_freq=taskinfo['laser_freq'], \
+                    duration=taskinfo['duration'], resolution=taskinfo['resolution'], bin_length=taskinfo['bin_length'], \
+                    data_num = taskinfo['data_num'], ver_start_angle=taskinfo['ver_start_angle'], \
+                    ver_end_angle=taskinfo['ver_end_angle'], ver_step=taskinfo['ver_step'], \
+                    hor_start_angle=taskinfo['hor_start_angle'], hor_end_angle=taskinfo['hor_end_angle'], \
+                    hor_step=taskinfo['hor_step'], complete=taskinfo['complete'])
+        db.session.merge(task)
+        for i in range(len(taskdata)):
+            task_dat = TaskData(task_id=taskdata[i]['task_id'],timestamp=taskdata[i]['timestamp'], \
+                                longitude=taskdata[i]['longitude'],latitude=taskdata[i]['latitude'], \
+                                altitude=taskdata[i]['altitude'],ver_angle=taskdata[i]['ver_angle'], \
+                                hor_angle=taskdata[i]['hor_angle'],raw_A=taskdata[i]['raw_A'],raw_B=taskdata[i]['raw_B'])
+            db.session.merge(task_dat)
+        db.session.commit()
+        return jsonify(result=results)
 

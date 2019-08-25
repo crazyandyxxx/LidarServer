@@ -335,7 +335,9 @@
       let file = e.target.files[0];
       let formData = new FormData();
       formData.append("task_file", file);
-      fetch("{{ url_for('main.import_task') }}", {method: "POST", body: formData});
+      fetch("{{ url_for('main.import_task') }}", {method: "POST", body: formData}).then(function(response){
+        checkTask();
+      });
     };
     document.body.appendChild(input);
     input.click();
