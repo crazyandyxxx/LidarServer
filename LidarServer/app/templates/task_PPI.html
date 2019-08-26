@@ -137,7 +137,7 @@
   <input id="addRuler" type="image" title="距离测量" src="../static/ruler.png" onclick="addMapRuler()"/>
   <input id="addMeasurer" type="image" title="面积测量" src="../static/measurer.png" onclick="addMapMeasurer()"/>
   <input id="clearOverlay" type="image" title="清除" src="../static/clear.png" onclick="clearMapOverlay()"/>
-  <input id="createISOCurve" type="image" title="3D热度图" src="../static/iso.png" onclick="createISOHeatmap()"/>
+  <input id="createISOCurve" type="image" title="3D热度图" src="../static/3dHeatmap.png" onclick="createISOHeatmap()"/>
   <input id="savePic" type="image" title="保存图片" src="../static/savePic.png" onclick="saveMap()"/>
 </div>
 
@@ -407,12 +407,12 @@ drawTickText();
         for(var i = 0; i<nmax+1; i++){
           x1.push(x0+i*resl*Math.cos(verAng/180*Math.PI)*Math.sin(horAngStart/180*Math.PI));
           y1.push(y0-i*resl*Math.cos(verAng/180*Math.PI)*Math.cos(horAngStart/180*Math.PI));
-          var h1 = rdata[idata][i]/vmax*maxH;
-          z1.push(h1<0?0:h1);
+          var h1 = -rdata[idata][i]/vmax*maxH;
+          z1.push(h1>0?0:h1);
           x2.push(x0+i*resl*Math.cos(verAng/180*Math.PI)*Math.sin(horAngEnd/180*Math.PI));
           y2.push(y0-i*resl*Math.cos(verAng/180*Math.PI)*Math.cos(horAngEnd/180*Math.PI));
-          var h2 = rdata[idata][i+1]/vmax*maxH;
-          z2.push(h2<0?0:h2);
+          var h2 = -rdata[idata+1][i]/vmax*maxH;
+          z2.push(h2>0?0:h2);
         }
 
         var triangle = new AMap.Object3D.Mesh()
@@ -636,13 +636,14 @@ drawTickText();
           geocoder.getAddress(location, function(status, result) {
               if (status === 'complete'&&result.regeocode) {
                   var address = result.regeocode.formattedAddress;
+                  var channel = document.getElementById('channel');
                   overlay.setLabel({
                       offset: new AMap.Pixel(0, -3),  //设置文本标注偏移量
                       content: "<div><div>当前位置"+location.lng + ',' + location.lat+"</div>"+
                               "<div class='info'>"+address+"</div>"+
                               "<div class='info'>距离"+Math.round(dis)+"</div>"+
                               "<div class='info'>角度"+Math.round(ang)+"</div>"+
-                              "<div class='info'>数值"+drawData[an][rn].toFixed(2)+"</div></div>",
+                              "<div class='info'>"+channel.options[channel.selectedIndex].text+"数值"+drawData[an][rn].toFixed(2)+"</div></div>",
                       direction: 'top' //设置文本标注方位
                   });
               }else{
@@ -769,10 +770,21 @@ drawTickText();
         object3Dlayer.clear();
         createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);   
       }
-
+      var is3D = false;
       function createISOHeatmap(){ 
         object3Dlayer.clear();
-        createISOPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);   
+        var heatmapBtn = document.getElementById('createISOCurve');
+        if(is3D){
+          createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);
+          heatmapBtn.src = '../static/3DHeatmap.png';
+          heatmapBtn.title = '3D热度图';
+
+        }else{
+          createISOPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);
+          heatmapBtn.src = '../static/iso.png'
+          heatmapBtn.title = '2D热度图';
+        }
+        is3D = !is3D;    
       }
 
 
