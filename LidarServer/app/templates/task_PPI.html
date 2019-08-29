@@ -327,19 +327,17 @@ drawTickText();
     var altitude = 0;
     var drawData = [];
     var position = new AMap.LngLat(0, 0);
+    var is3D = false;
 
     function createPie(location,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,opacity) {
         var gpn = Math.floor((horAngEnd-horAngStart)/horAngStep);
+        var tri;
         for(var i = 0;i<gpn;i++){
-            var tri = generateTriangle(location,rangeMax,resolution,i,drawData,verAng,horAngStart+i*horAngStep,horAngStart+(i+1)*horAngStep,vMin,vMax,opacity);
-            object3Dlayer.add(tri);
-        }
-    }
-
-    function createISOPie(location,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,opacity) {
-        var gpn = Math.floor((horAngEnd-horAngStart)/horAngStep);
-        for(var i = 0;i<gpn;i++){
-            var tri = generateISOTriangle(location,rangeMax,resolution,i,drawData,verAng,horAngStart+i*horAngStep,horAngStart+(i+1)*horAngStep,vMin,vMax,opacity);
+            if(is3D){
+              tri = generateISOTriangle(location,rangeMax,resolution,i,drawData,verAng,horAngStart+i*horAngStep,horAngStart+(i+1)*horAngStep,vMin,vMax,opacity);
+            }else{
+              tri = generateTriangle(location,rangeMax,resolution,i,drawData,verAng,horAngStart+i*horAngStep,horAngStart+(i+1)*horAngStep,vMin,vMax,opacity);
+            }
             object3Dlayer.add(tri);
         }
     }
@@ -399,7 +397,7 @@ drawTickText();
         var x0 = v0xy.x;
         var y0 = v0xy.y;
         var z0 = 0;
-        var maxH = 500*scal;
+        var maxH = 1000*scal;
 
         var x1 = [], y1 = [],z1 = [], x2 = [], y2 = [], z2 = [];
         var nmax = r/resl;
@@ -407,12 +405,14 @@ drawTickText();
         for(var i = 0; i<nmax+1; i++){
           x1.push(x0+i*resl*Math.cos(verAng/180*Math.PI)*Math.sin(horAngStart/180*Math.PI));
           y1.push(y0-i*resl*Math.cos(verAng/180*Math.PI)*Math.cos(horAngStart/180*Math.PI));
-          var h1 = -rdata[idata][i]/vmax*maxH;
-          z1.push(h1>0?0:h1);
+          var h1 = (rdata[idata][i]-vmin)/(vmax-vmin);
+          if(h1<0){h1=0}else if(h1>3){h1=1.5};
+          z1.push(-h1*maxH);
           x2.push(x0+i*resl*Math.cos(verAng/180*Math.PI)*Math.sin(horAngEnd/180*Math.PI));
           y2.push(y0-i*resl*Math.cos(verAng/180*Math.PI)*Math.cos(horAngEnd/180*Math.PI));
-          var h2 = -rdata[idata+1][i]/vmax*maxH;
-          z2.push(h2>0?0:h2);
+          var h2 = (rdata[idata+1][i]-vmin)/(vmax-vmin);
+          if(h2<0){h2=0}else if(h2>3){h2=1.5};
+          z2.push(-h2*maxH);
         }
 
         var triangle = new AMap.Object3D.Mesh()
@@ -770,21 +770,20 @@ drawTickText();
         object3Dlayer.clear();
         createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);   
       }
-      var is3D = false;
+      
       function createISOHeatmap(){ 
-        object3Dlayer.clear();
         var heatmapBtn = document.getElementById('createISOCurve');
         if(is3D){
-          createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);
           heatmapBtn.src = '../static/3DHeatmap.png';
           heatmapBtn.title = '3D热度图';
 
         }else{
-          createISOPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);
           heatmapBtn.src = '../static/iso.png'
           heatmapBtn.title = '2D热度图';
         }
-        is3D = !is3D;    
+        is3D = !is3D;   
+        object3Dlayer.clear();
+        createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity); 
       }
 
 
