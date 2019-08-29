@@ -83,11 +83,19 @@
       border-radius: 3px;
       background-color: white;
     }
-    #savePic{
+    #curvePlay{
       z-index: 100;
       position: absolute;
       right: 31px;
       top: 292px;
+      border-radius: 3px;
+      background-color: white;
+    }
+    #savePic{
+      z-index: 100;
+      position: absolute;
+      right: 31px;
+      top: 329px;
       border-radius: 3px;
       background-color: white;
     }
@@ -132,6 +140,7 @@
       <span>&nbsp;&nbsp;</span>
       <span id="angleVer"></span>
     </div>
+    
   </div>
   <input id="setCenter" type="image" title="居中" src="../static/setCenter.png" onclick="setMapCenter()"/>
   <input id="addMarker" type="image" title="添加标记" src="../static/marker.png" onclick="addMapMarker()"/>
@@ -139,6 +148,7 @@
   <input id="addMeasurer" type="image" title="面积测量" src="../static/measurer.png" onclick="addMapMeasurer()"/>
   <input id="clearOverlay" type="image" title="清除" src="../static/clear.png" onclick="clearMapOverlay()"/>
   <input id="createISOCurve" type="image" title="3D热度图" src="../static/3dHeatmap.png" onclick="createISOHeatmap()"/>
+  <input id="curvePlay" type="image" title="播放" src="../static/play.svg" onclick="playHeatmap()"/>
   <input id="savePic" type="image" title="保存图片" src="../static/savePic.png" onclick="saveMap()"/>
 </div>
 
@@ -749,6 +759,11 @@ drawTickText();
         is3D = !is3D;   
         object3Dlayer.clear();
         createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity); 
+      }
+
+      function playHeatmap(){
+        var playBtn = document.getElementById('curvePlay');
+        playBtn.src = '../static/35.gif'
       }
 
 
