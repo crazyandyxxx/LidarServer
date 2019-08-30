@@ -250,7 +250,6 @@ def get_ppi_data():
             timeat = request.values.get('time',0)
             resolution = task.resolution
             dataLength = task.bin_length
-            ri = np.arange(dataLength)+1
             task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=timeat,TaskData.hor_angle<=horEndAng).order_by(TaskData.timestamp).limit(ln).all()
             ov = np.loadtxt(r'./overlap/19000101000000_15.ov')
             overlapA = ov[:,0]
@@ -277,6 +276,51 @@ def get_ppi_data():
                 data['ext'] = ext_a
                 data['dep'] = dePolar
                 data['resolution'] = resolution
+                results.append(data)
+        if(content=='all'):
+            channel = request.values.get('channel', 0)
+            task = Task.query.filter_by(id = task_id).first()
+            horStartAng = task.hor_start_angle
+            horEndAng = task.hor_end_angle
+            horAngStep = task.hor_step
+            ln = int((horEndAng-horStartAng)/horAngStep)+1
+            resolution = task.resolution
+            dataLength = task.bin_length
+            pie_list = TaskData.query.filter_by(task_id=task_id,hor_angle=horStartAng).all()
+            ov = np.loadtxt(r'./overlap/19000101000000_15.ov')
+            overlapA = ov[:,0]
+            overlapB = ov[:,1]
+            for i in range(len(pie_list)):
+                data = {}
+                starttime = pie_list[i].timestamp
+                data['starttime'] = "{}".format(starttime.strftime('%Y-%m-%d %H:%M:%S'))
+                pie_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=starttime,TaskData.hor_angle<=horEndAng).order_by(TaskData.timestamp).limit(ln).all()
+                endtime = pie_dat[len(pie_dat)-1].timestamp
+                data['endtime'] = "{}".format(endtime.strftime('%Y-%m-%d %H:%M:%S'))
+                channeldata = []
+                for j in range(len(pie_dat)):
+                    dt = np.dtype(int)
+                    dt = dt.newbyteorder('<')
+                    chA = np.frombuffer(pie_dat[j].raw_A, dtype=dt)
+                    chB = np.frombuffer(pie_dat[j].raw_B, dtype=dt)
+                    chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chA, chB, overlapA, overlapB, resolution, snrT=1.5, rc=15000)
+                    if channel=='raw_A':
+                        channeldata.append(chA)
+                    elif channel=='raw_B':
+                        channeldata.append(chB)
+                    elif channel=='prr_A':
+                        channeldata.append(chAPR2)
+                    elif channel=='prr_B':
+                        channeldata.append(chBPR2)
+                    elif channel=='dep':
+                        channeldata.append(dePolar)
+                    elif channel=='ext':
+                        channeldata.append(ext_a)
+                    elif channel=='pm10':
+                        channeldata.append(243*np.pow(ext_a,1.13))
+                    elif channel=='pm25':
+                        channeldata.append(0.5*243*np.pow(ext_a,1.13))
+                data['channeldata'] = channeldata
                 results.append(data)
         return jsonify(result=results)
 

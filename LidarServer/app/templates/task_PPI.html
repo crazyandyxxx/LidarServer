@@ -142,14 +142,14 @@
     </div>
     
   </div>
-  <input id="setCenter" type="image" title="居中" src="../static/setCenter.png" onclick="setMapCenter()"/>
-  <input id="addMarker" type="image" title="添加标记" src="../static/marker.png" onclick="addMapMarker()"/>
-  <input id="addRuler" type="image" title="距离测量" src="../static/ruler.png" onclick="addMapRuler()"/>
-  <input id="addMeasurer" type="image" title="面积测量" src="../static/measurer.png" onclick="addMapMeasurer()"/>
-  <input id="clearOverlay" type="image" title="清除" src="../static/clear.png" onclick="clearMapOverlay()"/>
-  <input id="createISOCurve" type="image" title="3D热度图" src="../static/3dHeatmap.png" onclick="createISOHeatmap()"/>
-  <input id="curvePlay" type="image" title="播放" src="../static/play.svg" onclick="playHeatmap()"/>
-  <input id="savePic" type="image" title="保存图片" src="../static/savePic.png" onclick="saveMap()"/>
+  <input id="setCenter" type="image" title="居中" src="../static/setCenter.png" />
+  <input id="addMarker" type="image" title="添加标记" src="../static/marker.png" />
+  <input id="addRuler" type="image" title="距离测量" src="../static/ruler.png" />
+  <input id="addMeasurer" type="image" title="面积测量" src="../static/measurer.png" />
+  <input id="clearOverlay" type="image" title="清除" src="../static/clear.png" />
+  <input id="createISOCurve" type="image" title="3D热度图" src="../static/3dHeatmap.png"/>
+  <input id="curvePlay" type="image" title="播放" src="../static/play.svg"/>
+  <input id="savePic" type="image" title="保存图片" src="../static/savePic.png" />
 </div>
 
 {% endblock %}
@@ -159,74 +159,74 @@
 <script type="text/javascript">
     var task_id = '{{task_id}}';
 
-    function setMapCenter(){
-      map.setCenter(position);
-    }
+function setMapCenter(){
+  map.setCenter(position);
+}
 
-    function saveMap(){
-      html2canvas(document.getElementById('viewDiv')).then(function(canvas) {
-        var myImage = canvas.toBlob(function(blob){
-        var link = document.createElement("a");
-          if (link.download !== undefined) { // feature detection
-              // Browsers that support HTML5 download attribute
-              var url = URL.createObjectURL(blob);
-              var channel = document.getElementById('channel');
-              var sel1 = document.getElementById('timeSeries');
-              link.setAttribute("href", url);
-              link.setAttribute("download", channel.options[channel.selectedIndex].text+"_"+sel1.options[sel1.selectedIndex].text+".png");
-              link.style.visibility = 'hidden';
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
-          }
-        });
-      });
-    }
+function saveMap(){
+  html2canvas(document.getElementById('viewDiv')).then(function(canvas) {
+    var myImage = canvas.toBlob(function(blob){
+      var link = document.createElement("a");
+      if (link.download !== undefined) { // feature detection
+        // Browsers that support HTML5 download attribute
+        var url = URL.createObjectURL(blob);
+        var channel = document.getElementById('channel');
+        var sel1 = document.getElementById('timeSeries');
+        link.setAttribute("href", url);
+        link.setAttribute("download", channel.options[channel.selectedIndex].text+"_"+sel1.options[sel1.selectedIndex].text+".png");
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    });
+  });
+}
 
-    function drawColorbar(n) {
-      var canvas = document.getElementById("canvas");
-        width = canvas.width;
-        height = canvas.height;
+function drawColorbar(n) {
+  var canvas = document.getElementById("canvas");
+  width = canvas.width;
+  height = canvas.height;
 
-        var ctx = canvas.getContext("2d");
+  var ctx = canvas.getContext("2d");
 
-        // Create the linear gradient with which to fill the canvas
-        var gradient = ctx.createLinearGradient(0, 10, 0, 250);
-        for(let i=0;i<n;i++){
-          var c = getColor(i/(n-1),0,1,1);
-          var rgbStr = 'rgb('+Math.floor(c.r*255)+','+Math.floor(c.g*255)+','+Math.floor(c.b*255)+')';
-          gradient.addColorStop(1-i/(n-1), rgbStr);
-        }
-        // Fill the canvas with the gradient pattern
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 10, 10, 240);
+  // Create the linear gradient with which to fill the canvas
+  var gradient = ctx.createLinearGradient(0, 10, 0, 250);
+  for(let i=0;i<n;i++){
+    var c = getColor(i/(n-1),0,1,1);
+    var rgbStr = 'rgb('+Math.floor(c.r*255)+','+Math.floor(c.g*255)+','+Math.floor(c.b*255)+')';
+    gradient.addColorStop(1-i/(n-1), rgbStr);
+  }
+  // Fill the canvas with the gradient pattern
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 10, 10, 240);
 }
 var tickColor = 'black';
 var textColor = 'black';
 
-    function drawTicks(){
-      var canvas = document.getElementById("canvas");
-      var ctx = canvas.getContext("2d");
-      ctx.clearRect(10,0,canvas.width,canvas.height);
-      ctx.strokeStyle = tickColor;
-      for (let i = 0;i<6;i++){
-        ctx.beginPath();
-        ctx.moveTo(10,10+i*48);
-        ctx.lineTo(15,10+i*48);
-        ctx.stroke();
-      }
-    }
+function drawTicks(){
+  var canvas = document.getElementById("canvas");
+  var ctx = canvas.getContext("2d");
+  ctx.clearRect(10,0,canvas.width,canvas.height);
+  ctx.strokeStyle = tickColor;
+  for (let i = 0;i<6;i++){
+    ctx.beginPath();
+    ctx.moveTo(10,10+i*48);
+    ctx.lineTo(15,10+i*48);
+    ctx.stroke();
+  }
+}
 
-    function drawTickText(){
-      var canvas = document.getElementById("canvas");
-      var ctx = canvas.getContext("2d");
-      ctx.clearRect(16,0,canvas.width,canvas.height);
-      let dv = (vMax-vMin)/5;
-      ctx.fillStyle = textColor;
-      for (let i = 0;i<6;i++){
-        ctx.fillText((vMax-i*dv).toExponential(1),16,10+i*48);
-      }
-    }
+function drawTickText(){
+  var canvas = document.getElementById("canvas");
+  var ctx = canvas.getContext("2d");
+  ctx.clearRect(16,0,canvas.width,canvas.height);
+  let dv = (vMax-vMin)/5;
+  ctx.fillStyle = textColor;
+  for (let i = 0;i<6;i++){
+    ctx.fillText((vMax-i*dv).toExponential(1),16,10+i*48);
+  }
+}
 
 drawColorbar(11);
 drawTicks();
@@ -234,114 +234,109 @@ var vMax = 10000;
 var vMin = 0;
 drawTickText();
 
-    var map = new AMap.Map('viewDiv', {
-        viewMode:'3D',  
-        expandZoomRange:true,
-        zooms:[3,20],
-        zoom:16,
-        pitch:0,
-        center:[116.396132,39.900444]
-    });
+var map = new AMap.Map('viewDiv', {
+    viewMode:'3D',  
+    expandZoomRange:true,
+    zooms:[3,20],
+    zoom:16,
+    pitch:0,
+    center:[116.396132,39.900444]
+});
 
-    var geocoder;
+var geocoder;
 
-    var object3Dlayer = new AMap.Object3DLayer();
-    map.add(object3Dlayer);
+var object3Dlayer = new AMap.Object3DLayer();
+map.add(object3Dlayer);
 
-    // var heatmapLayer = new Loca.HeatmapLayer({
-    //     map: map,
-    // });
+AMapUI.loadUI(['control/BasicControl'], function(BasicControl) {
+  var layerCtrl = new BasicControl.LayerSwitcher({
+      position: 'rt',
+      
+        //自定义基础图层
+        baseLayers: [{
+            enable: true,
+            id: 'Gtile',
+            name: '谷歌矢量图',
+            layer: new AMap.TileLayer({
+              getTileUrl: 'http://mt{1,2,3,0}.google.cn/vt/lyrs=m@126&hl=zh-CN&gl=cn&src=app&s=G&x=[x]&y=[y]&z=[z]',
+              zIndex:2
+            })
+        },{
+            id: 'Gsatellite',
+            name: '谷歌卫星图',
+            layer: new AMap.TileLayer({
+              getTileUrl: 'http://mt{1,2,3,0}.google.cn/vt/lyrs=y@126&hl=zh-CN&gl=cn&src=app&s=G&x=[x]&y=[y]&z=[z]',
+              zIndex:2
+            })
+        },{
+            id: 'Atile',
+            name: '高德矢量图',
+            layer: new AMap.TileLayer()
+        }, {
+            id: 'Asatellite',
+            name: '高德卫星图',
+            layer: new AMap.TileLayer.Satellite()
+          }],
+        //自定义覆盖图层
+        overlayLayers: [ {
+            id: 'roadNet',
+            name: '高德路网图',
+            layer: new AMap.TileLayer.RoadNet()
+        },{
+            enable: true,
+            id: 'object3D',
+            name: '雷达扫描图',
+            layer: object3Dlayer
+        }]
+  });
+  //图层切换控件
+  map.addControl(layerCtrl);
+  map.setLayers(layerCtrl.getEnabledLayers());
+  layerCtrl.on('layerPropChanged',function(e){
+    if(e.props.enable){
+      if(e.layer.id.includes('satellite')){
+        tickColor = '#FFF';
+        textColor = '#FFF';
+        drawTicks();
+        drawTickText();
+      }else if(e.layer.id.includes('tile')){
+        tickColor = '#000';
+        textColor = '#000';
+        drawTicks();
+        drawTickText();
+      };
+    };
+  });
+});
 
-    AMapUI.loadUI(['control/BasicControl'], function(BasicControl) {
-      var layerCtrl = new BasicControl.LayerSwitcher({
-          position: 'rt',
-          
-           //自定义基础图层
-            baseLayers: [{
-                enable: true,
-                id: 'Gtile',
-                name: '谷歌矢量图',
-                layer: new AMap.TileLayer({
-                  getTileUrl: 'http://mt{1,2,3,0}.google.cn/vt/lyrs=m@126&hl=zh-CN&gl=cn&src=app&s=G&x=[x]&y=[y]&z=[z]',
-                  zIndex:2
-                })
-            },{
-                id: 'Gsatellite',
-                name: '谷歌卫星图',
-                layer: new AMap.TileLayer({
-                  getTileUrl: 'http://mt{1,2,3,0}.google.cn/vt/lyrs=y@126&hl=zh-CN&gl=cn&src=app&s=G&x=[x]&y=[y]&z=[z]',
-                  zIndex:2
-                })
-            },{
-                id: 'Atile',
-                name: '高德矢量图',
-                layer: new AMap.TileLayer()
-            }, {
-                id: 'Asatellite',
-                name: '高德卫星图',
-                layer: new AMap.TileLayer.Satellite()
-             }],
-            //自定义覆盖图层
-            overlayLayers: [ {
-                id: 'roadNet',
-                name: '高德路网图',
-                layer: new AMap.TileLayer.RoadNet()
-            },{
-                enable: true,
-                id: 'object3D',
-                name: '雷达扫描图',
-                layer: object3Dlayer
-            }]
-      });
-      //图层切换控件
-      map.addControl(layerCtrl);
-      map.setLayers(layerCtrl.getEnabledLayers());
-      layerCtrl.on('layerPropChanged',function(e){
-        if(e.props.enable){
-          if(e.layer.id.includes('satellite')){
-            tickColor = '#FFF';
-            textColor = '#FFF';
-            drawTicks();
-            drawTickText();
-          }else if(e.layer.id.includes('tile')){
-            tickColor = '#000';
-            textColor = '#000';
-            drawTicks();
-            drawTickText();
-          };
-        };
-      });
-    });
+AMap.plugin([
+    'AMap.ControlBar',
+    'AMap.Scale'
+], function(){
+    // 添加 3D 罗盘控制
+    map.addControl(new AMap.ControlBar({
+        position: {left:'-90px'} 
+    }));
+    map.addControl(new AMap.Scale());
+});
 
-    AMap.plugin([
-        'AMap.ControlBar',
-        'AMap.Scale'
-    ], function(){
+var rdata = {};
+var rangeMax = 6000;
+var colorOpacity = 0.5;
+var resolution = 15;
+var verAng = 0;
+var horAngStart=0;
+var horAngEnd = 360;
+var horAngStep = 5;
+var longitude = 0;
+var latitude = 0;
+var altitude = 0;
+var drawData = [];
+var position = new AMap.LngLat(0, 0);
+var is3D = false;
+var rotationAngle = 0;
 
-        // 添加 3D 罗盘控制
-        map.addControl(new AMap.ControlBar({
-            position: {left:'-90px'} 
-        }));
-        map.addControl(new AMap.Scale());
-    });
-
-    var rdata = {};
-    var rangeMax = 6000;
-    var colorOpacity = 0.5;
-    var resolution = 15;
-    var verAng = 0;
-    var horAngStart=0;
-    var horAngEnd = 360;
-    var horAngStep = 5;
-    var longitude = 0;
-    var latitude = 0;
-    var altitude = 0;
-    var drawData = [];
-    var position = new AMap.LngLat(0, 0);
-    var is3D = false;
-    var rotationAngle = 0;
-
-    function createPie(location,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,opacity) {
+  function createPie(location,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,opacity) {
       var gpn = Math.floor((horAngEnd-horAngStart)/horAngStep);
       var tri;
       for(var i = 0;i<gpn;i++){
@@ -350,7 +345,7 @@ drawTickText();
       }
     }
 
-    function generateTriangle(lnglat, r, resl, idata, rdata, verAng, horAngStart, horAngEnd, vmin, vmax, alpha){
+  function generateTriangle(lnglat, r, resl, idata, rdata, verAng, horAngStart, horAngEnd, vmin, vmax, alpha){
         var x0 = 0;
         var y0 = 0;
         var z0 = 0;
@@ -409,7 +404,7 @@ drawTickText();
         return triangle;
     }
 
-    function getColor(v, vmin, vmax, alpha){
+  function getColor(v, vmin, vmax, alpha){
         var c = {};
         if (v < vmin){
           v = vmin;
@@ -442,49 +437,6 @@ drawTickText();
             c.b = 0;
         }
         return c;
-  }
-
-  function create3DHeatmap(){
-    var list = [];
-    var v0xy = map.lngLatToGeodeticCoord(position);
-    var v1xy = map.lngLatToGeodeticCoord(position.offset(5000,0));
-    var scal = (v1xy.x-v0xy.x)/5000;
-    var x0 = v0xy.x;
-    var y0 = v0xy.y;
-    for (let i = 0;i<drawData.length;i++) {
-      let horAng = horAngStart+i*horAngStep;
-      for(let j = 0;j<rangeMax/resolution;j++){        
-        x1 = (x0+j*resolution*scal*Math.cos(verAng/180*Math.PI)*Math.sin(horAng/180*Math.PI));
-        y1 = (y0-j*resolution*scal*Math.cos(verAng/180*Math.PI)*Math.cos(horAng/180*Math.PI));
-        let ll = map.geodeticCoordToLngLat(new AMap.Pixel(x1,y1));
-        list.push({
-            coordinate: [ll.lng, ll.lat],
-            count: drawData[i][j]
-        })
-      }
-    
-
-    }
-
-    heatmapLayer.setData(list, {
-        lnglat: 'coordinate',
-        value: 'count'
-    });
-
-    heatmapLayer.setOptions({
-        style: {
-            radius: 30,
-            color: {
-                0.5: '#2c7bb6',
-                0.65: '#abd9e9',
-                0.7: '#ffffbf',
-                0.9: '#fde468',
-                1.0: '#d7191c'
-            }
-        }
-    });
-
-    heatmapLayer.render();
   }
 
   function prepareData(data){
@@ -529,55 +481,67 @@ drawTickText();
         rdata.pm25.push(data.result[i].ext.map(x => x>0? 121.5*Math.pow(x,1.13) : 0));
     };
   }
-    $.post('{{ url_for('main.get_ppi_data') }}', { 'task id': task_id, 'content':'list' },
-        function(data,status){
-        var sel1 = document.getElementById('timeSeries');
-        sel1.addEventListener("change", SelectTime);
-        var channel = document.getElementById('channel');
-        channel.addEventListener("change", SelectChannel);
-        var colorMax = document.getElementById('colorMax');
-        colorMax.addEventListener("change", ChangeMaxValue);
-        var colorMin = document.getElementById('colorMin');
-        colorMin.addEventListener("change", ChangeMinValue);
-        var zMax = document.getElementById('zMax');
-        zMax.addEventListener("change", ChangeRangeMax);
-        var opacity = document.getElementById('opacity');
-        opacity.addEventListener("change", ChangeColorOpacity);
-        var rotation = document.getElementById('rotation');
-        rotation.addEventListener("change", ChangeRotationAngle);
-        for(let i=0; i<data.result.length;i++){
-            sel1.options.add(new Option(data.result[i].timestamp+""));
-        };
-        $.post('{{ url_for('main.get_ppi_data') }}', { 'task id': task_id, 'content':'timedata', 'time': sel1.options[0].text},
-            function(data,status){
-            prepareData(data);
-            drawData = rdata.prr_A;
-            createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);
-            map.setCenter(position);
-            map.setFitView();
+    
+  $.post('{{ url_for('main.get_ppi_data') }}', { 'task id': task_id, 'content':'list' },
+    function(data,status){    
+      var sel1 = document.getElementById('timeSeries');
+      for(let i=0; i<data.result.length;i++){
+          sel1.options.add(new Option(data.result[i].timestamp+""));
+      };
+      $.post('{{ url_for('main.get_ppi_data') }}', { 'task id': task_id, 'content':'timedata', 'time': sel1.options[0].text},
+          function(data,status){
+          prepareData(data);
+          drawData = rdata.prr_A;
+          createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);
+          map.setCenter(position);
+          map.setFitView();
 
-            document.getElementById('angleRange').textContent = "扫描范围"+horAngStart+" - "+horAngEnd;
-            document.getElementById('angleStep').textContent = "扫描步长"+horAngStep;
-            document.getElementById('angleVer').textContent = "垂直角度"+verAng;
-            document.getElementById('timeStamp').textContent = sel1.options[0].text+"--"+data.result[data.result.length-1].timestamp;
-        });
-    });
+          document.getElementById('angleRange').textContent = "扫描范围"+horAngStart+" - "+horAngEnd;
+          document.getElementById('angleStep').textContent = "扫描步长"+horAngStep;
+          document.getElementById('angleVer').textContent = "垂直角度"+verAng;
+          document.getElementById('timeStamp').textContent = sel1.options[0].text+"--"+data.result[data.result.length-1].timestamp;
+          addMapEvents();
+      });
+  });
+    
+    function addMapEvents(){
+      document.getElementById('timeSeries').addEventListener("change", SelectTime);
+      document.getElementById('channel').addEventListener("change", SelectChannel);
+      document.getElementById('colorMax').addEventListener("change", ChangeMaxValue);
+      document.getElementById('colorMin').addEventListener("change", ChangeMinValue);
+      document.getElementById('zMax').addEventListener("change", ChangeRangeMax);
+      document.getElementById('opacity').addEventListener("change", ChangeColorOpacity);;
+      document.getElementById('rotation').addEventListener("change", ChangeRotationAngle);
+      document.getElementById('createISOCurve').addEventListener("click",createISOHeatmap);
+      document.getElementById('curvePlay').addEventListener("click",playHeatmap);
+      document.getElementById('setCenter').addEventListener("click",setMapCenter);
+      document.getElementById('addMarker').addEventListener("click",addMapMarker);
+      document.getElementById('addRuler').addEventListener("click",addMapRuler);
+      document.getElementById('addMeasurer').addEventListener("click",addMapMeasurer);
+      document.getElementById('clearOverlay').addEventListener("click",clearMapOverlay);
+      document.getElementById('savePic').addEventListener("click",saveMap);
+    }
 
     var mouseTool = new AMap.MouseTool(map); 
+    var isPlaying = false;
 
     function addMapMarker(){
+      if(isPlaying){return;}
       mouseTool.marker();
     }
 
     function clearMapOverlay(){
+      if(isPlaying){return;}
       mouseTool.close(true);
     }
 
     function addMapRuler(){
+      if(isPlaying){return;}
       mouseTool.rule();
     }
 
     function addMapMeasurer(){
+      if(isPlaying){return;}
       mouseTool.measureArea();
     }
     
@@ -665,89 +629,105 @@ drawTickText();
       return ret;
     }
 
-    function SelectTime(){
-        var sel1 = document.getElementById('timeSeries');
-        var index = sel1.selectedIndex;
-        $.post('{{ url_for('main.get_ppi_data') }}', { 'task id': task_id, 'content':'timedata', 'time': sel1.options[index].text},
-        function(data,status){
-          prepareData(data);
-          SelectChannel();
-          document.getElementById('timeStamp').textContent = sel1.options[index].text+"--"+data.result[data.result.length-1].timestamp;
-        });      
-      }
+    function SelectTime(e){
+      if(isPlaying){return;}
+      var sel1 = e.target;
+      var index = sel1.selectedIndex;
+      $.post('{{ url_for('main.get_ppi_data') }}', { 'task id': task_id, 'content':'timedata', 'time': sel1.options[index].text},
+      function(data,status){
+        prepareData(data);
+        SelectChannel();
+        document.getElementById('timeStamp').textContent = sel1.options[index].text+"--"+data.result[data.result.length-1].timestamp;
+      });      
+    }
+    var channelID = 'prr_A';
+    function SelectChannel(){
+      if(isPlaying){return;}
+      var channel = document.getElementById('channel');
+      drawData = rdata.prr_A;
+      switch(channel.options[channel.selectedIndex].text){
+        case '平行通道距离校正信号':
+          drawData = rdata.prr_A;
+          channelID = 'prr_A';
+          break;
+        case '垂直通道距离校正信号':
+          drawData = rdata.prr_B;
+          channelID = 'prr_B';
+          break;
+        case '消光系数':
+          drawData = rdata.ext;
+          channelID = 'ext';
+          break;
+        case '退偏比':
+          drawData = rdata.dep;
+          channelID = 'dep';
+          break;
+        case '平行通道原始信号':
+          drawData = rdata.raw_A;
+          channelID = 'raw_A';
+          break;
+        case '垂直通道原始信号':
+          drawData = rdata.raw_B;
+          channelID = 'raw_B';
+          break;
+        case 'PM10':
+          drawData = rdata.pm10;
+          channelID = 'pm10';
+          break;
+        case 'PM2.5':
+          drawData = rdata.pm25;
+          channelID = 'pm25';
+          break;
+      };
+      object3Dlayer.clear();
+      createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);
+    }
 
-      function SelectChannel(){
-        drawData = rdata.prr_A;
-        var channel = document.getElementById('channel');
-        switch(channel.options[channel.selectedIndex].text){
-          case '平行通道距离校正信号':
-            drawData = rdata.prr_A;
-            break;
-          case '垂直通道距离校正信号':
-            drawData = rdata.prr_B;
-            break;
-          case '消光系数':
-            drawData = rdata.ext;
-            break;
-          case '退偏比':
-            drawData = rdata.dep;
-            break;
-          case '平行通道原始信号':
-            drawData = rdata.raw_A;
-            break;
-          case '垂直通道原始信号':
-            drawData = rdata.raw_B;
-            break;
-          case 'PM10':
-            drawData = rdata.pm10;
-            break;
-          case 'PM2.5':
-            drawData = rdata.pm25;
-            break;
-        };
-        object3Dlayer.clear();
-        createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);
-      }
-
-      function ChangeMaxValue(){
-        var colorMax = document.getElementById('colorMax');
+      function ChangeMaxValue(e){
+        if(isPlaying){return;}
+        var colorMax = e.target;
         vMax = Number(colorMax.value);
         object3Dlayer.clear();
         createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);
         drawTickText();
       }
 
-      function ChangeMinValue(){
-        var colorMin = document.getElementById('colorMin'); 
+      function ChangeMinValue(e){ 
+        if(isPlaying){return;}
+        var colorMin = e.target;
         vMin = Number(colorMin.value);  
         object3Dlayer.clear();
         createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity); 
         drawTickText(); 
       }
 
-      function ChangeRangeMax(){
-        var zMax = document.getElementById('zMax'); 
+      function ChangeRangeMax(e){
+        if(isPlaying){return;}
+        var zMax = e.target;
         rangeMax = Number(zMax.value);  
         object3Dlayer.clear();
         createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);   
       }
 
-      function ChangeColorOpacity(){
-        var opacity = document.getElementById('opacity'); 
+      function ChangeColorOpacity(e){
+        if(isPlaying){return;}
+        var opacity = e.target;
         colorOpacity = Number(opacity.value);  
         object3Dlayer.clear();
         createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);   
       }
 
-      function ChangeRotationAngle(){
-        var rotation = document.getElementById('rotation'); 
+      function ChangeRotationAngle(e){
+        if(isPlaying){return;}
+        var rotation = e.target;
         rotationAngle = Number(rotation.value); 
         object3Dlayer.clear();
         createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);  
       }
       
-      function createISOHeatmap(){ 
-        var heatmapBtn = document.getElementById('createISOCurve');
+      function createISOHeatmap(e){ 
+        if(isPlaying){return;}
+        var heatmapBtn = e.target;
         if(is3D){
           heatmapBtn.src = '../static/3DHeatmap.png';
           heatmapBtn.title = '3D热度图';
@@ -760,10 +740,39 @@ drawTickText();
         object3Dlayer.clear();
         createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity); 
       }
+      
+      var canBeStop = false;
+      function playHeatmap(e){
+        var playBtn = e.target;
+        if(isPlaying){
+          if(canBeStop){
+            // stopHeatmapAnimation();
+            isPlaying = false;
+            playBtn.src = '../static/play.svg';
+          }
+        }else{
+          getAnimationData();
+        }
+      }
 
-      function playHeatmap(){
-        var playBtn = document.getElementById('curvePlay');
-        playBtn.src = '../static/35.gif'
+      function getAnimationData(){
+        $.ajax({
+          type: "post",
+          data: { 'task id': task_id, 'content':'all', 'channel': channelID},
+          url: '{{ url_for('main.get_ppi_data') }}',
+          beforeSend:function(){
+            var playBtn = document.getElementById('curvePlay');
+            isPlaying = true;
+            canBeStop = false;
+            playBtn.src = '../static/35.gif';
+          },
+          success:function(data){
+            var playBtn = document.getElementById('curvePlay');
+            playBtn.src = '../static/stop.svg';
+            playBtn.title = '停止';
+            canBeStop = true;
+          }
+        });
       }
 
 
