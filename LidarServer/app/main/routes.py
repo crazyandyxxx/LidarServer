@@ -317,9 +317,9 @@ def get_ppi_data():
                     elif channel=='ext':
                         channeldata.append(ext_a)
                     elif channel=='pm10':
-                        channeldata.append(243*np.pow(ext_a,1.13))
+                        channeldata.append(243*np.power(np.where(ext_a>0,ext_a,0),1.13))
                     elif channel=='pm25':
-                        channeldata.append(0.5*243*np.pow(ext_a,1.13))
+                        channeldata.append(0.5*243*np.power(np.where(ext_a>0,ext_a,0),1.13))
                 data['channeldata'] = channeldata
                 results.append(data)
         return jsonify(result=results)

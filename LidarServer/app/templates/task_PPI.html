@@ -359,13 +359,16 @@ var pie;
         var x1 = [], y1 = [],z1 = [], x2 = [], y2 = [], z2 = [];
         var nmax = r/resl;
         resl /= map.getResolution(lnglat, 20);
-        maxH = 1000/map.getResolution(lnglat, 20);
+        var maxH = 1000/map.getResolution(lnglat, 20);
         for(var i = 0; i<nmax+1; i++){
           x1.push(x0+i*resl*Math.cos(verAng/180*Math.PI)*Math.sin(horAngStart/180*Math.PI));
           y1.push(y0-i*resl*Math.cos(verAng/180*Math.PI)*Math.cos(horAngStart/180*Math.PI));
           var h1 = z0-i*resl*Math.sin(verAng/180*Math.PI);
           if(is3D){
-            h1 = (rdata[idata][i]-vmin)/(vmax-vmin);
+            h1 = 0;
+            if(idata<rdata.length){
+              h1 = (rdata[idata][i]-vmin)/(vmax-vmin);
+            }  
             if(h1<0){h1=0}else if(h1>3){h1=1.5};
             h1 *= -maxH;
           }
@@ -374,7 +377,10 @@ var pie;
           y2.push(y0-i*resl*Math.cos(verAng/180*Math.PI)*Math.cos(horAngEnd/180*Math.PI));
           var h2 = z0-i*resl*Math.sin(verAng/180*Math.PI);
           if(is3D){
-            h2 = (rdata[idata+1][i]-vmin)/(vmax-vmin);
+            h2 = 0;
+            if(idata<rdata.length-1){
+              h2 = (rdata[idata+1][i]-vmin)/(vmax-vmin);
+            }    
             if(h2<0){h2=0}else if(h2>3){h2=1.5};
             h2 *= -maxH;
           }
@@ -388,16 +394,26 @@ var pie;
           geometry.vertices.push(x1[i], y1[i], z1[i]);
           geometry.vertices.push(x2[i], y2[i], z2[i]);
           geometry.vertices.push(x2[i+1], y2[i+1], z2[i+1]);
-          var xc1 = getColor(rdata[idata][i], vmin, vmax, alpha);
-          var xc2 = getColor(rdata[idata][i+1], vmin, vmax, alpha);
-          var xc3 = getColor(rdata[idata+1][i], vmin, vmax, alpha);
-          var xc4 = getColor(rdata[idata+1][i+1], vmin, vmax, alpha);
-          geometry.vertexColors.push(xc1.r, xc1.g, xc1.b, xc1.a);
-          geometry.vertexColors.push(xc2.r, xc2.g, xc2.b, xc2.a);
-          geometry.vertexColors.push(xc4.r, xc4.g, xc4.b, xc4.a);
-          geometry.vertexColors.push(xc1.r, xc1.g, xc1.b, xc1.a);
-          geometry.vertexColors.push(xc3.r, xc3.g, xc3.b, xc3.a);
-          geometry.vertexColors.push(xc4.r, xc4.g, xc4.b, xc4.a);
+          if(idata<rdata.length-1){
+            var xc1 = getColor(rdata[idata][i], vmin, vmax, alpha);
+            var xc2 = getColor(rdata[idata][i+1], vmin, vmax, alpha);
+            var xc3 = getColor(rdata[idata+1][i], vmin, vmax, alpha);
+            var xc4 = getColor(rdata[idata+1][i+1], vmin, vmax, alpha);
+            geometry.vertexColors.push(xc1.r, xc1.g, xc1.b, xc1.a);
+            geometry.vertexColors.push(xc2.r, xc2.g, xc2.b, xc2.a);
+            geometry.vertexColors.push(xc4.r, xc4.g, xc4.b, xc4.a);
+            geometry.vertexColors.push(xc1.r, xc1.g, xc1.b, xc1.a);
+            geometry.vertexColors.push(xc3.r, xc3.g, xc3.b, xc3.a);
+            geometry.vertexColors.push(xc4.r, xc4.g, xc4.b, xc4.a);
+          }else{
+            geometry.vertexColors.push(0, 0, 0, 0);
+            geometry.vertexColors.push(0, 0, 0, 0);
+            geometry.vertexColors.push(0, 0, 0, 0);
+            geometry.vertexColors.push(0, 0, 0, 0);
+            geometry.vertexColors.push(0, 0, 0, 0);
+            geometry.vertexColors.push(0, 0, 0, 0);
+          }
+          
         }
     }
 
@@ -445,11 +461,6 @@ var pie;
     rdata.dep = [];
     rdata.pm10 = [];
     rdata.pm25 = [];
-    resolution = data.result[0].resolution;
-    verAng = data.result[0].verAngle;
-    horAngStart = data.result[0].horAngle;
-    horAngEnd = data.result[data.result.length-1].horAngle;
-    horAngStep = data.result[1].horAngle - data.result[0].horAngle;
     let lonArr = [];
     let latArr = [];
     let altArr = [];
@@ -486,7 +497,12 @@ var pie;
           sel1.options.add(new Option(data.result[i].timestamp+""));
       };
       $.post('{{ url_for('main.get_ppi_data') }}', { 'task id': task_id, 'content':'timedata', 'time': sel1.options[0].text},
-          function(data,status){
+        function(data,status){
+          resolution = data.result[0].resolution;
+          verAng = data.result[0].verAngle;
+          horAngStart = data.result[0].horAngle;
+          horAngEnd = data.result[data.result.length-1].horAngle;
+          horAngStep = data.result[1].horAngle - data.result[0].horAngle;
           prepareData(data);
           drawData = rdata.prr_A;
           createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);
@@ -496,7 +512,7 @@ var pie;
           document.getElementById('angleRange').textContent = "扫描范围"+horAngStart+" - "+horAngEnd;
           document.getElementById('angleStep').textContent = "扫描步长"+horAngStep;
           document.getElementById('angleVer').textContent = "垂直角度"+verAng;
-          document.getElementById('timeStamp').textContent = sel1.options[0].text+"--"+data.result[data.result.length-1].timestamp;
+          document.getElementById('timeStamp').textContent = sel1.options[0].text+"至"+data.result[data.result.length-1].timestamp;
           addMapEvents();
       });
   });
@@ -634,7 +650,7 @@ var pie;
       function(data,status){
         prepareData(data);
         SelectChannel();
-        document.getElementById('timeStamp').textContent = sel1.options[index].text+"--"+data.result[data.result.length-1].timestamp;
+        document.getElementById('timeStamp').textContent = sel1.options[index].text+"至"+data.result[data.result.length-1].timestamp;
       });      
     }
     var channelID = 'prr_A';
@@ -769,16 +785,101 @@ var pie;
             playBtn.src = '../static/stop.svg';
             playBtn.title = '停止';
             canBeStop = true;
-            Scan(data);
+            animData = data;
+            Scan();      
           }
         });
       }
-
-      function Scan(data){
+      var animData;
+      var animI = 0;
+      async function Scan(){
         if(!isPlaying){return;}
-        pie.rotateZ(-2);
+        animI %= animData.result.length;
+        // changePie(animData.result[animI].channeldata)
+        drawData = animData.result[animI].channeldata;
+        object3Dlayer.clear();
+        createPie(position,animData.result[animI].channeldata,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);
+        document.getElementById('timeStamp').textContent = animData.result[animI].starttime+"至"+animData.result[animI].endtime;
+        animI++;
+        await sleep(250);
         AMap.Util.requestAnimFrame(Scan);
       }
+      
+      function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+      }
+    // var rdata = {};
+    // var rangeMax = 6000;
+    // var colorOpacity = 0.5;
+    // var resolution = 15;
+    // var verAng = 0;
+    // var horAngStart=0;
+    // var horAngEnd = 360;
+    // var horAngStep = 5;
+    // var longitude = 0;
+    // var latitude = 0;
+    // var altitude = 0;
+    // var drawData = [];
+    // var position = new AMap.LngLat(0, 0);
+    // var is3D = false;
+    // var rotationAngle = 0;
+    // var pie;
+    function changePie(drawData) {
+      var gpn = Math.floor((horAngEnd-horAngStart)/horAngStep);
+      var geometry = pie.geometry;
+      for(var i = 0;i<gpn;i++){
+        changeTriangle(geometry,position,rangeMax,resolution,i,drawData,verAng,horAngStart+i*horAngStep,horAngStart+(i+1)*horAngStep,vMin,vMax,colorOpacity);
+      }
+      pie.needUpdate = true;
+      pie.reDraw();
+    }
+
+    function changeTriangle(geometry, lnglat, r, resl, idata, rdata, verAng, horAngStart, horAngEnd, vmin, vmax, alpha){
+        var x0 = 0;
+        var y0 = 0;
+        var z0 = 0;
+        var x1 = [], y1 = [],z1 = [], x2 = [], y2 = [], z2 = [];
+        var nmax = r/resl;
+        resl /= map.getResolution(lnglat, 20);
+        var maxH = 1000/map.getResolution(lnglat, 20);
+        for(var i = 0; i<nmax+1; i++){
+          x1.push(x0+i*resl*Math.cos(verAng/180*Math.PI)*Math.sin(horAngStart/180*Math.PI));
+          y1.push(y0-i*resl*Math.cos(verAng/180*Math.PI)*Math.cos(horAngStart/180*Math.PI));
+          var h1 = z0-i*resl*Math.sin(verAng/180*Math.PI);
+          if(is3D){
+            h1 = (rdata[idata][i]-vmin)/(vmax-vmin);
+            if(h1<0){h1=0}else if(h1>3){h1=1.5};
+            h1 *= -maxH;
+          }
+          z1.push(h1);
+          x2.push(x0+i*resl*Math.cos(verAng/180*Math.PI)*Math.sin(horAngEnd/180*Math.PI));
+          y2.push(y0-i*resl*Math.cos(verAng/180*Math.PI)*Math.cos(horAngEnd/180*Math.PI));
+          var h2 = z0-i*resl*Math.sin(verAng/180*Math.PI);
+          if(is3D){
+            h2 = (rdata[idata+1][i]-vmin)/(vmax-vmin);
+            if(h2<0){h2=0}else if(h2>3){h2=1.5};
+            h2 *= -maxH;
+          }
+          z2.push(h2);
+        }
+        
+        for(var i = 0; i<nmax; i++){
+          // geometry.vertices.splice(idata*nmax*18+i*18,9, x1[i], y1[i], z1[i],x1[i+1], y1[i+1], z1[i+1],x2[i+1], y2[i+1], z2[i+1]);
+          // geometry.vertices.splice(idata*nmax*18+i*18+9,9, x1[i], y1[i], z1[i],x2[i], y2[i], z2[i],x2[i+1], y2[i+1], z2[i+1]);
+          if(idata<rdata.length-1){
+            var xc1 = getColor(rdata[idata][i], vmin, vmax, alpha);
+            var xc2 = getColor(rdata[idata][i+1], vmin, vmax, alpha);
+            var xc3 = getColor(rdata[idata+1][i], vmin, vmax, alpha);
+            var xc4 = getColor(rdata[idata+1][i+1], vmin, vmax, alpha);
+            // geometry.vertexColors.splice(idata*nmax*24+i*24,12, xc1.r, xc1.g, xc1.b, xc1.a,xc2.r, xc2.g, xc2.b, xc2.a,xc4.r, xc4.g, xc4.b, xc4.a);
+            // geometry.vertexColors.splice(idata*nmax*24+i*24+12,12, xc1.r, xc1.g, xc1.b, xc1.a,xc3.r, xc3.g, xc3.b, xc3.a,xc4.r, xc4.g, xc4.b, xc4.a);
+          }else{
+            // geometry.vertexColors.splice(idata*nmax*24+i*24,12, 0, 0, 0, 0,0, 0, 0, 0,0, 0, 0, 0);
+            // geometry.vertexColors.splice(idata*nmax*24+i*24+12,12, 0, 0, 0, 0,0, 0, 0, 0,0, 0, 0, 0);
+          }
+          
+        }
+    }
 
 </script>
 
