@@ -338,14 +338,19 @@ var rotationAngle = 0;
 
   function createPie(location,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,opacity) {
       var gpn = Math.floor((horAngEnd-horAngStart)/horAngStep);
-      var tri;
+      var pie = new AMap.Object3D.Mesh()
+      pie.transparent = true;
+      pie.backOrFront = 'both';
+      var geometry = pie.geometry;
       for(var i = 0;i<gpn;i++){
-        tri = generateTriangle(location,rangeMax,resolution,i,drawData,verAng,horAngStart+i*horAngStep,horAngStart+(i+1)*horAngStep,vMin,vMax,opacity);
-        object3Dlayer.add(tri);
+        generateTriangle(geometry,location,rangeMax,resolution,i,drawData,verAng,horAngStart+i*horAngStep,horAngStart+(i+1)*horAngStep,vMin,vMax,opacity);
       }
+      pie.rotateZ(rotationAngle);
+      pie.position(location);
+      object3Dlayer.add(pie);
     }
 
-  function generateTriangle(lnglat, r, resl, idata, rdata, verAng, horAngStart, horAngEnd, vmin, vmax, alpha){
+  function generateTriangle(geometry, lnglat, r, resl, idata, rdata, verAng, horAngStart, horAngEnd, vmin, vmax, alpha){
         var x0 = 0;
         var y0 = 0;
         var z0 = 0;
@@ -374,12 +379,7 @@ var rotationAngle = 0;
           }
           z2.push(h2);
         }
-
-        var triangle = new AMap.Object3D.Mesh()
-        triangle.transparent = true;
-        triangle.backOrFront = 'both';
-
-        var geometry = triangle.geometry;
+        
         for(var i = 0; i<nmax; i++){
           geometry.vertices.push(x1[i], y1[i], z1[i]);
           geometry.vertices.push(x1[i+1], y1[i+1], z1[i+1]);
@@ -398,10 +398,6 @@ var rotationAngle = 0;
           geometry.vertexColors.push(xc3.r, xc3.g, xc3.b, xc3.a);
           geometry.vertexColors.push(xc4.r, xc4.g, xc4.b, xc4.a);
         }
-        triangle.rotateZ(rotationAngle);
-        triangle.position(lnglat);
-        
-        return triangle;
     }
 
   function getColor(v, vmin, vmax, alpha){
