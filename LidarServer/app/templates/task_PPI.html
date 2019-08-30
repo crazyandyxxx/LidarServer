@@ -335,10 +335,11 @@ var drawData = [];
 var position = new AMap.LngLat(0, 0);
 var is3D = false;
 var rotationAngle = 0;
+var pie;
 
   function createPie(location,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,opacity) {
       var gpn = Math.floor((horAngEnd-horAngStart)/horAngStep);
-      var pie = new AMap.Object3D.Mesh()
+      pie = new AMap.Object3D.Mesh()
       pie.transparent = true;
       pie.backOrFront = 'both';
       var geometry = pie.geometry;
@@ -745,6 +746,7 @@ var rotationAngle = 0;
             // stopHeatmapAnimation();
             isPlaying = false;
             playBtn.src = '../static/play.svg';
+            playBtn.title = '播放';
           }
         }else{
           getAnimationData();
@@ -767,10 +769,16 @@ var rotationAngle = 0;
             playBtn.src = '../static/stop.svg';
             playBtn.title = '停止';
             canBeStop = true;
+            Scan(data);
           }
         });
       }
 
+      function Scan(data){
+        if(!isPlaying){return;}
+        pie.rotateZ(-2);
+        AMap.Util.requestAnimFrame(Scan);
+      }
 
 </script>
 
