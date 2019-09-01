@@ -568,7 +568,8 @@ var pie;
           var p0 = map.lngLatToGeodeticCoord(position);
           var p1 = map.lngLatToGeodeticCoord(location);
           var ang = (Math.atan2(p1.y-p0.y,p1.x-p0.x)/Math.PI*180+450)%360;
-          var angDiff = ang-horAngStart;
+          var angDiff = ang-horAngStart-rotationAngle;
+          angDiff %= 360;
           angDiff<0 && (angDiff+=360);
           var an = Math.floor(angDiff/horAngStep);
 
