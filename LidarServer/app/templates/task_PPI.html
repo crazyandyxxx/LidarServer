@@ -29,6 +29,21 @@
       transform: translate(-50%,0%) */
       right: 0;
     }
+    .close-btn {
+        position: absolute;
+        top: -6px;
+        right: -8px;
+        width: 15px;
+        height: 15px;
+        font-size: 12px;
+        background: #ccc;
+        border-radius: 50%;
+        color: #fff;
+        text-align: center;
+        line-height: 15px;
+        box-shadow: -1px 1px 1px rgba(10, 10, 10, .2);
+        cursor:pointer;
+    }
     #colorbar{
       z-index: 100;
       position: absolute; 
@@ -540,20 +555,66 @@ var pie;
 
     function addMapMarker(){
       if(isPlaying){return;}
-      mouseTool.marker();
+      map.on('click', showInfoClick);
+    }
+    
+    function showInfoClick(e){
+      var location = e.lnglat;
+      var dis = AMap.GeometryUtil.distance(location, position);
+      var rn = Math.round(dis/resolution/Math.cos(verAng/180*Math.PI));
+      var p0 = map.lngLatToGeodeticCoord(position);
+      var p1 = map.lngLatToGeodeticCoord(location);
+      var ang = (Math.atan2(p1.y-p0.y,p1.x-p0.x)/Math.PI*180+450)%360;
+      var angDiff = ang-horAngStart-rotationAngle;
+      angDiff %= 360;
+      angDiff<0 && (angDiff+=360);
+      var an = Math.floor(angDiff/horAngStep);
+      var overlay = new AMap.Marker({
+        position:location
+      });
+      overlay.setMap(map);
+      if(!geocoder){
+          geocoder = new AMap.Geocoder({
+              city: "010", //城市设为北京，默认：“全国”
+              radius: 1000 //范围，默认：500
+          });
+      } 
+      geocoder.getAddress(location, function(status, result) {
+          if (status === 'complete'&&result.regeocode) {
+              var address = result.regeocode.formattedAddress;
+              var channel = document.getElementById('channel');
+              overlay.setLabel({
+                  offset: new AMap.Pixel(0, -3),  //设置文本标注偏移量
+                  content: "<div><div>当前位置"+location.lng + ',' + location.lat+"</div>"+
+                          "<div class='info'>"+address+"</div>"+
+                          "<div class='info'>距离"+Math.round(dis)+"</div>"+
+                          "<div class='info'>角度"+Math.round(ang)+"</div>"+
+                          "<div class='info'>"+channel.options[channel.selectedIndex].text+"数值<b>"+drawData[an][rn].toFixed(2)+"</b></div>"+
+                          "<div class='close-btn'>X</div></div>",
+                  direction: 'top' //设置文本标注方位
+              });
+              overlay.on('click',deleteMarker);
+          }else{
+              log.error('根据经纬度查询地址失败')
+          }
+      });
     }
 
     function clearMapOverlay(){
+      map.off('click', showInfoClick);
       if(isPlaying){return;}
       mouseTool.close(true);
+      map.clearMap();
     }
 
     function addMapRuler(){
+      map.off('click', showInfoClick);
       if(isPlaying){return;}
       mouseTool.rule();
     }
 
     function addMapMeasurer(){
+      map.off('click', showInfoClick);
       if(isPlaying){return;}
       mouseTool.measureArea();
     }
@@ -561,45 +622,12 @@ var pie;
     var overlays = [];
     mouseTool.on('draw',function(e){
         var overlay = e.obj;  
-        if(overlay.CLASS_NAME=='AMap.Marker'){
-          var location = overlay.getPosition();
-          var dis = AMap.GeometryUtil.distance(location, position);
-          var rn = Math.round(dis/resolution/Math.cos(verAng/180*Math.PI));
-          var p0 = map.lngLatToGeodeticCoord(position);
-          var p1 = map.lngLatToGeodeticCoord(location);
-          var ang = (Math.atan2(p1.y-p0.y,p1.x-p0.x)/Math.PI*180+450)%360;
-          var angDiff = ang-horAngStart-rotationAngle;
-          angDiff %= 360;
-          angDiff<0 && (angDiff+=360);
-          var an = Math.floor(angDiff/horAngStep);
-
-          if(!geocoder){
-              geocoder = new AMap.Geocoder({
-                  city: "010", //城市设为北京，默认：“全国”
-                  radius: 1000 //范围，默认：500
-              });
-          } 
-          geocoder.getAddress(location, function(status, result) {
-              if (status === 'complete'&&result.regeocode) {
-                  var address = result.regeocode.formattedAddress;
-                  var channel = document.getElementById('channel');
-                  overlay.setLabel({
-                      offset: new AMap.Pixel(0, -3),  //设置文本标注偏移量
-                      content: "<div><div>当前位置"+location.lng + ',' + location.lat+"</div>"+
-                              "<div class='info'>"+address+"</div>"+
-                              "<div class='info'>距离"+Math.round(dis)+"</div>"+
-                              "<div class='info'>角度"+Math.round(ang)+"</div>"+
-                              "<div class='info'>"+channel.options[channel.selectedIndex].text+"数值"+drawData[an][rn].toFixed(2)+"</div></div>",
-                      direction: 'top' //设置文本标注方位
-                  });
-              }else{
-                  log.error('根据经纬度查询地址失败')
-              }
-          });
-
-        }
     }) 
     
+    function deleteMarker(e){
+      map.remove(e.target);
+    }
+
     function Gps84ToGcj02(lon,lat){
       if (outOfChina(lon, lat)) {
             return new AMap.LngLat(lon, lat);
