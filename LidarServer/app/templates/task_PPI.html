@@ -106,6 +106,17 @@
       border-radius: 3px;
       background-color: white;
     }
+    #playSpeed{
+      display: none;
+      z-index: 100;
+      position: absolute;
+      right: 65px;
+      height: 32px;
+      width: 64px;
+      top: 292px;
+      border-radius: 3px;
+      background-color: white;
+    }
     #savePic{
       z-index: 100;
       position: absolute;
@@ -164,6 +175,7 @@
   <input id="clearOverlay" type="image" title="清除" src="../static/clear.png" />
   <input id="createISOCurve" type="image" title="3D热度图" src="../static/3dHeatmap.png"/>
   <input id="curvePlay" type="image" title="播放" src="../static/play.svg"/>
+  <input id="playSpeed" type="range" min="0" max="19" value="10">
   <input id="savePic" type="image" title="保存图片" src="../static/savePic.png" />
 </div>
 
@@ -792,8 +804,10 @@ var pie;
             isPlaying = false;
             playBtn.src = '../static/play.svg';
             playBtn.title = '播放';
+            document.getElementById('playSpeed').style.display = 'none';
           }
         }else{
+          document.getElementById('playSpeed').style.display = 'block';
           getAnimationData();
         }
       }
@@ -821,6 +835,8 @@ var pie;
       }
       var animData;
       var animI = 0;
+      var playSpeed = 1000;
+      document.getElementById('playSpeed').oninput = function(){playSpeed=this.value*100};
       async function Scan(){
         if(!isPlaying){return;}
         animI %= animData.result.length;
@@ -830,7 +846,7 @@ var pie;
         createPie(position,animData.result[animI].channeldata,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);
         document.getElementById('timeStamp').textContent = animData.result[animI].starttime+"至"+animData.result[animI].endtime;
         animI++;
-        await sleep(250);
+        await sleep(playSpeed);
         AMap.Util.requestAnimFrame(Scan);
       }
       
