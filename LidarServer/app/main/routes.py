@@ -382,10 +382,16 @@ def get_rhi_data():
 @bp.route('/task/export', methods=['GET', 'POST'])
 @login_required
 def export_task():
+    if request.method == 'POST':
+        task_id = request.values.get('task id', 0)
+        task = Task.query.filter_by(id = task_id).first()
+        return jsonify(result=[task.data_num])
     if request.method == 'GET':
         task_id = request.args.get('task_id')
+        data_start = int(request.args.get('data_start'))
+        data_end = int(request.args.get("data_end"))
         task = Task.query.filter_by(id = task_id).first()
-        task_dat = TaskData.query.filter_by(task_id=task_id).all()
+        task_dat = TaskData.query.filter_by(task_id=task_id).slice(data_start,data_end).all()
         data = {}
         colinfo = ['id','start_time','end_time','mode','data_num','description', \
                    'laser_freq','duration','resolution','bin_length','ver_start_angle', \
@@ -399,7 +405,7 @@ def export_task():
         return send_file(
                     out_s,
                     as_attachment=True,
-                    attachment_filename='export.ldb',
+                    attachment_filename='export'+str(data_start)+'.ldb',
                     mimetype='application/octet-stream'
                 )
 

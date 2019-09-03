@@ -234,14 +234,33 @@
     } 
   }
   function ExportDB(task_id){
-    var link = document.createElement("a");
-    var url = "{{ url_for('main.export_task') }}"+"?task_id="+task_id
-    link.setAttribute("href", url);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
+    $.post("{{ url_for('main.export_task') }}", { 'task id': task_id},
+        function(data,status){
+          let dataCount = data.result[0];
+          let dataStep = 5000;
+          for(let dataStart = 0; dataStart<dataCount; dataStart+=dataStep){            
+            var urlf = "{{ url_for('main.export_task') }}"+"?task_id="+task_id+"&data_start="+dataStart+"&data_end="+(dataStart+dataStep);
+            $.get(urlf,{},function(data,status){
+              var blob = new Blob([data]);
+              if (navigator.msSaveBlob) { // IE 10+
+                  navigator.msSaveBlob(blob, "download", "export"+dataStart+".ldb");
+              } else {
+                  var link = document.createElement("a");
+                  if (link.download !== undefined) { // feature detection
+                      // Browsers that support HTML5 download attribute
+                      var url = URL.createObjectURL(blob);
+                      link.setAttribute("href", url);
+                      link.setAttribute("download", "export"+dataStart+".ldb");
+                      link.style.visibility = 'hidden';
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                  }
+              }
+            });
+          }
+        }
+    );  
   }
   function ExportPPI(task_id){
     $.post('{{ url_for('main.get_ppi_data') }}', { 'task id': task_id, 'content':'list' },
