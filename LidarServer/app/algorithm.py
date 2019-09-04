@@ -18,7 +18,7 @@ def aerosol_calc(chA,chB,overlapA,overlapB,resolution=15,snrT=2,pblT=0.5,rc=1500
     chBPR2 = chBCutBg*r*r/1e6 
     chPR2 = chAPR2+chBPR2
     sn0 = int(300/resolution)
-    sn1 = int(1000/resolution)
+    sn1 = int(3000/resolution)
     chMax = chPR2[sn0:sn1].max()
     chPR2N = np.where(snr>snrT,chPR2,chMax/200)
     chPR2N = np.where(chPR2N>0.8*chMax,0.8*chMax,chPR2N)
