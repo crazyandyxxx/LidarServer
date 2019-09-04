@@ -405,8 +405,7 @@ def export_task():
         return send_file(
                     out_s,
                     as_attachment=True,
-                    attachment_filename='export'+str(data_start)+'.ldb',
-                    mimetype='application/octet-stream'
+                    attachment_filename='export'+str(data_start)+'.ldb'
                 )
 
 @bp.route('/task/import', methods=['POST'])

@@ -238,26 +238,26 @@
         function(data,status){
           let dataCount = data.result[0];
           let dataStep = 5000;
-          for(let dataStart = 0; dataStart<dataCount; dataStart+=dataStep){            
-            var urlf = "{{ url_for('main.export_task') }}"+"?task_id="+task_id+"&data_start="+dataStart+"&data_end="+(dataStart+dataStep);
-            $.get(urlf,{},function(data,status){
-              var blob = new Blob([data]);
-              if (navigator.msSaveBlob) { // IE 10+
-                  navigator.msSaveBlob(blob, "download", "export"+dataStart+".ldb");
-              } else {
-                  var link = document.createElement("a");
-                  if (link.download !== undefined) { // feature detection
-                      // Browsers that support HTML5 download attribute
-                      var url = URL.createObjectURL(blob);
-                      link.setAttribute("href", url);
-                      link.setAttribute("download", "export"+dataStart+".ldb");
-                      link.style.visibility = 'hidden';
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                  }
-              }
-            });
+          for(let dataStart = 0; dataStart<dataCount; dataStart+=dataStep){    
+            $.post("{{ url_for('main.export_task') }}", { 'task id': task_id},
+              function(data1,status1){        
+                var urlf = "{{ url_for('main.export_task') }}"+"?task_id="+task_id+"&data_start="+dataStart+"&data_end="+(dataStart+dataStep);
+                var xhttp = new XMLHttpRequest();
+                xhttp.onload = function() {
+                    if (this.status === 200) {
+                        var a = document.createElement('a');
+                        a.href = window.URL.createObjectURL(xhttp.response);
+                        a.download = "export.ldb";
+                        a.style.display = 'none';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    }
+                };
+                xhttp.open("GET", urlf, true);
+                xhttp.responseType = 'blob';
+                xhttp.send();
+              });
           }
         }
     );  

@@ -1,7 +1,7 @@
 import numpy as np
 import math
 
-def aerosol_calc(chA,chB,overlapA,overlapB,resolution=15,snrT=2,pblT=0.3,rc=15000,sa=40,waveLen=532,verAngle=90):
+def aerosol_calc(chA,chB,overlapA,overlapB,resolution=15,snrT=2,pblT=0.5,rc=15000,sa=40,waveLen=532,verAngle=90):
     r = np.arange(len(chA))+1
     r = r*resolution
     bn=int(len(chA)*5/6)
@@ -22,7 +22,7 @@ def aerosol_calc(chA,chB,overlapA,overlapB,resolution=15,snrT=2,pblT=0.3,rc=1500
     chMax = chPR2[sn0:sn1].max()
     chPR2N = np.where(snr>snrT,chPR2,chMax/200)
     chPR2N = np.where(chPR2N>0.8*chMax,0.8*chMax,chPR2N)
-    pblIndexArr = np.where((chPR2N<pblT*chMax)&(chPR2N>chMax*200))[0]
+    pblIndexArr = np.where((chPR2N[sn0:]<pblT*chMax)&(chPR2N[sn0:]>chMax/200))[0]+sn0
     pblIndex = sn0
     if(pblIndexArr.size>0):
         if(pblIndexArr[0]>sn0):
