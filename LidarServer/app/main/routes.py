@@ -93,9 +93,9 @@ def browse():
         eTime = request.values.get('end time',0)
         scanType = request.values.get('scan type',0)
         if(scanType=='ALL'):
-            tasks = Task.query.filter(Task.start_time.between(sTime,eTime)).filter(Task.data_num>1).all()
+            tasks = Task.query.filter(Task.start_time.between(sTime,eTime)).filter(Task.data_num>1).order_by(Task.start_time).all()
         else:
-            tasks = Task.query.filter(Task.mode==scanType).filter(Task.start_time.between(sTime,eTime)).filter(Task.data_num>1).all()
+            tasks = Task.query.filter(Task.mode==scanType).filter(Task.start_time.between(sTime,eTime)).filter(Task.data_num>1).order_by(Task.start_time).all()
         cols = ['id','start_time','end_time','mode','data_num']
         results = [{col: getattr(task, col) for col in cols} for task in tasks]
         for result in results:
@@ -235,7 +235,7 @@ def get_ppi_data():
         if(content=='list'):
             task = Task.query.filter_by(id = task_id).first()
             horStartAng = task.hor_start_angle
-            task_dat = TaskData.query.filter_by(task_id=task_id,hor_angle=horStartAng).all()
+            task_dat = TaskData.query.filter_by(task_id=task_id,hor_angle=horStartAng).order_by(TaskData.timestamp).all()
             for i in range(len(task_dat)):
                 data = {}
                 ts = task_dat[i].timestamp
@@ -286,7 +286,7 @@ def get_ppi_data():
             ln = int((horEndAng-horStartAng)/horAngStep)+1
             resolution = task.resolution
             dataLength = task.bin_length
-            pie_list = TaskData.query.filter_by(task_id=task_id,hor_angle=horStartAng).all()
+            pie_list = TaskData.query.filter_by(task_id=task_id,hor_angle=horStartAng).order_by(TaskData.timestamp).all()
             ov = np.loadtxt(r'./overlap/19000101000000_15.ov')
             overlapA = ov[:,0]
             overlapB = ov[:,1]
