@@ -56,6 +56,7 @@
     </select>
     <input type="button" value="   检索   " size="30" onclick="checkTask()">
     <input type="button" value="   导入   " size="30" onclick="ImportTask()">
+    <input id = "importWaiting" type="image" src="../static/loading1.gif" style="visibility: hidden">
     <div class="panel panel-default">
       <!-- Default panel contents -->
       <div class="panel-heading">检索结果</div>
@@ -351,11 +352,13 @@
     input.accept = '.ldb'
     input.style.visibility='hidden';
     input.onchange = function(e){
+      document.getElementById('importWaiting').style.visibility="visible";
       let file = e.target.files[0];
       let formData = new FormData();
       formData.append("task_file", file);
       fetch("{{ url_for('main.import_task') }}", {method: "POST", body: formData}).then(function(response){
         checkTask();
+        document.getElementById('importWaiting').style.visibility="hidden";
       });
     };
     document.body.appendChild(input);
