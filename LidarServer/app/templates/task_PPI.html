@@ -106,6 +106,15 @@
       border-radius: 3px;
       background-color: white;
     }
+    #waitingPlay{
+      z-index: 101;
+      position: absolute;
+      right: 31px;
+      top: 292px;
+      border-radius: 3px;
+      background-color: white;
+      display: none;
+    }
     #playSpeed{
       display: none;
       z-index: 100;
@@ -175,6 +184,7 @@
   <input id="clearOverlay" type="image" title="清除" src="../static/clear.png" />
   <input id="createISOCurve" type="image" title="3D热度图" src="../static/3dHeatmap.png"/>
   <input id="curvePlay" type="image" title="播放" src="../static/play.svg"/>
+  <input id="waitingPlay" type="image" src="../static/35.gif"/>
   <input id="playSpeed" type="range" min="0" max="19" value="10">
   <input id="savePic" type="image" title="保存图片" src="../static/savePic.png" />
 </div>
@@ -821,10 +831,11 @@ var pie;
             var playBtn = document.getElementById('curvePlay');
             isPlaying = true;
             canBeStop = false;
-            playBtn.src = '../static/35.gif';
+            document.getElementById('waitingPlay').style.display = 'block';
           },
           success:function(data){
             var playBtn = document.getElementById('curvePlay');
+            document.getElementById('waitingPlay').style.display = 'none';
             playBtn.src = '../static/stop.svg';
             playBtn.title = '停止';
             canBeStop = true;
@@ -853,22 +864,7 @@ var pie;
       function sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
       }
-    // var rdata = {};
-    // var rangeMax = 6000;
-    // var colorOpacity = 0.5;
-    // var resolution = 15;
-    // var verAng = 0;
-    // var horAngStart=0;
-    // var horAngEnd = 360;
-    // var horAngStep = 5;
-    // var longitude = 0;
-    // var latitude = 0;
-    // var altitude = 0;
-    // var drawData = [];
-    // var position = new AMap.LngLat(0, 0);
-    // var is3D = false;
-    // var rotationAngle = 0;
-    // var pie;
+
     function changePie(drawData) {
       var gpn = Math.floor((horAngEnd-horAngStart)/horAngStep);
       var geometry = pie.geometry;
