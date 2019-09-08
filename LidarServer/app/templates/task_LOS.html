@@ -56,7 +56,11 @@
 </span>
 <span>
   色标最小值<input type="number" id="colorMinA" value="0" class="inputNum" onchange="ChangeChannelAMin()">
-  色标最大值<input type="number" id="colorMaxA" value="10000" class="inputNum" onchange="ChangeChannelAMax()">
+  色标最大值<input type="number" id="colorMaxA" value="10000" class="inputNum" onchange="ChangeChannelAMax()">&nbsp;&nbsp;&nbsp;&nbsp;
+</span>
+<span>
+  <input type="checkbox" id="realTime" onclick="getRealTimeData()">
+  <label>实时刷新</label>
 </span>
 </div>
 <div>
@@ -82,11 +86,11 @@
   </select>
   <span>
     &nbsp;&nbsp;&nbsp;&nbsp;从<input type="number" id="zMinB" value="0" class="inputNum" max="30000" min="15" onchange="ChangeChannelBRangeMin()">
-    至<input type="number" id="zMaxB" value="3000" class="inputNum" max="30000" min="15" onchange="ChangeChannelBRangeMax()">&nbsp;&nbsp;&nbsp;&nbsp;
+    至<input type="number" id="zMaxB" value="3000" class="inputNum" max="30000" min="15" onchange="ChangeChannelBRangeMax()">
   </span>
   <span>
     色标最小值<input type="number" id="colorMinB" value="0" class="inputNum" onchange="ChangeChannelBMin()">
-    色标最大值<input type="number" id="colorMaxB" value="10000" class="inputNum" onchange="ChangeChannelBMax()">
+    色标最大值<input type="number" id="colorMaxB" value="10000" class="inputNum" onchange="ChangeChannelBMax()">&nbsp;&nbsp;&nbsp;&nbsp;
   </span>
 </div>
   <div>
@@ -160,7 +164,7 @@
         showline: true,
         tickmode:'auto',
         showexponent:"last",
-        exponentformat:"power"
+        exponentformat:"power",
       },
       yaxis: {
         showline: true,
@@ -185,7 +189,7 @@
         showline: true,
         tickmode:'auto',
         showexponent:"last",
-        exponentformat:"power"
+        exponentformat:"power",
       },
       yaxis: {
         showline: true,
@@ -209,27 +213,42 @@
       responsive: true
     };
     var PRA_data ={},PRB_data={},traceA={},traceB={},tracePblA={},tracePblB={};
+    
+    function prepareData(data){
+      linePRA=[];
+      linePRB=[];
+      timeat=[];
+      height = [];
+      lineA = [];
+      lineB = [];
+      lineExt = [];
+      lineDep = [];
+      linePbl = [];
+      linePM10 = [];
+      linePM25 = [];
+      res = data.result[0].resolution/1000;
+      let leng = data.result[0].raw_A.length;        
+      for(let i = 0;i<leng;i++){
+        height.push((i+1)*res);
+      };
+      for(let i=0; i<data.result.length;i++){
+        timeat.push(data.result[i].timestamp);
+        lineA.push(data.result[i].raw_A);
+        lineB.push( data.result[i].raw_B);
+        linePRA.push(data.result[i].prr_A);
+        linePRB.push(data.result[i].prr_B);
+        lineExt.push(data.result[i].ext);
+        lineDep.push(data.result[i].dep);
+        linePbl.push(data.result[i].pbl/1000);
+        linePM10.push(data.result[i].ext.map(x => x>0? 243*Math.pow(x,1.13) : 0));
+        linePM25.push(data.result[i].ext.map(x => x>0? 121.5*Math.pow(x,1.13) : 0));
+      };
+    }
 
-    $.post('{{ url_for('main.get_los_data') }}', { 'task id': task_id },
+    $.post('{{ url_for('main.get_los_data') }}', { 'task id': task_id, 'real': false },
         function(data,status){
         if(status == "success"){
-          res = data.result[0].resolution/1000;
-          leng = data.result[0].raw_A.length;        
-          for(let i = 0;i<leng;i++){
-            height.push((i+1)*res);
-          };
-          for(let i=0; i<data.result.length;i++){
-            timeat.push(data.result[i].timestamp);
-            lineA.push(data.result[i].raw_A);
-            lineB.push( data.result[i].raw_B);
-            linePRA.push(data.result[i].prr_A);
-            linePRB.push(data.result[i].prr_B);
-            lineExt.push(data.result[i].ext);
-            lineDep.push(data.result[i].dep);
-            linePbl.push(data.result[i].pbl/1000);
-            linePM10.push(data.result[i].ext.map(x => x>0? 243*Math.pow(x,1.13) : 0));
-            linePM25.push(data.result[i].ext.map(x => x>0? 121.5*Math.pow(x,1.13) : 0));
-          };
+          prepareData(data);
           drawDataA = linePRA;
           PRA_data = {
               z: linePRA,
@@ -318,6 +337,30 @@
         };  
       });
     
+    function getRealTimeData(){
+      if(document.getElementById('realTime').checked){
+        $.post('{{ url_for('main.get_los_data') }}', { 'task id': task_id, 'real': true },
+        function(data,status){
+          if(status == "success"){
+            prepareData(data);
+            plotA.removeListener('plotly_hover',plotHover);
+            var update = {
+              'xaxis.range[0]':timeat[0],
+              'xaxis.range[1]':timeat[timeat.length-1]
+            };
+            Plotly.relayout('PRADiv',update);
+            Plotly.relayout('PRBDiv',update);
+            tracePblA.y = linePbl;
+            tracePblB.y = linePbl;
+            SelectChannelA();
+            SelectChannelB();
+            plotA.on('plotly_hover',plotHover);
+            setTimeout(getRealTimeData,10*1000);
+          }
+        });
+      }  
+    }
+
     function plotHover(data){
       var pn='';
       for(let i=0;i<data.points.length;i++){
@@ -421,7 +464,7 @@
             tracePblA.visible = true;
             break;
         };
- 
+        PRA_data.x = timeat;
         PRA_data.z = drawDataA;
         traceA.x = drawDataA[lineIndex].slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res);
         
@@ -534,7 +577,7 @@
           case '污染边界层':
             tracePblB.visible = true;
         };
-
+        PRB_data.x = timeat;
         PRB_data.z = drawDataB;
         traceB.x = drawDataB[lineIndex].slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res);
 

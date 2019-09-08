@@ -162,10 +162,17 @@ def get_los_data():
     results = []
     if request.method == 'POST':
         task_id = request.values.get('task id', 0)
+        real_time = request.values.get('real', 0)
         task = Task.query.filter_by(id = task_id).first()
         resolution = task.resolution
         dataLength = task.bin_length
-        task_dat = TaskData.query.filter_by(task_id=task_id).all()
+        if(task.complete):
+            task_dat = TaskData.query.filter_by(task_id=task_id).all()
+        else:
+            if(real_time):
+                task_dat = TaskData.query.filter_by(task_id=task_id).slice(task.data_num-200 if task.data_num>200 else 0,task.data_num).all()
+            else:
+                task_dat = TaskData.query.filter_by(task_id=task_id).all()
         ov = np.loadtxt(r'./overlap/19000101000000_15.ov')
         overlapA = ov[:,0]
         overlapB = ov[:,1]
