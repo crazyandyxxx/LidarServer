@@ -48,8 +48,5 @@
 {% endblock %}
 
 {% block scripts %}
-    {{ super() }}
-    {{ moment.include_moment() }}
-    {{ moment.lang(g.locale) }}
     {% block app_scripts %}{% endblock %}
 {% endblock %}
