@@ -11,6 +11,7 @@ from flask_moment import Moment
 from config import Config
 from flask.json import JSONEncoder
 import numpy
+import sys
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -33,7 +34,12 @@ class MyEncoder(JSONEncoder):
             return super(MyEncoder, self).default(obj)
 
 def create_app(config_class=Config):
-    app = Flask(__name__)
+    if getattr(sys, 'frozen', False):
+        template_folder = os.path.join(sys._MEIPASS, 'templates')
+        static_folder = os.path.join(sys._MEIPASS, 'static')
+        app = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
+    else:
+        app = Flask(__name__)
     app.config.from_object(config_class)
     app.json_encoder = MyEncoder
 
