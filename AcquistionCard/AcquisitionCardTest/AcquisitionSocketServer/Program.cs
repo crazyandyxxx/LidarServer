@@ -25,6 +25,7 @@ namespace AcquisitionSocketServer
             SetGPSPort();
             SetPanPort();
             SocketServie();
+            LoadOngoingTask();
         }
         public static void SocketServie()
         {
@@ -36,6 +37,14 @@ namespace AcquisitionSocketServer
             GetAcqCard();//连接采集卡
             Task.Factory.StartNew(() => ListenClientConnect(), TaskCreationOptions.LongRunning);//通过多线程监听客户端连接              
             Console.ReadLine();
+        }
+        public static void LoadOngoingTask()
+        {
+            GetAquisitionParams();
+            ConstructAcquisitionStartCmd();
+            chA = new byte[binNum * 4];
+            chB = new byte[binNum * 4];
+            StartAcquisitionProgress();
         }
         /// <summary>  
         /// 监听客户端连接  
