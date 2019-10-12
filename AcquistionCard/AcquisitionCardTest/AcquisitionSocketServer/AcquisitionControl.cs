@@ -83,7 +83,7 @@ namespace AcquisitionSocketServer
 
                         acquisitionCount++;//采集组数递增
                         Console.WriteLine(DateTime.Now + "   " + acquisitionCount+"   "+ currentAccumNum);
-                        dbThread = new Thread(UpdateAcquisitionDB);//数据入库
+                        dbThread = new Thread(()=>UpdateAcquisitionDB(longitude, latitude, altitude, currentVerAng, currentHorAng, chA, chB));//数据入库
                         dbThread.Start();                      
                         //Task.Factory.StartNew(() => UpdateAcquisitionDB());
                     }
