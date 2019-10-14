@@ -102,4 +102,7 @@ def create_app(config_class=Config):
 
     return app
 
+def CheckExceptionStop():
+    print(999)
+
 from app import models

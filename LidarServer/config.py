@@ -24,11 +24,11 @@ class Config(object):
     POSTS_PER_PAGE = 25
     JOBS = [
                 {
-                    'id': 'createschuler_job',
-                    'func': 'module:func',
+                    'id': 'job',
+                    'func': 'app:CheckExceptionStop',
                     'args': None,
                     'trigger': 'interval',
-                    'seconds': 5*60
+                    'seconds': 5
                 }
             ]
 

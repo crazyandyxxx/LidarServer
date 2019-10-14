@@ -39,6 +39,16 @@ def Stop_acquisition():
     r = (json.loads(s.recv(1024).decode()))
     s.close()
 
+def Restart_acquisition():
+    s = socket.socket()
+    s.connect((host, port))
+    acq_params = {}
+    start_cmd={'cmdType':'acqRestart', 'cmdParams':acq_params}
+
+    s.sendall(json.dumps(start_cmd).encode())
+    r = (json.loads(s.recv(1024).decode()))
+    s.close()
+
 def check_acquisition_progress():
     s = socket.socket()
     s.connect((host, port))

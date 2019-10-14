@@ -11,6 +11,7 @@ import uuid
 from app.algorithm import *
 import pickle
 import io
+import json
 
 @bp.before_app_request
 def before_request():
@@ -41,6 +42,7 @@ def acquire():
         horSt = form.HorStartAngle.data
         horEd = form.HorEndAngle.data
         horStep = form.HorAngleStep.data
+        mailAddress = form.MailAddress.data
         
         task = Task.query.filter_by(complete=False).first()
         if task:

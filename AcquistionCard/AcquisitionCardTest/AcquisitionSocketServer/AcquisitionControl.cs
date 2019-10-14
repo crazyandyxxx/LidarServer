@@ -15,6 +15,13 @@ namespace AcquisitionSocketServer
 
         private static void StartAcquisitionProgress()
         {
+            if(AcquisitionProgressThr != null)
+            {
+                if((AcquisitionProgressThr.ThreadState & ThreadState.Stopped) != ThreadState.Stopped)
+                {
+                    return;
+                }
+            }
             var hc = GetAcqCard();//连接采集卡
             if (hc)
             {
