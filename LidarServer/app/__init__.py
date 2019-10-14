@@ -10,6 +10,8 @@ from flask_bootstrap import Bootstrap
 from flask_moment import Moment
 from config import Config
 from flask.json import JSONEncoder
+from flask_cors import CORS
+from flask_apscheduler import APScheduler
 import numpy
 import sys
 
@@ -21,6 +23,7 @@ login.login_message = 'Please log in to access this page.'
 mail = Mail()
 bootstrap = Bootstrap()
 moment = Moment()
+scheduler=APScheduler()
 
 class MyEncoder(JSONEncoder):
     def default(self, obj):
@@ -40,6 +43,7 @@ def create_app(config_class=Config):
         app = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
     else:
         app = Flask(__name__)
+    CORS(app, supports_credentials=True)
     app.config.from_object(config_class)
     app.json_encoder = MyEncoder
 
@@ -49,6 +53,8 @@ def create_app(config_class=Config):
     mail.init_app(app)
     bootstrap.init_app(app)
     moment.init_app(app)
+    scheduler.init_app(app)
+    scheduler.start()
 
     from app.errors import bp as errors_bp
     app.register_blueprint(errors_bp)

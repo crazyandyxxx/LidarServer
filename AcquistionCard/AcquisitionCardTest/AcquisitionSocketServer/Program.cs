@@ -24,8 +24,8 @@ namespace AcquisitionSocketServer
         {
             SetGPSPort();
             SetPanPort();
-            SocketServie();
             LoadOngoingTask();
+            SocketServie();        
         }
         public static void SocketServie()
         {
@@ -34,17 +34,19 @@ namespace AcquisitionSocketServer
             int port = 6016;//端口
             socket.Bind(new IPEndPoint(IPAddress.Parse(host), port));
             socket.Listen(100);//设定最多100个排队连接请求             
-            GetAcqCard();//连接采集卡
             Task.Factory.StartNew(() => ListenClientConnect(), TaskCreationOptions.LongRunning);//通过多线程监听客户端连接              
             Console.ReadLine();
         }
         public static void LoadOngoingTask()
         {
-            GetAquisitionParams();
-            ConstructAcquisitionStartCmd();
-            chA = new byte[binNum * 4];
-            chB = new byte[binNum * 4];
-            StartAcquisitionProgress();
+            var r = GetAquisitionParams();
+            if (r)
+            {
+                ConstructAcquisitionStartCmd();
+                chA = new byte[binNum * 4];
+                chB = new byte[binNum * 4];
+                StartAcquisitionProgress();
+            }
         }
         /// <summary>  
         /// 监听客户端连接  
