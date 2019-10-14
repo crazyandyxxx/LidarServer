@@ -17,6 +17,8 @@ namespace AcquisitionSocketServer
         //采集参数
         static ushort trigTh = 680, chATh = 680, chBTh = 680, chCTh = 680;     
         static byte[] chA, chB;
+        static uint frequency;
+        static uint duration;
         static uint accumTimes;
         static ushort binNum = 2000;
         static float resolution = 15;
@@ -31,7 +33,9 @@ namespace AcquisitionSocketServer
         private static void SetAcquistionParams(dynamic cmd)
         {
             taskId = (string)cmd.cmdParams.taskId;
-            accumTimes = (uint)cmd.cmdParams.accumTimes;
+            frequency = (uint)cmd.cmdParams.frequency;
+            duration = (uint)cmd.cmdParams.duration;
+            accumTimes = frequency * duration;
             binNum = (ushort)cmd.cmdParams.binNum;
             resolution = (float)cmd.cmdParams.resolution;
             mode = (string)cmd.cmdParams.mode;

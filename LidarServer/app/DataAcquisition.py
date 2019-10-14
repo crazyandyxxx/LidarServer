@@ -6,13 +6,14 @@ host = '127.0.0.1' # 获取本地主机名
 port = 6016                # 设置端口号
  
 
-def start_acquisition(taskId, mode, accumTimes, binNum, resolution, verStartAng, verEndAng, verAngStep, horStartAng, horEndAng, horAngStep):   
+def start_acquisition(taskId, mode, frequency, duration, binNum, resolution, verStartAng, verEndAng, verAngStep, horStartAng, horEndAng, horAngStep):   
     s = socket.socket() # 创建 socket 对象
     s.connect((host, port))
     acq_params = {}
     acq_params['taskId'] = taskId
     acq_params['mode'] = mode
-    acq_params['accumTimes'] = accumTimes
+    acq_params['frequency'] = frequency
+    acq_params['duration'] = duration
     acq_params['binNum'] = binNum
     acq_params['resolution'] = resolution
     acq_params['verStartAng'] = verStartAng

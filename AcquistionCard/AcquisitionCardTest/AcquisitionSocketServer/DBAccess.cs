@@ -65,9 +65,9 @@ namespace AcquisitionSocketServer
                 if (sr.Read())
                 {
                     taskId = Guid.NewGuid().ToString();
-                    var freq = sr.GetInt32(3);
-                    var dur = sr.GetInt32(4);
-                    accumTimes = (uint)(freq * dur);
+                    frequency = (uint)sr.GetInt32(3);
+                    duration = (uint)sr.GetInt32(4);
+                    accumTimes = frequency * duration;
                     binNum = (ushort)sr.GetInt32(6);
                     resolution = sr.GetFloat(5);
                     mode = sr.GetString(1);
@@ -92,8 +92,8 @@ namespace AcquisitionSocketServer
                     cmd.Parameters.Add("p0", DbType.String).Value = taskId;
                     cmd.Parameters.Add("p1", DbType.String).Value = mode;
                     cmd.Parameters.Add("p2", DbType.String).Value = "";
-                    cmd.Parameters.Add("p3", DbType.Int32).Value = freq;
-                    cmd.Parameters.Add("p4", DbType.Int32).Value = dur;
+                    cmd.Parameters.Add("p3", DbType.Int32).Value = frequency;
+                    cmd.Parameters.Add("p4", DbType.Int32).Value = duration;
                     cmd.Parameters.Add("p5", DbType.Single).Value = resolution;
                     cmd.Parameters.Add("p6", DbType.Int32).Value = (Int32)binNum;
                     var dt = DateTime.Now.ToString("s");

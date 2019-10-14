@@ -24,7 +24,7 @@ namespace AcquisitionSocketServer
 
         private static void SetPanPort()
         {
-            panPort.BaudRate = 2400;
+            panPort.BaudRate = Properties.AcquisitionServerSetting.Default.PanPortRate;
             panPort.PortName = Properties.AcquisitionServerSetting.Default.PanPort;
             panPort.DataBits = 8;
             panPort.Parity = Parity.None;

@@ -22,6 +22,8 @@ namespace AcquisitionSocketServer
                     return;
                 }
             }
+            LaserOn();
+            Thread.Sleep(2000);
             var hc = GetAcqCard();//连接采集卡
             if (hc)
             {
@@ -37,7 +39,7 @@ namespace AcquisitionSocketServer
                 AcquisitionProgressThr.Abort();
                 AcquisitionProgressThr.Join();
             }
-
+            LaserOff();
             acquisitionCount = 0;
         }
 

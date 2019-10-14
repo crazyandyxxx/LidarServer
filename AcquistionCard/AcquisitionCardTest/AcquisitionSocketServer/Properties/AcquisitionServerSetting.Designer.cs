@@ -25,7 +25,7 @@ namespace AcquisitionSocketServer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("C:\\Server\\LidarProject\\LidarServer\\app.db")]
+        [global::System.Configuration.DefaultSettingValueAttribute("D:\\Project\\Lidar\\LidarServer\\LidarServer\\app.db")]
         public string DBPath {
             get {
                 return ((string)(this["DBPath"]));
@@ -56,6 +56,30 @@ namespace AcquisitionSocketServer.Properties {
             }
             set {
                 this["PanPort"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("9600")]
+        public int GPSPortRate {
+            get {
+                return ((int)(this["GPSPortRate"]));
+            }
+            set {
+                this["GPSPortRate"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("9600")]
+        public int PanPortRate {
+            get {
+                return ((int)(this["PanPortRate"]));
+            }
+            set {
+                this["PanPortRate"] = value;
             }
         }
     }

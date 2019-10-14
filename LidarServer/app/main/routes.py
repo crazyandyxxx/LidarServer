@@ -31,18 +31,18 @@ def index():
 def acquire():
     form = AcquireForm()   
     if form.validate_on_submit():
-        mode = form.Mode.data
-        freq = form.Frequency.data
-        dura = form.Duration.data
-        resolution = form.Resolution.data
-        binN = form.BinLen.data
-        verSt = form.VerStartAngle.data
-        verEd = form.VerEndAngle.data
-        verStep = form.VerAngleStep.data
-        horSt = form.HorStartAngle.data
-        horEd = form.HorEndAngle.data
-        horStep = form.HorAngleStep.data
-        mailAddress = form.MailAddress.data
+        acqParas['mode'] = mode = form.Mode.data
+        acqParas['frequency'] = freq = form.Frequency.data
+        acqParas['duration'] = dura = form.Duration.data
+        acqParas['resolution'] = resolution = form.Resolution.data
+        acqParas['binLength'] = binN = form.BinLen.data
+        acqParas['verStartAngle'] = verSt = form.VerStartAngle.data
+        acqParas['verEndAngle'] = verEd = form.VerEndAngle.data
+        acqParas['verAngleStep'] = verStep = form.VerAngleStep.data
+        acqParas['horStartAngle'] = horSt = form.HorStartAngle.data
+        acqParas['horEndAngle'] = horEd = form.HorEndAngle.data
+        acqParas['horAngleStep'] = horStep = form.HorAngleStep.data
+        acqParas['mailAddress'] = mailAddress = form.MailAddress.data
         
         task = Task.query.filter_by(complete=False).first()
         if task:
@@ -52,7 +52,10 @@ def acquire():
             startAcq = 0
         else: 
             task_id = str(uuid.uuid4())
-            start_acquisition(task_id, mode, freq*dura, binN, resolution, verSt, verEd, verStep, horSt, horEd, horStep)              
+            with open("./config/acquisitionParameters.json","w") as f:
+                json.dump(acqParas,f)
+
+            start_acquisition(task_id, mode, freq, dura, binN, resolution, verSt, verEd, verStep, horSt, horEd, horStep)              
             task = Task(id=task_id, mode=mode, laser_freq=freq, duration=dura, resolution=resolution, bin_length=binN, 
                         data_num = 0, ver_start_angle=verSt, ver_end_angle=verEd, ver_step=verStep, 
                         hor_start_angle=horSt, hor_end_angle=horEd,hor_step=horStep)
@@ -85,6 +88,18 @@ def acquire():
             form.HorStartAngle.data = 0
             form.HorEndAngle.data = 360
             form.HorAngleStep.data = 5
+        with open("./config/acquisitionParameters.json",'r') as load_f:
+            acqParas = json.load(load_f)
+            form.Frequency.data = acqParas['frequency']
+            form.Duration.data = acqParas['duration']
+            form.BinLen.data = acqParas['binLength']
+            form.VerStartAngle.data = acqParas['verStartAngle']
+            form.VerEndAngle.data = acqParas['verEndAngle']
+            form.VerAngleStep.data = acqParas['verAngleStep']
+            form.HorStartAngle.data = acqParas['horStartAngle']
+            form.HorEndAngle.data = acqParas['horEndAngle']
+            form.HorAngleStep.data = acqParas['horAngleStep']
+            form.MailAddress.data = acqParas['mailAddress']
         return render_template('acquire.html', title=('数据采集'), form=form)
 
 @bp.route('/browse', methods=['GET', 'POST'])

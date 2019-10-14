@@ -17,7 +17,7 @@ namespace AcquisitionSocketServer
 
         private static void SetGPSPort()
         {
-            gpsPort.BaudRate = 9600;
+            gpsPort.BaudRate = Properties.AcquisitionServerSetting.Default.GPSPortRate;
             gpsPort.PortName = Properties.AcquisitionServerSetting.Default.GPSPort;
             gpsPort.DataBits = 8;
             gpsPort.Parity = Parity.None;
