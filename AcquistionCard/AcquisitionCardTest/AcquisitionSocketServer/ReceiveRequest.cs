@@ -43,6 +43,13 @@ namespace AcquisitionSocketServer
                             resultCode = "1";
                             break;
 
+                        case "acqRestart":
+                            StopAcquisitionProgress();
+                            System.Threading.Thread.Sleep(50);
+                            LoadOngoingTask();
+                            resultCode = "1";
+                            break;
+
                         case "acqProgress":
                             resultCode = CheckAcquisitionProgress();
                             break;

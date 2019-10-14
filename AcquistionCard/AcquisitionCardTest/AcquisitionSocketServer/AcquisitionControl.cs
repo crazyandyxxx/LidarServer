@@ -15,22 +15,21 @@ namespace AcquisitionSocketServer
 
         private static void StartAcquisitionProgress()
         {
-            AcquisitionProgressThr = new Thread(() => AcquisitionProgressLoop());
-            AcquisitionProgressThr.Start();
-            //Task.Factory.StartNew(() => AcquisitionProgressLoop(),cts.Token);
+            var hc = GetAcqCard();//连接采集卡
+            if (hc)
+            {
+                AcquisitionProgressThr = new Thread(() => AcquisitionProgressLoop());
+                AcquisitionProgressThr.Start();
+            }
         }
 
         private static void StopAcquisitionProgress()
         {
-            if (CtrlEndPt != null)
-            {
-                int len = 2;
-                byte[] buf = new byte[] { 0xC4, 0xa0 };
-                CtrlEndPt.Write(ref buf, ref len);
-            }
             if (AcquisitionProgressThr != null)
+            {
                 AcquisitionProgressThr.Abort();
-            //cts.Cancel();
+                AcquisitionProgressThr.Join();
+            }
 
             acquisitionCount = 0;
         }

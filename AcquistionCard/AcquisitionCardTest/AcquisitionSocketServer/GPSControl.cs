@@ -36,43 +36,45 @@ namespace AcquisitionSocketServer
 
         private static void GPSDataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            string resp = gpsPort.ReadLine();
-            if (resp.StartsWith("$GNGGA"))
+            latitude = longitude = altitude = -99999;
+            try
             {
-                string[] values = resp.Split(',');
-                bool isGPSValid;
-                latitude = longitude = altitude = -99999;
-                if (values.Length == 15)
+                string resp = gpsPort.ReadLine();
+                if (resp.StartsWith("$GNGGA"))
                 {
-                    if (string.Compare(values[6], "0") == 0)
+                    string[] values = resp.Split(',');
+                    if (values.Length == 15)
                     {
-                        isGPSValid = false;              
-                    }
-                    else
-                    {
-                        isGPSValid = true;
-                        float lat=0, lng=0, alt = 0;
-                        if(float.TryParse(values[2],out lat)&&float.TryParse(values[4],out lng)&&float.TryParse(values[9],out alt))
+                        if (string.Compare(values[6], "0") != 0)
                         {
-                            latitude = lat;
-                            longitude = lng;
-                            altitude = alt;
+                            float lat = 0, lng = 0, alt = 0;
+                            if (float.TryParse(values[2], out lat) && float.TryParse(values[4], out lng) && float.TryParse(values[9], out alt))
+                            {
+                                latitude = lat;
+                                longitude = lng;
+                                altitude = alt;
 
-                            float d = (float)Math.Floor(latitude / 100.0);
-                            latitude = d + (latitude - d * 100.0f) / 60.0f;
+                                float d = (float)Math.Floor(latitude / 100.0);
+                                latitude = d + (latitude - d * 100.0f) / 60.0f;
 
-                            d = (float)Math.Floor(longitude / 100.0);
-                            longitude = d + (longitude - d * 100.0f) / 60.0f;
+                                d = (float)Math.Floor(longitude / 100.0);
+                                longitude = d + (longitude - d * 100.0f) / 60.0f;
 
-                            if (string.Compare(values[3], "S") == 0)
-                                latitude = -latitude;
+                                if (string.Compare(values[3], "S") == 0)
+                                    latitude = -latitude;
 
-                            if (string.Compare(values[5], "W") == 0)
-                                longitude = -longitude;
+                                if (string.Compare(values[5], "W") == 0)
+                                    longitude = -longitude;
+                            }
                         }
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
         }
     }
 }

@@ -11,9 +11,9 @@ namespace AcquisitionSocketServer
         /// <summary>  
         /// 连接采集卡  
         /// </summary>  
-        static void GetAcqCard()
+        static bool GetAcqCard()
         {
-            usbDevices = new USBDeviceList(CyConst.DEVICES_CYUSB);//连接采集卡
+            usbDevices = new USBDeviceList(CyConst.DEVICES_CYUSB);
             MyDevice = usbDevices[0] as CyUSBDevice;
             if (MyDevice != null)
             {
@@ -26,10 +26,12 @@ namespace AcquisitionSocketServer
                     CtrlEndPt.Value = 0x00ba;
                     CtrlEndPt.Index = 0x0000;
                 }
+                return true;
             }
             else
             {
                 Console.WriteLine("采集卡未连接");
+                return false;
             }
         }
     }
