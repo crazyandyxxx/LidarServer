@@ -20,7 +20,9 @@ def before_request():
         db.session.commit()
 
 def CheckExceptionStop():
-    print(999)
+    task = Task.query.filter_by(complete=False).order_by(Task.start_time.desc()).first()
+    if task:
+        print((datetime.now-task.end_time).seconds)
 
 @bp.route('/', methods=['GET', 'POST'])
 @bp.route('/index', methods=['GET', 'POST'])
@@ -47,7 +49,7 @@ def acquire():
         acqParas['horAngleStep'] = horStep = form.HorAngleStep.data
         acqParas['mailAddress'] = mailAddress = form.MailAddress.data
         
-        task = Task.query.filter_by(complete=False).first()
+        task = Task.query.filter_by(complete=False).order_by(Task.start_time.desc()).first()
         if task:
             Stop_acquisition()
             task.complete = True
@@ -69,7 +71,7 @@ def acquire():
         return redirect(url_for('main.acquire'))
         
     elif request.method == 'GET':
-        task = Task.query.filter_by(complete=False).first()
+        task = Task.query.filter_by(complete=False).order_by(Task.start_time.desc()).first()
         if task:
             form.Mode.data = task.mode
             form.Frequency.data = task.laser_freq

@@ -17,7 +17,7 @@ namespace AcquisitionSocketServer
         {
             if(AcquisitionProgressThr != null)
             {
-                if((AcquisitionProgressThr.ThreadState & ThreadState.Stopped) != ThreadState.Stopped)
+                if ((AcquisitionProgressThr.ThreadState & ThreadState.Aborted) != ThreadState.Aborted && (AcquisitionProgressThr.ThreadState & ThreadState.Stopped) != ThreadState.Stopped)
                 {
                     return;
                 }
