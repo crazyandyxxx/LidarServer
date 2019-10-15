@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="DBPath" Type="System.String" Scope="User">
-      <Value Profile="(Default)">D:\Project\Lidar\LidarServer\LidarServer\app.db</Value>
+      <Value Profile="(Default)">E:\project\temp\LidarServer\LidarServer\app.db</Value>
     </Setting>
     <Setting Name="GPSPort" Type="System.String" Scope="User">
       <Value Profile="(Default)">COM1</Value>

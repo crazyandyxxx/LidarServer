@@ -56,8 +56,6 @@ namespace AcquisitionSocketServer
             while (true)
             {
                 Socket clientSocket = socket.Accept();
-                //Thread receiveThread = new Thread(ReceiveMessage);
-                //receiveThread.Start(clientSocket);
                 Task.Factory.StartNew(() => ReceiveMessage(clientSocket), TaskCreationOptions.LongRunning);
 
             }

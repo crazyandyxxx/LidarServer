@@ -1,0 +1,1 @@
+{"mode": "LOS", "frequency": 4000, "duration": 25, "resolution": "15.0", "binLength": 2000, "verStartAngle": 0.0, "verEndAngle": 90.0, "verAngleStep": 5.0, "horStartAngle": 0.0, "horEndAngle": 360.0, "horAngleStep": 5.0, "mailAddress": ""}

@@ -173,7 +173,7 @@ namespace AcquisitionSocketServer
 
         private static void SerialPortCommunicate(byte[] wrData, byte[] rdData, SerialPort port)
         {
-            if (port != null)
+            if (port.IsOpen)
             {
                 lock (port)
                 {

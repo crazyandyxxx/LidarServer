@@ -25,7 +25,7 @@ class Config(object):
     JOBS = [
                 {
                     'id': 'job',
-                    'func': 'app:CheckExceptionStop',
+                    'func': 'app.main.routes:CheckExceptionStop',
                     'args': None,
                     'trigger': 'interval',
                     'seconds': 5

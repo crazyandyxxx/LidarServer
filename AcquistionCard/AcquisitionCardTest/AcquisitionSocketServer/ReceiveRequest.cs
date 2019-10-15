@@ -45,7 +45,7 @@ namespace AcquisitionSocketServer
 
                         case "acqRestart":
                             StopAcquisitionProgress();
-                            System.Threading.Thread.Sleep(50);
+                            System.Threading.Thread.Sleep(1000);
                             LoadOngoingTask();
                             resultCode = "1";
                             break;

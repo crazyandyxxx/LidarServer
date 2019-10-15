@@ -59,6 +59,7 @@
     <Compile Include="DBAccess.cs" />
     <Compile Include="GetAcquistionCard.cs" />
     <Compile Include="GPSControl.cs" />
+    <Compile Include="LaserControl.cs" />
     <Compile Include="PanControl.cs" />
     <Compile Include="Properties\AcquisitionServerSetting.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -71,7 +72,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="Properties\app.config" />
+    <None Include="Properties\app.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Properties\AcquisitionServerSetting.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>AcquisitionServerSetting.Designer.cs</LastGenOutput>

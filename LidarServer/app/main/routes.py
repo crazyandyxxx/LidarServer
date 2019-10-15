@@ -10,7 +10,7 @@ from app.models import Task, TaskData
 import uuid
 from app.algorithm import *
 import pickle
-import io
+import io, os
 import json
 
 @bp.before_app_request
@@ -19,6 +19,8 @@ def before_request():
         current_user.last_seen = datetime.now()
         db.session.commit()
 
+def CheckExceptionStop():
+    print(999)
 
 @bp.route('/', methods=['GET', 'POST'])
 @bp.route('/index', methods=['GET', 'POST'])
@@ -31,6 +33,7 @@ def index():
 def acquire():
     form = AcquireForm()   
     if form.validate_on_submit():
+        acqParas = {}
         acqParas['mode'] = mode = form.Mode.data
         acqParas['frequency'] = freq = form.Frequency.data
         acqParas['duration'] = dura = form.Duration.data
@@ -52,6 +55,8 @@ def acquire():
             startAcq = 0
         else: 
             task_id = str(uuid.uuid4())
+            if not os.path.exists('./config'):
+                os.mkdir('./config')
             with open("./config/acquisitionParameters.json","w") as f:
                 json.dump(acqParas,f)
 
@@ -88,18 +93,21 @@ def acquire():
             form.HorStartAngle.data = 0
             form.HorEndAngle.data = 360
             form.HorAngleStep.data = 5
-        with open("./config/acquisitionParameters.json",'r') as load_f:
-            acqParas = json.load(load_f)
-            form.Frequency.data = acqParas['frequency']
-            form.Duration.data = acqParas['duration']
-            form.BinLen.data = acqParas['binLength']
-            form.VerStartAngle.data = acqParas['verStartAngle']
-            form.VerEndAngle.data = acqParas['verEndAngle']
-            form.VerAngleStep.data = acqParas['verAngleStep']
-            form.HorStartAngle.data = acqParas['horStartAngle']
-            form.HorEndAngle.data = acqParas['horEndAngle']
-            form.HorAngleStep.data = acqParas['horAngleStep']
-            form.MailAddress.data = acqParas['mailAddress']
+        try:
+            with open("./config/acquisitionParameters.json",'r') as load_f:
+                acqParas = json.load(load_f)
+                form.Frequency.data = acqParas['frequency']
+                form.Duration.data = acqParas['duration']
+                form.BinLen.data = acqParas['binLength']
+                form.VerStartAngle.data = acqParas['verStartAngle']
+                form.VerEndAngle.data = acqParas['verEndAngle']
+                form.VerAngleStep.data = acqParas['verAngleStep']
+                form.HorStartAngle.data = acqParas['horStartAngle']
+                form.HorEndAngle.data = acqParas['horEndAngle']
+                form.HorAngleStep.data = acqParas['horAngleStep']
+                form.MailAddress.data = acqParas['mailAddress']
+        except:
+            print('load acquistion config error')
         return render_template('acquire.html', title=('数据采集'), form=form)
 
 @bp.route('/browse', methods=['GET', 'POST'])
