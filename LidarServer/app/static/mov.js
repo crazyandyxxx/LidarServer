@@ -16,7 +16,15 @@ AMapUI.loadUI(['control/BasicControl'], function(BasicControl) {
       
        //自定义基础图层
         baseLayers: [{
-            enable: true,
+          enable: true,
+          id: 'Atile',
+          name: '高德矢量图',
+          layer: new AMap.TileLayer()
+      }, {
+          id: 'Asatellite',
+          name: '高德卫星图',
+          layer: new AMap.TileLayer.Satellite()
+       },{         
             id: 'Gtile',
             name: '谷歌矢量图',
             layer: new AMap.TileLayer({
@@ -30,15 +38,7 @@ AMapUI.loadUI(['control/BasicControl'], function(BasicControl) {
               getTileUrl: 'http://mt{1,2,3,0}.google.cn/vt/lyrs=y@126&hl=zh-CN&gl=cn&src=app&s=G&x=[x]&y=[y]&z=[z]',
               zIndex:2
             })
-        },{
-            id: 'Atile',
-            name: '高德矢量图',
-            layer: new AMap.TileLayer()
-        }, {
-            id: 'Asatellite',
-            name: '高德卫星图',
-            layer: new AMap.TileLayer.Satellite()
-         }],
+        }],
         //自定义覆盖图层
         overlayLayers: [ {
             id: 'roadNet',

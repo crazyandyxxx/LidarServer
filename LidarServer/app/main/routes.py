@@ -23,7 +23,16 @@ def before_request():
 @bp.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():
-    return render_template('system.html')
+    info = {}
+    try:
+        with open("./config/instrumentInfo.json",'r') as load_f:
+            info = json.load(load_f)
+    except:
+        print('load instrument infomation error')
+    return render_template('system.html', insID=info['instrumentID'], 
+                                          acqCardID=info['acquisitionCardID'], 
+                                          panID=info['panID'],
+                                          softVer=info['softwareVersion'])
 
 @bp.route('/acquire', methods=['GET', 'POST'])
 @login_required
@@ -206,7 +215,7 @@ def get_los_data():
             dt = dt.newbyteorder('<')
             chA = np.frombuffer(task_dat[i].raw_A, dtype=dt)
             chB = np.frombuffer(task_dat[i].raw_B, dtype=dt)
-            chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chA, chB, overlapA, overlapB, resolution, snrT=1.5, rc=15000)
+            chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chA, chB, overlapA, overlapB, resolution, snrT=2, rc=15000)
             data['raw_A'] = chA
             data['raw_B'] = chB
             data['prr_A'] = chAPR2
@@ -239,7 +248,7 @@ def get_mov_data():
             dt = dt.newbyteorder('<')
             chA = np.frombuffer(task_dat[i].raw_A, dtype=dt)
             chB = np.frombuffer(task_dat[i].raw_B, dtype=dt)
-            chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chA, chB, overlapA, overlapB, resolution, snrT=1.5, rc=15000)
+            chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chA, chB, overlapA, overlapB, resolution, snrT=2, rc=15000)
             data['raw_A'] = chA
             data['raw_B'] = chB
             data['prr_A'] = chAPR2
@@ -296,7 +305,7 @@ def get_ppi_data():
                 dt = dt.newbyteorder('<')
                 chA = np.frombuffer(task_dat[i].raw_A, dtype=dt)
                 chB = np.frombuffer(task_dat[i].raw_B, dtype=dt)
-                chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chA, chB, overlapA, overlapB, resolution, snrT=1.5, rc=15000)
+                chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chA, chB, overlapA, overlapB, resolution, snrT=2, rc=15000)
                 data['raw_A'] = chA
                 data['raw_B'] = chB
                 data['prr_A'] = chAPR2
@@ -332,7 +341,7 @@ def get_ppi_data():
                     dt = dt.newbyteorder('<')
                     chA = np.frombuffer(pie_dat[j].raw_A, dtype=dt)
                     chB = np.frombuffer(pie_dat[j].raw_B, dtype=dt)
-                    chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chA, chB, overlapA, overlapB, resolution, snrT=1.5, rc=15000)
+                    chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chA, chB, overlapA, overlapB, resolution, snrT=2, rc=15000)
                     if channel=='raw_A':
                         channeldata.append(chA)
                     elif channel=='raw_B':
@@ -396,7 +405,7 @@ def get_rhi_data():
                 dt = dt.newbyteorder('<')
                 chA = np.frombuffer(task_dat[i].raw_A, dtype=dt)
                 chB = np.frombuffer(task_dat[i].raw_B, dtype=dt)
-                chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chA, chB, overlapA, overlapB, resolution, snrT=1.5, rc=15000)
+                chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chA, chB, overlapA, overlapB, resolution, snrT=2, rc=15000)
                 data['raw_A'] = chA
                 data['raw_B'] = chB
                 data['prr_A'] = chAPR2

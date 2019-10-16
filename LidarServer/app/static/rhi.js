@@ -66,30 +66,30 @@ drawTickText();
         position: 'rt',
         
          //自定义基础图层
-          baseLayers: [{
-              enable: true,
-              id: 'Gtile',
-              name: '谷歌矢量图',
-              layer: new AMap.TileLayer({
-                getTileUrl: 'http://mt{1,2,3,0}.google.cn/vt/lyrs=m@126&hl=zh-CN&gl=cn&src=app&s=G&x=[x]&y=[y]&z=[z]',
-                zIndex:2
-              })
-          },{
-              id: 'Gsatellite',
-              name: '谷歌卫星图',
-              layer: new AMap.TileLayer({
-                getTileUrl: 'http://mt{1,2,3,0}.google.cn/vt/lyrs=y@126&hl=zh-CN&gl=cn&src=app&s=G&x=[x]&y=[y]&z=[z]',
-                zIndex:2
-              })
-          },{
-              id: 'Atile',
-              name: '高德矢量图',
-              layer: new AMap.TileLayer()
-          }, {
-              id: 'Asatellite',
-              name: '高德卫星图',
-              layer: new AMap.TileLayer.Satellite()
-           }],
+         baseLayers: [{
+          enable: true,
+          id: 'Atile',
+          name: '高德矢量图',
+          layer: new AMap.TileLayer()
+      }, {
+          id: 'Asatellite',
+          name: '高德卫星图',
+          layer: new AMap.TileLayer.Satellite()
+        },{
+            id: 'Gtile',
+            name: '谷歌矢量图',
+            layer: new AMap.TileLayer({
+              getTileUrl: 'http://mt{1,2,3,0}.google.cn/vt/lyrs=m@126&hl=zh-CN&gl=cn&src=app&s=G&x=[x]&y=[y]&z=[z]',
+              zIndex:2
+            })
+        },{
+            id: 'Gsatellite',
+            name: '谷歌卫星图',
+            layer: new AMap.TileLayer({
+              getTileUrl: 'http://mt{1,2,3,0}.google.cn/vt/lyrs=y@126&hl=zh-CN&gl=cn&src=app&s=G&x=[x]&y=[y]&z=[z]',
+              zIndex:2
+            })
+        }],
           //自定义覆盖图层
           overlayLayers: [ {
               id: 'roadNet',

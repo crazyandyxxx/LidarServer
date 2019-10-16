@@ -3,12 +3,12 @@
 {% block app_content %}
 <div id="menu">
     <h3 class="item">设备序列号</h3>
-    <p class="description">SL0001041119</p>
+    <p class="description">{{ insID }}</p>
     <h3 class="item">采集卡序列号</h3>
-  <p class="description">AC68113</p>
+  <p class="description">{{ acqCardID }}</p>
   <h3 class="item">云台序列号</h3>
-  <p class="description">PA96554</p>
+  <p class="description">{{ panID }}</p>
   <h3 class="item">软件版本</h3>
-  <p class="description">1.0.0.0</p>
+  <p class="description">{{ softVer }}</p>
 </div>
 {% endblock %}

@@ -239,6 +239,8 @@ var linePRA=[];
             };
             Plotly.relayout('PRADiv',update);
             Plotly.relayout('PRBDiv',update);
+            tracePblA.x = timeat;
+            tracePblB.x = timeat;
             tracePblA.y = linePbl;
             tracePblB.y = linePbl;
             SelectChannelA();
@@ -350,6 +352,7 @@ var linePRA=[];
             drawDataA = linePM25;
             break;
           case '污染边界层':
+            drawDataA = lineExt;
             tracePblA.visible = true;
             break;
         };
@@ -464,6 +467,7 @@ var linePRA=[];
           case 'PM2.5':
             drawDataB = linePM25;
           case '污染边界层':
+            drawDataB = lineExt;
             tracePblB.visible = true;
         };
         PRB_data.x = timeat;
