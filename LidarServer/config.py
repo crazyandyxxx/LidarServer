@@ -11,11 +11,12 @@ class Config(object):
         'sqlite:///' + os.path.join(basedir, 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     LOG_TO_STDOUT = os.environ.get('LOG_TO_STDOUT')
-    MAIL_SERVER = os.environ.get('MAIL_SERVER')
+    MAIL_SERVER = os.environ.get('MAIL_SERVER') or 'smtp.163.com'
     MAIL_PORT = int(os.environ.get('MAIL_PORT') or 25)
     MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS') is not None
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or 'zhongkelanguang'
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD') or 'Bestlidar88'
+    MAIL_DEFAULT_SENDER = 'zhongkelanguang@163.com'
     ADMINS = ['your-email@example.com']
     LANGUAGES = ['en', 'es']
     MS_TRANSLATOR_KEY = os.environ.get('MS_TRANSLATOR_KEY')
@@ -25,10 +26,10 @@ class Config(object):
     JOBS = [
                 {
                     'id': 'job',
-                    'func': 'app.main.routes:CheckExceptionStop',
+                    'func': 'app.schedule:CheckExceptionStop',
                     'args': None,
                     'trigger': 'interval',
-                    'seconds': 5
+                    'seconds': 6
                 }
             ]
 

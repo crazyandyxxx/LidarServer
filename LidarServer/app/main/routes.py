@@ -19,11 +19,6 @@ def before_request():
         current_user.last_seen = datetime.now()
         db.session.commit()
 
-def CheckExceptionStop():
-    task = Task.query.filter_by(complete=False).order_by(Task.start_time.desc()).first()
-    if task:
-        print((datetime.now-task.end_time).seconds)
-
 @bp.route('/', methods=['GET', 'POST'])
 @bp.route('/index', methods=['GET', 'POST'])
 @login_required
@@ -51,7 +46,7 @@ def acquire():
         
         task = Task.query.filter_by(complete=False).order_by(Task.start_time.desc()).first()
         if task:
-            Stop_acquisition()
+            stop_acquisition()
             task.complete = True
             db.session.commit()
             startAcq = 0

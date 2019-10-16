@@ -30,7 +30,7 @@ def start_acquisition(taskId, mode, frequency, duration, binNum, resolution, ver
 
     return r['result']
 
-def Stop_acquisition():
+def stop_acquisition():
     s = socket.socket()
     s.connect((host, port))
     acq_params = {}
@@ -40,7 +40,7 @@ def Stop_acquisition():
     r = (json.loads(s.recv(1024).decode()))
     s.close()
 
-def Restart_acquisition():
+def restart_acquisition():
     s = socket.socket()
     s.connect((host, port))
     acq_params = {}
