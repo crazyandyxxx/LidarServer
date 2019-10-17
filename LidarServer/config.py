@@ -29,7 +29,7 @@ class Config(object):
                     'func': 'app.schedule:CheckExceptionStop',
                     'args': None,
                     'trigger': 'interval',
-                    'seconds': 6
+                    'seconds': 10
                 }
             ]
 

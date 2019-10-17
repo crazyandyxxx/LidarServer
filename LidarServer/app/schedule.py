@@ -28,10 +28,13 @@ def CheckExceptionStop():
                 addresses = mailAddresses.split(',')
                 message = '检测到设备%s异常停机，尝试重启。' % instrumentID
                 subject = "设备异常"
-                with mail.connect() as conn:
-                    for address in addresses:
-                        msg = Message(recipients=[address],
-                                    body=message,
-                                    subject=subject)
+                try:
+                    with mail.connect() as conn:
+                        for address in addresses:
+                            msg = Message(recipients=[address],
+                                        body=message,
+                                        subject=subject)
 
-                        conn.send(msg)          
+                            conn.send(msg)    
+                except:
+                    print('send mail error')      
