@@ -1,9 +1,11 @@
 from flask_mail import Message
 from datetime import datetime
-from app import db, mail
+from app import db, mail, scheduler
 from app.models import Task
 from app.dataAcquisition import *
+from apscheduler.triggers.interval import IntervalTrigger
 
+@scheduler.task(IntervalTrigger(seconds=10))
 def CheckExceptionStop():
     with db.app.app_context():
         task = Task.query.filter_by(complete=False).order_by(Task.start_time.desc()).first()
@@ -36,5 +38,5 @@ def CheckExceptionStop():
                                         subject=subject)
 
                             conn.send(msg)    
-                except:
-                    print('send mail error')      
+                except Exception as e:
+                    print('send mail error', e)      
