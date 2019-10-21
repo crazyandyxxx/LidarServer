@@ -19,8 +19,8 @@ namespace AcquisitionSocketServer
             laserOnByte[4] = bt[1];
             laserOnByte[5] = bt[0];
             bt = CRC16_Modbus(new byte[] { laserOnByte[0], laserOnByte[1], laserOnByte[2], laserOnByte[3], laserOnByte[4], laserOnByte[5] });
-            laserOnByte[6] = bt[0];
-            laserOnByte[7] = bt[1];
+            laserOnByte[6] = bt[1];
+            laserOnByte[7] = bt[0];
             SerialPortCommunicate(laserOnByte, laserOnByteRv, panPort);
             Thread.Sleep(50);
             

@@ -102,6 +102,7 @@ def acquire():
         try:
             with open("./config/acquisitionParameters.json",'r') as load_f:
                 acqParas = json.load(load_f)
+                form.Mode.data = acqParas['mode']
                 form.Frequency.data = acqParas['frequency']
                 form.Duration.data = acqParas['duration']
                 form.BinLen.data = acqParas['binLength']

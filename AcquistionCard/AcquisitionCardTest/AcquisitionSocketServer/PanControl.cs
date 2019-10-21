@@ -58,22 +58,22 @@ namespace AcquisitionSocketServer
                 var horRealEnd = horStartAng + horN * horAngStep;
                 var horTargetAng = horAng;
                 var verAng = verStartAng;
-                if (horAng == horStartAng)
-                {
-                    var backAngStep = (horRealEnd - horStartAng) / 3;
-                    for (int i = 1; i < 3; i++)
-                    {
-                        horTargetAng = horRealEnd - i * backAngStep;
-                        if (verAng > 90)
-                        {
-                            horTargetAng += 180;
-                        }
-                        horTargetAng = (horTargetAng + 360) % 360;
-                        ToAngle(horTargetAng, AngleType.Hor, 3, 200);
-                    }
-                }
+                //if (horAng == horStartAng)
+                //{
+                //    var backAngStep = (horRealEnd - horStartAng) / 3;
+                //    for (int i = 1; i < 3; i++)
+                //    {
+                //        horTargetAng = horRealEnd - i * backAngStep;
+                //        if (verAng > 90)
+                //        {
+                //            horTargetAng += 180;
+                //        }
+                //        horTargetAng = (horTargetAng + 360) % 360;
+                //        ToAngle(horTargetAng, AngleType.Hor, 3, 200);
+                //    }
+                //}
 
-                horTargetAng = horAng;
+                //horTargetAng = horAng;
                 var verTargetAng = verAng;
                 if (verAng > 90)
                 {

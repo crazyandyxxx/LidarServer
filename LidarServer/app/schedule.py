@@ -11,7 +11,7 @@ def CheckExceptionStop():
         task = Task.query.filter_by(complete=False).order_by(Task.start_time.desc()).first()
         if task:
             dt = (datetime.now()-task.end_time).seconds 
-            if(dt>3*task.duration):
+            if(dt>10*task.duration):
                 restart_acquisition()
                 mailAddresses = ''
                 instrumentID = ''
