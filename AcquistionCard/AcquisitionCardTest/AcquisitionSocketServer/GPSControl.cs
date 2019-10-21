@@ -36,12 +36,12 @@ namespace AcquisitionSocketServer
 
         private static void GPSDataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            latitude = longitude = altitude = -99999;
             try
             {
                 string resp = gpsPort.ReadLine();
                 if (resp.StartsWith("$GNGGA"))
                 {
+                    latitude = longitude = altitude = -99999;
                     string[] values = resp.Split(',');
                     if (values.Length == 15)
                     {
@@ -52,7 +52,7 @@ namespace AcquisitionSocketServer
                             {
                                 latitude = lat;
                                 longitude = lng;
-                                altitude = alt;
+                                altitude = alt;                            
 
                                 float d = (float)Math.Floor(latitude / 100.0);
                                 latitude = d + (latitude - d * 100.0f) / 60.0f;
@@ -65,6 +65,7 @@ namespace AcquisitionSocketServer
 
                                 if (string.Compare(values[5], "W") == 0)
                                     longitude = -longitude;
+
                             }
                         }
                     }

@@ -37,7 +37,7 @@ namespace AcquisitionSocketServer
             if (AcquisitionProgressThr != null)
             {
                 AcquisitionProgressThr.Abort();
-                AcquisitionProgressThr.Join();
+                //AcquisitionProgressThr.Join();
             }
             LaserOff();
             acquisitionCount = 0;

@@ -28,7 +28,7 @@ namespace AcquisitionSocketServer
         static int acquisitionCount = 0;
         static string mode;
         static float currentVerAng = 0, currentHorAng=0;
-        static double altitude = 0, latitude = 0, longitude = 0;
+        static double altitude = -99999, latitude = -99999, longitude = -99999;
 
         private static void SetAcquistionParams(dynamic cmd)
         {
