@@ -43,96 +43,132 @@ var textColor = 'black';
     }
   }
 
-drawColorbar(11);
-drawTicks();
+
 var vMax = 10000;
 var vMin = 0;
-drawTickText();
 
-  var map = new AMap.Map('viewDiv', {
-      viewMode:'3D',  
-      expandZoomRange:true,
-      zooms:[3,20],
-      zoom:16,
-      pitch:60,
-      center:[116.396132,39.900444]
+
+var map;
+var object3Dlayer;
+
+window.onload = function(){
+  drawColorbar(11);
+  drawTicks();
+  drawTickText();
+
+  map = new AMap.Map('viewDiv', {
+    viewMode:'3D',  
+    expandZoomRange:true,
+    zooms:[3,20],
+    zoom:16,
+    pitch:60,
+    center:[116.396132,39.900444]
+});
+
+object3Dlayer = new AMap.Object3DLayer();
+map.add(object3Dlayer);
+
+AMapUI.loadUI(['control/BasicControl'], function(BasicControl) {
+  var layerCtrl = new BasicControl.LayerSwitcher({
+      position: 'rt',
+      
+       //自定义基础图层
+       baseLayers: [{
+        enable: true,
+        id: 'Atile',
+        name: '高德矢量图',
+        layer: new AMap.TileLayer()
+    }, {
+        id: 'Asatellite',
+        name: '高德卫星图',
+        layer: new AMap.TileLayer.Satellite()
+      },{
+          id: 'Gtile',
+          name: '谷歌矢量图',
+          layer: new AMap.TileLayer({
+            getTileUrl: 'http://mt{1,2,3,0}.google.cn/vt/lyrs=m@126&hl=zh-CN&gl=cn&src=app&s=G&x=[x]&y=[y]&z=[z]',
+            zIndex:2
+          })
+      },{
+          id: 'Gsatellite',
+          name: '谷歌卫星图',
+          layer: new AMap.TileLayer({
+            getTileUrl: 'http://mt{1,2,3,0}.google.cn/vt/lyrs=y@126&hl=zh-CN&gl=cn&src=app&s=G&x=[x]&y=[y]&z=[z]',
+            zIndex:2
+          })
+      }],
+        //自定义覆盖图层
+        overlayLayers: [ {
+            id: 'roadNet',
+            name: '高德路网图',
+            layer: new AMap.TileLayer.RoadNet()
+        },{
+            enable: true,
+            id: 'object3D',
+            name: '雷达扫描图',
+            layer: object3Dlayer
+        }]
   });
-
-  var object3Dlayer = new AMap.Object3DLayer();
-  map.add(object3Dlayer);
-
-  AMapUI.loadUI(['control/BasicControl'], function(BasicControl) {
-    var layerCtrl = new BasicControl.LayerSwitcher({
-        position: 'rt',
-        
-         //自定义基础图层
-         baseLayers: [{
-          enable: true,
-          id: 'Atile',
-          name: '高德矢量图',
-          layer: new AMap.TileLayer()
-      }, {
-          id: 'Asatellite',
-          name: '高德卫星图',
-          layer: new AMap.TileLayer.Satellite()
-        },{
-            id: 'Gtile',
-            name: '谷歌矢量图',
-            layer: new AMap.TileLayer({
-              getTileUrl: 'http://mt{1,2,3,0}.google.cn/vt/lyrs=m@126&hl=zh-CN&gl=cn&src=app&s=G&x=[x]&y=[y]&z=[z]',
-              zIndex:2
-            })
-        },{
-            id: 'Gsatellite',
-            name: '谷歌卫星图',
-            layer: new AMap.TileLayer({
-              getTileUrl: 'http://mt{1,2,3,0}.google.cn/vt/lyrs=y@126&hl=zh-CN&gl=cn&src=app&s=G&x=[x]&y=[y]&z=[z]',
-              zIndex:2
-            })
-        }],
-          //自定义覆盖图层
-          overlayLayers: [ {
-              id: 'roadNet',
-              name: '高德路网图',
-              layer: new AMap.TileLayer.RoadNet()
-          },{
-              enable: true,
-              id: 'object3D',
-              name: '雷达扫描图',
-              layer: object3Dlayer
-          }]
-    });
-    //图层切换控件
-    map.addControl(layerCtrl);
-    map.setLayers(layerCtrl.getEnabledLayers());
-    layerCtrl.on('layerPropChanged',function(e){
-      if(e.props.enable){
-        if(e.layer.id.includes('satellite')){
-          tickColor = '#FFF';
-          textColor = '#FFF';
-          drawTicks();
-          drawTickText();
-        }else if(e.layer.id.includes('tile')){
-          tickColor = '#000';
-          textColor = '#000';
-          drawTicks();
-          drawTickText();
-        };
+  //图层切换控件
+  map.addControl(layerCtrl);
+  map.setLayers(layerCtrl.getEnabledLayers());
+  layerCtrl.on('layerPropChanged',function(e){
+    if(e.props.enable){
+      if(e.layer.id.includes('satellite')){
+        tickColor = '#FFF';
+        textColor = '#FFF';
+        drawTicks();
+        drawTickText();
+      }else if(e.layer.id.includes('tile')){
+        tickColor = '#000';
+        textColor = '#000';
+        drawTicks();
+        drawTickText();
       };
+    };
+  });
+});
+
+AMap.plugin([
+    'AMap.ControlBar',
+    'AMap.Scale'
+], function(){
+
+    // 添加 3D 罗盘控制
+    map.addControl(new AMap.ControlBar({
+        position: {left:'-90px'} 
+    }));
+    map.addControl(new AMap.Scale());
+});
+
+$.post(urlGetRhiData, { 'task id': task_id, 'content':'list' },
+    function(data,status){
+      var sel1 = document.getElementById('timeSeries');
+      sel1.addEventListener("change", SelectTime);
+      var channel = document.getElementById('channel');
+      channel.addEventListener("change", SelectChannel);
+      var colorMax = document.getElementById('colorMax');
+      colorMax.addEventListener("change", ChangeMaxValue);
+      var colorMin = document.getElementById('colorMin');
+      colorMin.addEventListener("change", ChangeMinValue);
+      var zMax = document.getElementById('zMax');
+      zMax.addEventListener("change", ChangeRangeMax);
+      var opacity = document.getElementById('opacity');
+      opacity.addEventListener("change", ChangeColorOpacity);
+      for(let i=0; i<data.result.length;i++){
+          sel1.options.add(new Option(data.result[i].timestamp+""));
+      };
+      $.post(urlGetRhiData, { 'task id': task_id, 'content':'timedata', 'time': sel1.options[0].text},
+        function(data,status){
+            prepareData(data);
+            drawData = rdata.prr_A;
+            createPie(position,drawData,resolution,rangeMax,horAng,verAngStart,verAngEnd,verAngStep,vMin,vMax,colorOpacity);
+            map.setCenter(position);
+            map.setFitView();
+        });
     });
-  });
-
-  AMap.plugin([
-      'AMap.ControlBar',
-      'AMap.Scale'
-  ], function(){
-
-      // 添加 3D 罗盘控制
-      map.addControl(new AMap.ControlBar({
-          position: {left:'-90px'} 
-      }));
-      map.addControl(new AMap.Scale());
-  });
+};
+  
 
   var rdata = {};
   var rangeMax = 6000;
@@ -287,33 +323,6 @@ drawTickText();
       rdata.pm25.push(data.result[i].ext.map(x => x>0? 121.5*Math.pow(x,1.13) : 0));
     };
   }
-
-  $.post(urlGetRhiData, { 'task id': task_id, 'content':'list' },
-    function(data,status){
-      var sel1 = document.getElementById('timeSeries');
-      sel1.addEventListener("change", SelectTime);
-      var channel = document.getElementById('channel');
-      channel.addEventListener("change", SelectChannel);
-      var colorMax = document.getElementById('colorMax');
-      colorMax.addEventListener("change", ChangeMaxValue);
-      var colorMin = document.getElementById('colorMin');
-      colorMin.addEventListener("change", ChangeMinValue);
-      var zMax = document.getElementById('zMax');
-      zMax.addEventListener("change", ChangeRangeMax);
-      var opacity = document.getElementById('opacity');
-      opacity.addEventListener("change", ChangeColorOpacity);
-      for(let i=0; i<data.result.length;i++){
-          sel1.options.add(new Option(data.result[i].timestamp+""));
-      };
-      $.post(urlGetRhiData, { 'task id': task_id, 'content':'timedata', 'time': sel1.options[0].text},
-        function(data,status){
-            prepareData(data);
-            drawData = rdata.prr_A;
-            createPie(position,drawData,resolution,rangeMax,horAng,verAngStart,verAngEnd,verAngStep,vMin,vMax,colorOpacity);
-            map.setCenter(position);
-            map.setFitView();
-        });
-    });
   
   function Gps84ToGcj02(lon,lat){
     if (outOfChina(lon, lat)) {

@@ -1,4 +1,8 @@
-var map = new AMap.Map('viewDiv', {
+var map;
+var object3Dlayer;
+
+window.onload=function(){
+map = new AMap.Map('viewDiv', {
     viewMode:'3D',  
     expandZoomRange:true,
     zooms:[3,20],
@@ -7,7 +11,7 @@ var map = new AMap.Map('viewDiv', {
     center:[116.396132,39.900444]
 });
 
-var object3Dlayer = new AMap.Object3DLayer();
+object3Dlayer = new AMap.Object3DLayer();
 map.add(object3Dlayer);
 
 AMapUI.loadUI(['control/BasicControl'], function(BasicControl) {
@@ -67,6 +71,109 @@ AMap.plugin([
     }));
     map.addControl(new AMap.Scale());
 });
+
+map.on('mousemove', function (ev) {
+  var pixel = ev.pixel;
+  var px = new AMap.Pixel(pixel.x, pixel.y);
+  var obj = map.getObject3DByContainerPos(px, [object3Dlayer], false) || {};
+  if(points3D!=undefined){
+    points3D.geometry.vertexColors.splice(4,4,2 * 0.029, 2 * 0.015, 2 * 0.01, 1);
+    if(obj.object==points3D){
+      points3D.geometry.vertexColors.splice(4,4,0, 1, 0, 1);
+    }
+    points3D.needUpdate = true;
+    points3D.reDraw();
+  }
+});
+
+
+map.on('click', function (ev) {
+  var pixel = ev.pixel;
+  var px = new AMap.Pixel(pixel.x, pixel.y);
+  var obj = map.getObject3DByContainerPos(px, [object3Dlayer], false) || {};
+
+  if(obj.object==points3D){
+    poistionLabel.show();
+  }
+});
+
+$.post(urlGetMovData, { 'task id': task_id},
+      function(data,status){
+        var channel = document.getElementById('channel');
+        channel.addEventListener("change", SelectChannel);
+        var colorMax = document.getElementById('colorMax');
+        colorMax.addEventListener("change", ChangeMaxValue);
+        var colorMin = document.getElementById('colorMin');
+        colorMin.addEventListener("change", ChangeMinValue);
+        var zMax = document.getElementById('zMax');
+        zMax.addEventListener("change", ChangeRangeMax);
+        var zMin = document.getElementById('zMin');
+        zMin.addEventListener("change", ChangeRangeMin);
+        var opacity = document.getElementById('opacity');
+        opacity.addEventListener("change", ChangeColorOpacity);
+        var scale = document.getElementById('scale');
+        scale.addEventListener("change", ChangeRangeScale);
+
+        prepareData(data);
+        drawData = rdata.prr_A;
+        createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity);
+        map.setCenter(locations[0]);
+        map.setFitView();
+        createWallIndicator();
+
+        PRA_data = {
+          z: drawData,
+          x: timeat,
+          y: height,
+          zmin: 0,
+          zmax: 10000,
+          type: 'heatmap',
+          transpose: true,
+          colorscale:createColorScale(11),
+          colorbar:{
+            thickness:15,
+            xpad:5,
+            showexponent:"last",
+            exponentformat:"power"
+          }
+        };
+
+        traceA = {
+          x: drawData[0].slice(layoutLineA.yaxis.range[0]/resolution*1000,layoutLineA.yaxis.range[1]/resolution*1000),
+          y: height,
+          mode: 'lines',
+          line: {
+            color: 'black',
+            width: 2
+          }
+        };
+
+        tracePbl = {
+          x:timeat,
+          y:rdata.pbl,
+          mode:'markers',
+          type:'scatter',
+          marker:{color:'black'},
+          showlegend:false,
+          visible:false
+        };
+
+        layoutA.xaxis.range = [timeat[0],timeat[timeat.length-1]];
+        layoutLineA.annotations[0].text = timeat[lineIndex];
+        Plotly.newPlot('PRADiv', [PRA_data,tracePbl], layoutA,layoutConfig);
+        Plotly.newPlot('lineADiv',[traceA],layoutLineA,layoutConfig);
+
+        plotA.on('plotly_hover',plotHover);
+
+        poistionLabel = new AMap.Text({
+                              position:locations[lineIndex],
+                              height:rangeMax*scal*rangeScale,
+                              map:map
+                            }) 
+
+        setPositionLabel();
+    });
+};
 
 function createRectangle(pt1, pt2, resl, zMin, zMax, zScale, idata, rdata, vmin, vmax, alpha) {
     var v1xy = map.lngLatToGeodeticCoord(pt1);
@@ -248,7 +355,7 @@ function prepareData(data){
   var leng = data.result[0].raw_A.length;        
   for(let i = 0;i<leng;i++){
       height.push((i+1)*resolution/1000);
-  };
+  }
   for(let i=0; i<data.result.length;i++){
       if(data.result[i].longitude>-180){
           timeat.push(data.result[i].timestamp);
@@ -266,85 +373,8 @@ function prepareData(data){
           var altitude = data.result[i].altitude;
           locations.push(Gps84ToGcj02(longitude,latitude));
       }             
-  };
+  }
 }
-
-$.post(urlGetMovData, { 'task id': task_id},
-      function(data,status){
-        var channel = document.getElementById('channel');
-        channel.addEventListener("change", SelectChannel);
-        var colorMax = document.getElementById('colorMax');
-        colorMax.addEventListener("change", ChangeMaxValue);
-        var colorMin = document.getElementById('colorMin');
-        colorMin.addEventListener("change", ChangeMinValue);
-        var zMax = document.getElementById('zMax');
-        zMax.addEventListener("change", ChangeRangeMax);
-        var zMin = document.getElementById('zMin');
-        zMin.addEventListener("change", ChangeRangeMin);
-        var opacity = document.getElementById('opacity');
-        opacity.addEventListener("change", ChangeColorOpacity);
-        var scale = document.getElementById('scale');
-        scale.addEventListener("change", ChangeRangeScale);
-
-        prepareData(data);
-        drawData = rdata.prr_A;
-        createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity);
-        map.setCenter(locations[0]);
-        map.setFitView();
-        createWallIndicator();
-
-        PRA_data = {
-          z: drawData,
-          x: timeat,
-          y: height,
-          zmin: 0,
-          zmax: 10000,
-          type: 'heatmap',
-          transpose: true,
-          colorscale:createColorScale(11),
-          colorbar:{
-            thickness:15,
-            xpad:5,
-            showexponent:"last",
-            exponentformat:"power"
-          }
-        };
-
-        traceA = {
-          x: drawData[0].slice(layoutLineA.yaxis.range[0]/resolution*1000,layoutLineA.yaxis.range[1]/resolution*1000),
-          y: height,
-          mode: 'lines',
-          line: {
-            color: 'black',
-            width: 2
-          }
-        };
-
-        tracePbl = {
-          x:timeat,
-          y:rdata.pbl,
-          mode:'markers',
-          type:'scatter',
-          marker:{color:'black'},
-          showlegend:false,
-          visible:false
-        };
-
-        layoutA.xaxis.range = [timeat[0],timeat[timeat.length-1]];
-        layoutLineA.annotations[0].text = timeat[lineIndex];
-        Plotly.newPlot('PRADiv', [PRA_data,tracePbl], layoutA,layoutConfig);
-        Plotly.newPlot('lineADiv',[traceA],layoutLineA,layoutConfig);
-
-        plotA.on('plotly_hover',plotHover);
-
-        poistionLabel = new AMap.Text({
-                              position:locations[lineIndex],
-                              height:rangeMax*scal*rangeScale,
-                              map:map
-                            }) 
-
-        setPositionLabel();
-    });
 
 function createWallIndicator(){
   var center = map.lngLatToGeodeticCoord(locations[lineIndex]);
@@ -373,31 +403,6 @@ function createWallIndicator(){
   object3Dlayer.add(lines);
   object3Dlayer.add(points3D);
 }
-
-map.on('mousemove', function (ev) {
-  var pixel = ev.pixel;
-  var px = new AMap.Pixel(pixel.x, pixel.y);
-  var obj = map.getObject3DByContainerPos(px, [object3Dlayer], false) || {};
-  if(points3D!=undefined){
-    points3D.geometry.vertexColors.splice(4,4,2 * 0.029, 2 * 0.015, 2 * 0.01, 1);
-    if(obj.object==points3D){
-      points3D.geometry.vertexColors.splice(4,4,0, 1, 0, 1);
-    }
-    points3D.needUpdate = true;
-    points3D.reDraw();
-  }
-});
-
-
-map.on('click', function (ev) {
-  var pixel = ev.pixel;
-  var px = new AMap.Pixel(pixel.x, pixel.y);
-  var obj = map.getObject3DByContainerPos(px, [object3Dlayer], false) || {};
-
-  if(obj.object==points3D){
-    poistionLabel.show();
-  }
-});
 
 var lineIndex = 0;
 var plotA = document.getElementById('PRADiv');

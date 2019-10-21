@@ -67,97 +67,143 @@ function setMapCenter(){
     }
   }
   
-  drawColorbar(11);
-  drawTicks();
+  
   var vMax = 10000;
   var vMin = 0;
-  drawTickText();
+
   
-  var map = new AMap.Map('viewDiv', {
-      viewMode:'3D',  
-      expandZoomRange:true,
-      zooms:[3,20],
-      zoom:16,
-      pitch:0,
-      center:[116.396132,39.900444]
-  });
-  
+  var map;
   var geocoder;
+  var object3Dlayer;
+  var animData;
+  var animI = 0;
+  var playSpeed = 1000;
+  var overlays = [];
+
+  window.onload = function(){
+    drawColorbar(11);
+    drawTicks();
+    drawTickText();
   
-  var object3Dlayer = new AMap.Object3DLayer();
-  map.add(object3Dlayer);
-  
-  AMapUI.loadUI(['control/BasicControl'], function(BasicControl) {
-    var layerCtrl = new BasicControl.LayerSwitcher({
-        position: 'rt',
-        
-          //自定义基础图层
-          baseLayers: [{
-            enable: true,
-            id: 'Atile',
-            name: '高德矢量图',
-            layer: new AMap.TileLayer()
-        }, {
-            id: 'Asatellite',
-            name: '高德卫星图',
-            layer: new AMap.TileLayer.Satellite()
-          },{
-              id: 'Gtile',
-              name: '谷歌矢量图',
-              layer: new AMap.TileLayer({
-                getTileUrl: 'http://mt{1,2,3,0}.google.cn/vt/lyrs=m@126&hl=zh-CN&gl=cn&src=app&s=G&x=[x]&y=[y]&z=[z]',
-                zIndex:2
-              })
-          },{
-              id: 'Gsatellite',
-              name: '谷歌卫星图',
-              layer: new AMap.TileLayer({
-                getTileUrl: 'http://mt{1,2,3,0}.google.cn/vt/lyrs=y@126&hl=zh-CN&gl=cn&src=app&s=G&x=[x]&y=[y]&z=[z]',
-                zIndex:2
-              })
-          }],
-          //自定义覆盖图层
-          overlayLayers: [ {
-              id: 'roadNet',
-              name: '高德路网图',
-              layer: new AMap.TileLayer.RoadNet()
-          },{
+    map = new AMap.Map('viewDiv', {
+        viewMode:'3D',  
+        expandZoomRange:true,
+        zooms:[3,20],
+        zoom:16,
+        pitch:0,
+        center:[116.396132,39.900444]
+    });
+    
+    
+    
+    object3Dlayer = new AMap.Object3DLayer();
+    map.add(object3Dlayer);
+    
+    AMapUI.loadUI(['control/BasicControl'], function(BasicControl) {
+      var layerCtrl = new BasicControl.LayerSwitcher({
+          position: 'rt',
+          
+            //自定义基础图层
+            baseLayers: [{
               enable: true,
-              id: 'object3D',
-              name: '雷达扫描图',
-              layer: object3Dlayer
-          }]
-    });
-    //图层切换控件
-    map.addControl(layerCtrl);
-    map.setLayers(layerCtrl.getEnabledLayers());
-    layerCtrl.on('layerPropChanged',function(e){
-      if(e.props.enable){
-        if(e.layer.id.includes('satellite')){
-          tickColor = '#FFF';
-          textColor = '#FFF';
-          drawTicks();
-          drawTickText();
-        }else if(e.layer.id.includes('tile')){
-          tickColor = '#000';
-          textColor = '#000';
-          drawTicks();
-          drawTickText();
+              id: 'Atile',
+              name: '高德矢量图',
+              layer: new AMap.TileLayer()
+          }, {
+              id: 'Asatellite',
+              name: '高德卫星图',
+              layer: new AMap.TileLayer.Satellite()
+            },{
+                id: 'Gtile',
+                name: '谷歌矢量图',
+                layer: new AMap.TileLayer({
+                  getTileUrl: 'http://mt{1,2,3,0}.google.cn/vt/lyrs=m@126&hl=zh-CN&gl=cn&src=app&s=G&x=[x]&y=[y]&z=[z]',
+                  zIndex:2
+                })
+            },{
+                id: 'Gsatellite',
+                name: '谷歌卫星图',
+                layer: new AMap.TileLayer({
+                  getTileUrl: 'http://mt{1,2,3,0}.google.cn/vt/lyrs=y@126&hl=zh-CN&gl=cn&src=app&s=G&x=[x]&y=[y]&z=[z]',
+                  zIndex:2
+                })
+            }],
+            //自定义覆盖图层
+            overlayLayers: [ {
+                id: 'roadNet',
+                name: '高德路网图',
+                layer: new AMap.TileLayer.RoadNet()
+            },{
+                enable: true,
+                id: 'object3D',
+                name: '雷达扫描图',
+                layer: object3Dlayer
+            }]
+      });
+      //图层切换控件
+      map.addControl(layerCtrl);
+      map.setLayers(layerCtrl.getEnabledLayers());
+      layerCtrl.on('layerPropChanged',function(e){
+        if(e.props.enable){
+          if(e.layer.id.includes('satellite')){
+            tickColor = '#FFF';
+            textColor = '#FFF';
+            drawTicks();
+            drawTickText();
+          }else if(e.layer.id.includes('tile')){
+            tickColor = '#000';
+            textColor = '#000';
+            drawTicks();
+            drawTickText();
+          };
         };
-      };
+      });
     });
-  });
+    
+    AMap.plugin([
+        'AMap.ControlBar',
+        'AMap.Scale'
+    ], function(){
+        // 添加 3D 罗盘控制
+        map.addControl(new AMap.ControlBar({
+            position: {left:'-90px'} 
+        }));
+        map.addControl(new AMap.Scale());
+    });
+
+    $.post(urlGetPpiData, { 'task id': task_id, 'content':'list' },
+      function(data,status){    
+        var sel1 = document.getElementById('timeSeries');
+        for(let i=0; i<data.result.length;i++){
+            sel1.options.add(new Option(data.result[i].timestamp+""));
+        };
+        $.post(urlGetPpiData, { 'task id': task_id, 'content':'timedata', 'time': sel1.options[0].text},
+          function(data,status){
+            resolution = data.result[0].resolution;
+            verAng = data.result[0].verAngle;
+            horAngStart = data.result[0].horAngle;
+            horAngEnd = data.result[data.result.length-1].horAngle;
+            horAngStep = data.result[1].horAngle - data.result[0].horAngle;
+            prepareData(data);
+            drawData = rdata.prr_A;
+            createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);
+            map.setCenter(position);
+            map.setFitView();
   
-  AMap.plugin([
-      'AMap.ControlBar',
-      'AMap.Scale'
-  ], function(){
-      // 添加 3D 罗盘控制
-      map.addControl(new AMap.ControlBar({
-          position: {left:'-90px'} 
-      }));
-      map.addControl(new AMap.Scale());
+            document.getElementById('angleRange').textContent = "扫描范围"+horAngStart+" - "+horAngEnd;
+            document.getElementById('angleStep').textContent = "扫描步长"+horAngStep;
+            document.getElementById('angleVer').textContent = "垂直角度"+verAng;
+            document.getElementById('timeStamp').textContent = sel1.options[0].text+"至"+data.result[data.result.length-1].timestamp;
+            addMapEvents();
+        });
+    });
+    mouseTool = new AMap.MouseTool(map);
+    mouseTool.on('draw',function(e){
+      var overlay = e.obj;  
   });
+    document.getElementById('playSpeed').oninput = function(){playSpeed=this.value*100};
+  };
+  
   
   var rdata = {};
   var rangeMax = 6000;
@@ -329,32 +375,7 @@ function setMapCenter(){
       };
     }
       
-    $.post(urlGetPpiData, { 'task id': task_id, 'content':'list' },
-      function(data,status){    
-        var sel1 = document.getElementById('timeSeries');
-        for(let i=0; i<data.result.length;i++){
-            sel1.options.add(new Option(data.result[i].timestamp+""));
-        };
-        $.post(urlGetPpiData, { 'task id': task_id, 'content':'timedata', 'time': sel1.options[0].text},
-          function(data,status){
-            resolution = data.result[0].resolution;
-            verAng = data.result[0].verAngle;
-            horAngStart = data.result[0].horAngle;
-            horAngEnd = data.result[data.result.length-1].horAngle;
-            horAngStep = data.result[1].horAngle - data.result[0].horAngle;
-            prepareData(data);
-            drawData = rdata.prr_A;
-            createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);
-            map.setCenter(position);
-            map.setFitView();
-  
-            document.getElementById('angleRange').textContent = "扫描范围"+horAngStart+" - "+horAngEnd;
-            document.getElementById('angleStep').textContent = "扫描步长"+horAngStep;
-            document.getElementById('angleVer').textContent = "垂直角度"+verAng;
-            document.getElementById('timeStamp').textContent = sel1.options[0].text+"至"+data.result[data.result.length-1].timestamp;
-            addMapEvents();
-        });
-    });
+
       
       function addMapEvents(){
         document.getElementById('timeSeries').addEventListener("change", SelectTime);
@@ -374,7 +395,7 @@ function setMapCenter(){
         document.getElementById('savePic').addEventListener("click",saveMap);
       }
   
-      var mouseTool = new AMap.MouseTool(map); 
+      var mouseTool; 
       var isPlaying = false;
   
       function addMapMarker(){
@@ -441,12 +462,7 @@ function setMapCenter(){
         map.off('click', showInfoClick);
         if(isPlaying){return;}
         mouseTool.measureArea();
-      }
-      
-      var overlays = [];
-      mouseTool.on('draw',function(e){
-          var overlay = e.obj;  
-      }) 
+      } 
       
       function deleteMarker(e){
         map.remove(e.target);
@@ -646,10 +662,8 @@ function setMapCenter(){
             }
           });
         }
-        var animData;
-        var animI = 0;
-        var playSpeed = 1000;
-        document.getElementById('playSpeed').oninput = function(){playSpeed=this.value*100};
+        
+        
         async function Scan(){
           if(!isPlaying){return;}
           animI %= animData.result.length;
