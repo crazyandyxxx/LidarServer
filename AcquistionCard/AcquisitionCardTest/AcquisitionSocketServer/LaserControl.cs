@@ -22,7 +22,7 @@ namespace AcquisitionSocketServer
             laserOnByte[6] = bt[1];
             laserOnByte[7] = bt[0];
             SerialPortCommunicate(laserOnByte, laserOnByteRv, panPort);
-            Thread.Sleep(50);
+            Thread.Sleep(200);
             
             laserOnByte = new byte[] { 0x01, 0x06, 0x00, 0x06, 0x00, 0xAF, 0x29, 0xB7 };//开启雷达
             SerialPortCommunicate(laserOnByte, laserOnByteRv, panPort);

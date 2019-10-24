@@ -107,6 +107,9 @@ var startTime = moment().startOf('second').subtract(3, 'days');
         case '水平切面':
           ExportPPI(task_id);
           break;
+        case '垂直切面':
+          ExportRHI(task_id);
+          break;
       }
     }
 
@@ -135,8 +138,8 @@ var startTime = moment().startOf('second').subtract(3, 'days');
           for(let dataStart = 0; dataStart<dataCount; dataStart+=dataStep){    
             $.post(urlExportTask, { 'task id': task_id},
               function(data1,status1){        
-                var urlf = urlExportTask+"?task_id="+task_id+"&data_start="+dataStart+"&data_end="+(dataStart+dataStep);
-                var xhttp = new XMLHttpRequest();
+                let urlf = urlExportTask+"?task_id="+task_id+"&data_start="+dataStart+"&data_end="+(dataStart+dataStep);
+                let xhttp = new XMLHttpRequest();
                 xhttp.onload = function() {
                     if (this.status === 200) {
                         var a = document.createElement('a');
@@ -235,7 +238,90 @@ var startTime = moment().startOf('second').subtract(3, 'days');
                   }
               }
           });
-      };
+      }
+    });
+  }
+
+  function ExportRHI(task_id){
+    $.post(urlRHI, { 'task id': task_id, 'content':'list' },
+        function(dataList,status){
+        for(let i=0; i<dataList.result.length;i++){
+        $.post(urlRHI, { 'task id': task_id, 'content':'timedata', 'time': dataList.result[i].timestamp},
+            function(data,status){
+              let csvContent = "";
+              csvContent += 'Data Count,'+data.result.length+'\r\n';
+              csvContent += 'Data Length,'+data.result[0].raw_A.length+'\r\n';
+              csvContent += 'Resolution,'+data.result[0].resolution+'\r\n';
+              csvContent += 'Horizontal Angle,'+data.result[0].horAngle+'\r\n';
+              csvContent += 'Vertical Angle Start,'+data.result[0].verAngle+'\r\n';
+              csvContent += 'Vertical Angle End,'+data.result[data.result.length-1].verAngle+'\r\n';
+              csvContent += 'Vertical Angle Step,'+(data.result[1].verAngle - data.result[0].verAngle)+'\r\n';
+              let lonArr = [];
+              let latArr = [];
+              let altArr = [];
+              for(let i=0; i<data.result.length;i++){
+                if(data.result[i].longitude>0){
+                  lonArr.push(data.result[i].longitude);
+                  latArr.push(data.result[i].latitude);
+                  altArr.push(data.result[i].altitude);
+                } 
+              }
+              lonArr.sort(function(a,b){return a-b});
+              latArr.sort(function(a,b){return a-b});
+              altArr.sort(function(a,b){return a-b});
+              longitude = lonArr[Math.floor(lonArr.length/2)];
+              latitude = latArr[Math.floor(lonArr.length/2)];
+              altitude = altArr[Math.floor(lonArr.length/2)];
+              csvContent += 'Longitude,'+longitude+'\r\n';
+              csvContent += 'Latitude,'+latitude+'\r\n';
+              csvContent += 'Altitude,'+altitude+'\r\n';
+              csvContent += '********************'+'\r\n';
+              csvContent += 'Aerosol Extinction'+'\r\n';
+              csvContent += '********************'+'\r\n';
+              for(let i=0; i<data.result.length;i++){
+                csvContent += data.result[i].timestamp+','+data.result[i].verAngle+',';
+                csvContent += data.result[i].ext.join(',')+'\r\n';
+              }
+              csvContent += '********************'+'\r\n';
+              csvContent += 'Depolarization'+'\r\n';
+              csvContent += '********************'+'\r\n';
+              for(let i=0; i<data.result.length;i++){
+                csvContent += data.result[i].timestamp+','+data.result[i].verAngle+',';
+                csvContent += data.result[i].dep.join(',')+'\r\n';
+              }
+              csvContent += '********************'+'\r\n';
+              csvContent += 'Channel A Data'+'\r\n';
+              csvContent += '********************'+'\r\n';
+              for(let i=0; i<data.result.length;i++){
+                csvContent += data.result[i].timestamp+','+data.result[i].verAngle+',';
+                csvContent += data.result[i].raw_A.join(',')+'\r\n';
+              }
+              csvContent += '********************'+'\r\n';
+              csvContent += 'Channel B Data'+'\r\n';
+              csvContent += '********************'+'\r\n';
+              for(let i=0; i<data.result.length;i++){
+                csvContent += data.result[i].timestamp+','+data.result[i].verAngle+',';
+                csvContent += data.result[i].raw_B.join(',')+'\r\n';
+              }
+
+              var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+              if (navigator.msSaveBlob) { // IE 10+
+                  navigator.msSaveBlob(blob, "垂直切面_"+data.result[0].timestamp+".csv");
+              } else {
+                  var link = document.createElement("a");
+                  if (link.download !== undefined) { // feature detection
+                      // Browsers that support HTML5 download attribute
+                      var url = URL.createObjectURL(blob);
+                      link.setAttribute("href", url);
+                      link.setAttribute("download", "垂直切面_"+data.result[0].timestamp+".csv");
+                      link.style.visibility = 'hidden';
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                  }
+              }
+          });
+      }
     });
   }
 
