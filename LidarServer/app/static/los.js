@@ -134,7 +134,7 @@ var linePRA=[];
       };
     }
 
-    $.post(urlGetLosData, { 'task id': task_id, 'real': false },
+    $.post(urlGetLosData, { 'task id': task_id, 'content': 'view' },
         function(data,status){
         if(status == "success"){
           prepareData(data);
@@ -228,7 +228,7 @@ var linePRA=[];
     
     function getRealTimeData(){
       if(document.getElementById('realTime').checked){
-        $.post(urlGetLosData, { 'task id': task_id, 'real': true },
+        $.post(urlGetLosData, { 'task id': task_id, 'content': 'view' },
         function(data,status){
           if(status == "success"){
             prepareData(data);
@@ -466,9 +466,11 @@ var linePRA=[];
             break;
           case 'PM2.5':
             drawDataB = linePM25;
+            break;
           case '污染边界层':
             drawDataB = lineExt;
             tracePblB.visible = true;
+            break;
         };
         PRB_data.x = timeat;
         PRB_data.z = drawDataB;

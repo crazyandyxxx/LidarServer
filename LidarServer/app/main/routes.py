@@ -194,17 +194,22 @@ def get_los_data():
     results = []
     if request.method == 'POST':
         task_id = request.values.get('task id', 0)
-        real_time = request.values.get('real', 0)
+        content = request.values.get('content', 0)
+
         task = Task.query.filter_by(id = task_id).first()
         resolution = task.resolution
-        dataLength = task.bin_length
-        if(task.complete):
+        task_dat = []
+
+        if(content=='total count'):
+            return jsonify(result=[task.data_num])
+        if(content=='view'):
             task_dat = TaskData.query.filter_by(task_id=task_id).all()
-        else:
-            if(real_time):
-                task_dat = TaskData.query.filter_by(task_id=task_id).slice(task.data_num-200 if task.data_num>200 else 0,task.data_num).all()
-            else:
-                task_dat = TaskData.query.filter_by(task_id=task_id).all()
+            # task_dat = TaskData.query.filter_by(task_id=task_id).slice(task.data_num-200 if task.data_num>200 else 0,task.data_num).all()
+        if(content=='export'):
+            data_start = int(request.values.get('data start', 0))
+            data_end = int(request.values.get('data end', 0))
+            task_dat = TaskData.query.filter_by(task_id=task_id).slice(data_start,data_end).all()
+
         ov = np.loadtxt(r'./overlap/19000101000000_15.ov')
         overlapA = ov[:,0]
         overlapB = ov[:,1]
