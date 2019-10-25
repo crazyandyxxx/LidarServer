@@ -2,6 +2,7 @@
 
 {% block styles  %}
 <link rel="stylesheet" type="text/css" href="../static/bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="../static/daterangepicker.css" />
 <style type="text/css">
   .inputNum {
     width: 6em;
@@ -9,14 +10,15 @@
   }
   .PRDiv{
     position: relative;
-    float:right;
-    width:900px;
+    float: right;
+    width:75%;
+    padding: 0;
     z-index: 100;
   }
   .lineDiv{
     position: relative;
-    float:right;
-    width:290px;
+    float: right;
+    width:25%;
     margin-left:-50px;
     z-index: 10;
   }
@@ -65,6 +67,7 @@
 <span>
   <input type="checkbox" id="realTime" onclick="getRealTimeData()">
   <label>实时刷新</label>
+  <input type="image" name='dateRange' src="../static/date.png">
 </span>
 </div>
 <div>
@@ -115,6 +118,8 @@
 </script>
 <script src="../static/plotly-latest.min.js"></script>
 <script src="../static/jquery.min.js"></script>
+<script src="../static/moment.min.js"></script>
+<script src="../static/daterangepicker.js"></script>
 <script src="../static/los.js"></script>
 
 

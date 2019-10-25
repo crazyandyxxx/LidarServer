@@ -133,6 +133,34 @@ var linePRA=[];
         linePM25.push(data.result[i].ext.map(x => x>0? 121.5*Math.pow(x,1.13) : 0));
       };
     }
+    var startTime = moment().startOf('second').subtract(3, 'days');
+    var endTime = moment().startOf('second');
+    var scanType = 'ALL';
+      $(function() {
+          $('input[name="dateRange"]').daterangepicker({
+              timePicker: true,
+              timePicker24Hour: true,
+              timePickerSeconds:true,
+              startDate: startTime,
+              endDate: endTime,
+              locale: {
+                  format: 'YYYY/MM/DD HH:mm:ss',
+                  applyLabel: '确定',
+                  cancelLabel: '取消',
+                  fromLabel: '从',
+                  toLabel: '至',
+                  customRangeLabel: 'Custom',
+                  weekLabel: '周',
+                  daysOfWeek: ['日', '一', '二', '三', '四', '五','六'],
+                  monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+                  firstDay: 1
+              }
+          },
+          function(start, end) {
+            alert("A new date range was chosen: " + start.format        ('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));    
+            }
+          );
+      });
 
     $.post(urlGetLosData, { 'task id': task_id, 'content': 'view' },
         function(data,status){

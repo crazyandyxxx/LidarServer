@@ -393,6 +393,69 @@ var startTime = moment().startOf('second').subtract(3, 'days');
       }
     });
   }
+  
+  function ExportMOV(task_id){
+    $.post(urlMOV, { 'task id': task_id, 'content':'total count' },
+        function(dataList,status){
+          let dataCount = dataList.result[0];
+          let dataStep = 1000;
+          for(let dataStart = 0; dataStart<dataCount; dataStart+=dataStep){ 
+        $.post(urlMOV, { 'task id': task_id, 'content':'export', 'data start':dataStart, 'data end':dataStart+dataStep},
+            function(data,status){
+              let csvContent = "";
+              csvContent += 'Data Count,'+data.result.length+'\r\n';
+              csvContent += 'Data Length,'+data.result[0].raw_A.length+'\r\n';
+              csvContent += 'Resolution,'+data.result[0].resolution+'\r\n';
+
+              csvContent += '********************'+'\r\n';
+              csvContent += 'Aerosol Extinction'+'\r\n';
+              csvContent += '********************'+'\r\n';
+              for(let i=0; i<data.result.length;i++){
+                csvContent += data.result[i].timestamp+','+data.result[i].longitude+','+data.result[i].latitude+','+data.result[i].altitude+',';
+                csvContent += data.result[i].ext.join(',')+'\r\n';
+              }
+              csvContent += '********************'+'\r\n';
+              csvContent += 'Depolarization'+'\r\n';
+              csvContent += '********************'+'\r\n';
+              for(let i=0; i<data.result.length;i++){
+                csvContent += data.result[i].timestamp+','+data.result[i].longitude+','+data.result[i].latitude+','+data.result[i].altitude+',';
+                csvContent += data.result[i].dep.join(',')+'\r\n';
+              }
+              csvContent += '********************'+'\r\n';
+              csvContent += 'Channel A Data'+'\r\n';
+              csvContent += '********************'+'\r\n';
+              for(let i=0; i<data.result.length;i++){
+                csvContent += data.result[i].timestamp+','+data.result[i].longitude+','+data.result[i].latitude+','+data.result[i].altitude+',';
+                csvContent += data.result[i].raw_A.join(',')+'\r\n';
+              }
+              csvContent += '********************'+'\r\n';
+              csvContent += 'Channel B Data'+'\r\n';
+              csvContent += '********************'+'\r\n';
+              for(let i=0; i<data.result.length;i++){
+                csvContent += data.result[i].timestamp+','+data.result[i].longitude+','+data.result[i].latitude+','+data.result[i].altitude+',';
+                csvContent += data.result[i].raw_B.join(',')+'\r\n';
+              }
+
+              var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+              if (navigator.msSaveBlob) { // IE 10+
+                  navigator.msSaveBlob(blob, "走航扫描_"+data.result[0].timestamp+".csv");
+              } else {
+                  var link = document.createElement("a");
+                  if (link.download !== undefined) { // feature detection
+                      // Browsers that support HTML5 download attribute
+                      var url = URL.createObjectURL(blob);
+                      link.setAttribute("href", url);
+                      link.setAttribute("download", "走航扫描_"+data.result[0].timestamp+".csv");
+                      link.style.visibility = 'hidden';
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                  }
+              }
+          });
+      }
+    });
+  }
 
   function ImportTask(){
     var input = document.createElement('input');

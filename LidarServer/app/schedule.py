@@ -5,14 +5,18 @@ from app.models import Task
 from app.dataAcquisition import *
 from apscheduler.triggers.interval import IntervalTrigger
 
-@scheduler.task(IntervalTrigger(seconds=10))
+@scheduler.task(IntervalTrigger(seconds=60))
 def CheckExceptionStop():
     with db.app.app_context():
         task = Task.query.filter_by(complete=False).order_by(Task.start_time.desc()).first()
         if task:
             dt = (datetime.now()-task.end_time).seconds 
             if(dt>10*task.duration):
-                restart_acquisition()
+                try:
+                    restart_acquisition()
+                except:
+                    print('restart error')
+
                 mailAddresses = ''
                 instrumentID = ''
                 try:
@@ -27,6 +31,7 @@ def CheckExceptionStop():
                         instrumentID = info['instrumentID']
                 except:
                     print('load instrument infomation error - send mail')
+                    
                 addresses = mailAddresses.split(',')
                 message = '检测到设备%s异常停机，尝试重启。' % instrumentID
                 subject = "设备异常"

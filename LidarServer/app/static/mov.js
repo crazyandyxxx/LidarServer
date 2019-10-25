@@ -97,7 +97,7 @@ map.on('click', function (ev) {
   }
 });
 
-$.post(urlGetMovData, { 'task id': task_id},
+$.post(urlGetMovData, { 'task id': task_id, 'content':'view'},
       function(data,status){
         var channel = document.getElementById('channel');
         channel.addEventListener("change", SelectChannel);
