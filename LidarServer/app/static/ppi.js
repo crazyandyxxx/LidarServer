@@ -224,7 +224,7 @@ function setMapCenter(){
   
     function createPie(location,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,opacity) {
         var gpn = Math.floor((horAngEnd-horAngStart)/horAngStep);
-        pie = new AMap.Object3D.Mesh()
+        pie = new AMap.Object3D.Mesh();
         pie.transparent = true;
         pie.backOrFront = 'both';
         var geometry = pie.geometry;
@@ -245,7 +245,7 @@ function setMapCenter(){
           var nmax = r/resl;
           resl /= map.getResolution(lnglat, 20);
           var maxH = 1000/map.getResolution(lnglat, 20);
-          for(var i = 0; i<nmax+1; i++){
+          for(let i = 0; i<nmax+1; i++){
             x1.push(x0+i*resl*Math.cos(verAng/180*Math.PI)*Math.sin(horAngStart/180*Math.PI));
             y1.push(y0-i*resl*Math.cos(verAng/180*Math.PI)*Math.cos(horAngStart/180*Math.PI));
             var h1 = z0-i*resl*Math.sin(verAng/180*Math.PI);
@@ -254,7 +254,7 @@ function setMapCenter(){
               if(idata<rdata.length){
                 h1 = (rdata[idata][i]-vmin)/(vmax-vmin);
               }  
-              if(h1<0){h1=0}else if(h1>3){h1=1.5};
+              if(h1<0){h1=0}else if(h1>3){h1=1.5}
               h1 *= -maxH;
             }
             z1.push(h1);
@@ -266,13 +266,13 @@ function setMapCenter(){
               if(idata<rdata.length-1){
                 h2 = (rdata[idata+1][i]-vmin)/(vmax-vmin);
               }    
-              if(h2<0){h2=0}else if(h2>3){h2=1.5};
+              if(h2<0){h2=0}else if(h2>3){h2=1.5}
               h2 *= -maxH;
             }
             z2.push(h2);
           }
           
-          for(var i = 0; i<nmax; i++){
+          for(let i = 0; i<nmax; i++){
             geometry.vertices.push(x1[i], y1[i], z1[i]);
             geometry.vertices.push(x1[i+1], y1[i+1], z1[i+1]);
             geometry.vertices.push(x2[i+1], y2[i+1], z2[i+1]);
@@ -372,7 +372,7 @@ function setMapCenter(){
           rdata.dep.push(data.result[i].dep);
           rdata.pm10.push(data.result[i].ext.map(x => x>0? 243*Math.pow(x,1.13) : 0));
           rdata.pm25.push(data.result[i].ext.map(x => x>0? 121.5*Math.pow(x,1.13) : 0));
-      };
+      }
     }
       
 

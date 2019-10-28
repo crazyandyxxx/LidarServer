@@ -159,7 +159,26 @@ var linePRA=[];
               }
           },
           function(start, end) {
-            alert("A new date range was chosen: " + start.format        ('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));    
+            $.post(urlGetLosData, { 'task id': task_id, 'content': 'view', 'time start':start.format('YYYY-MM-DD HH:mm:ss'), 'time end':end.format('YYYY-MM-DD HH:mm:ss') },
+              function(data,status){
+                if(status == "success"){
+                  prepareData(data);
+                  plotA.removeListener('plotly_hover',plotHover);
+                  var update = {
+                    'xaxis.range[0]':timeat[0],
+                    'xaxis.range[1]':timeat[timeat.length-1]
+                  };
+                  Plotly.relayout('PRADiv',update);
+                  Plotly.relayout('PRBDiv',update);
+                  tracePblA.x = timeat;
+                  tracePblB.x = timeat;
+                  tracePblA.y = linePbl;
+                  tracePblB.y = linePbl;
+                  SelectChannelA();
+                  SelectChannelB();
+                  plotA.on('plotly_hover',plotHover);
+                }
+              });    
             }
           );
       }

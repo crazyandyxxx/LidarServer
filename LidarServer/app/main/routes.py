@@ -12,6 +12,7 @@ from app.algorithm import *
 import pickle
 import io, os
 import json
+from sqlalchemy import func
 
 @bp.before_app_request
 def before_request():
@@ -202,8 +203,13 @@ def get_los_data():
 
         if(content=='total count'):
             return jsonify(result=[task.data_num])
-        if(content=='view'):
-            task_dat = TaskData.query.filter_by(task_id=task_id).all()
+        if(content=='view'):           
+            time_start = request.values.get('time start', 0)
+            time_end = request.values.get('time end', 0)
+            if(time_start and time_end):
+                task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=time_start,TaskData.timestamp<=time_end).order_by(func.random()).limit(300).from_self().order_by(TaskData.timestamp).all()
+            else:
+                task_dat = TaskData.query.filter_by(task_id=task_id).order_by(func.random()).limit(300).from_self().order_by(TaskData.timestamp).all()
             # task_dat = TaskData.query.filter_by(task_id=task_id).slice(task.data_num-200 if task.data_num>200 else 0,task.data_num).all()
         if(content=='export'):
             data_start = int(request.values.get('data start', 0))
@@ -291,7 +297,7 @@ def get_ppi_data():
         if(content=='list'):
             task = Task.query.filter_by(id = task_id).first()
             horStartAng = task.hor_start_angle
-            task_dat = TaskData.query.filter_by(task_id=task_id,hor_angle=horStartAng).order_by(TaskData.timestamp).all()
+            task_dat = TaskData.query.filter_by(task_id=task_id,hor_angle=horStartAng).order_by(TaskData.timestamp.desc()).all()
             for i in range(len(task_dat)):
                 data = {}
                 ts = task_dat[i].timestamp
@@ -390,7 +396,7 @@ def get_rhi_data():
         if(content=='list'):
             task = Task.query.filter_by(id = task_id).first()
             verStartAng = task.ver_start_angle
-            task_dat = TaskData.query.filter_by(task_id=task_id,ver_angle=verStartAng).all()
+            task_dat = TaskData.query.filter_by(task_id=task_id,ver_angle=verStartAng).order_by(TaskData.timestamp.desc()).all()
             for i in range(len(task_dat)):
                 data = {}
                 ts = task_dat[i].timestamp
