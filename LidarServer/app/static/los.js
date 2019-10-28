@@ -135,14 +135,16 @@ var linePRA=[];
     }
     var startTime = moment().startOf('second').subtract(3, 'days');
     var endTime = moment().startOf('second');
-    var scanType = 'ALL';
-      $(function() {
+
+      function setDateRange(startTime, endTime) {
           $('input[name="dateRange"]').daterangepicker({
               timePicker: true,
               timePicker24Hour: true,
               timePickerSeconds:true,
               startDate: startTime,
               endDate: endTime,
+              minDate: startTime,
+              maxDate: endTime,
               locale: {
                   format: 'YYYY/MM/DD HH:mm:ss',
                   applyLabel: '确定',
@@ -160,12 +162,13 @@ var linePRA=[];
             alert("A new date range was chosen: " + start.format        ('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));    
             }
           );
-      });
+      }
 
     $.post(urlGetLosData, { 'task id': task_id, 'content': 'view' },
         function(data,status){
         if(status == "success"){
           prepareData(data);
+          setDateRange(data.result[0].timestamp, data.result[data.result.length-1].timestamp);
           drawDataA = linePRA;
           PRA_data = {
               z: linePRA,
@@ -260,6 +263,7 @@ var linePRA=[];
         function(data,status){
           if(status == "success"){
             prepareData(data);
+            setDateRange(data.result[0].timestamp, data.result[data.result.length-1].timestamp);
             plotA.removeListener('plotly_hover',plotHover);
             var update = {
               'xaxis.range[0]':timeat[0],
