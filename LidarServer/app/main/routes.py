@@ -144,9 +144,15 @@ def browse():
 @bp.route('/getDeviceStatus')
 @login_required
 def get_device_status():
-    progress = check_acquisition_progress()
-    gps = check_gps()
-    heading = check_heading()
+    progress = {'progress':0,'count':0}
+    gps = {'longitude':-9999, 'latitude':-9999, 'altitude':-9999}
+    heading = {'heading':0,'pitch':0}
+    try:
+        progress = check_acquisition_progress()
+        gps = check_gps()
+        heading = check_heading()
+    except:
+        print('check device error')
     return jsonify([
         {
             'name': 'acquire_progress',

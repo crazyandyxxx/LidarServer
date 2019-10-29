@@ -5,7 +5,7 @@ from app.models import Task
 from app.dataAcquisition import *
 from apscheduler.triggers.interval import IntervalTrigger
 
-@scheduler.task(IntervalTrigger(seconds=60))
+@scheduler.task(IntervalTrigger(seconds=120))
 def CheckExceptionStop():
     with db.app.app_context():
         task = Task.query.filter_by(complete=False).order_by(Task.start_time.desc()).first()
