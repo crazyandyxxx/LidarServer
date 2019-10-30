@@ -517,9 +517,16 @@ function setMapCenter(){
         var index = sel1.selectedIndex;
         $.post(urlGetPpiData, { 'task id': task_id, 'content':'timedata', 'time': sel1.options[index].text},
         function(data,status){
+          verAng = data.result[0].verAngle;
+          horAngStart = data.result[0].horAngle;
+          horAngEnd = data.result[data.result.length-1].horAngle;
+          horAngStep = data.result[1].horAngle - data.result[0].horAngle;
           prepareData(data);
           SelectChannel();
-          document.getElementById('timeStamp').textContent = sel1.options[index].text+"至"+data.result[data.result.length-1].timestamp;
+          document.getElementById('angleRange').textContent = "扫描范围"+horAngStart+" - "+horAngEnd;
+          document.getElementById('angleStep').textContent = "扫描步长"+horAngStep;
+          document.getElementById('angleVer').textContent = "垂直角度"+verAng;
+          document.getElementById('timeStamp').textContent = sel1.options[0].text+"至"+data.result[data.result.length-1].timestamp;
         });      
       }
       var channelID = 'prr_A';
@@ -643,7 +650,7 @@ function setMapCenter(){
         function getAnimationData(){
           $.ajax({
             type: "post",
-            data: { 'task id': task_id, 'content':'all', 'channel': channelID},
+            data: { 'task id': task_id, 'content':'all', 'channel': channelID, 'range': rangeMax},
             url: urlGetPpiData,
             beforeSend:function(){
               var playBtn = document.getElementById('curvePlay');

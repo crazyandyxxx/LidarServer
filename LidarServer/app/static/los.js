@@ -163,6 +163,7 @@ var linePRA=[];
               function(data,status){
                 if(status == "success"){
                   prepareData(data);
+                  lineIndex = 0;
                   plotA.removeListener('plotly_hover',plotHover);
                   var update = {
                     'xaxis.range[0]':timeat[0],
@@ -282,6 +283,7 @@ var linePRA=[];
         function(data,status){
           if(status == "success"){
             prepareData(data);
+            lineIndex = data.result.length-1;
             setDateRange(data.result[0].timestamp, data.result[data.result.length-1].timestamp);
             plotA.removeListener('plotly_hover',plotHover);
             var update = {
