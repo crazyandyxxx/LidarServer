@@ -14,6 +14,8 @@ from flask_cors import CORS
 from flask_apscheduler import APScheduler
 import numpy
 import sys
+from app.checkLicense import verifyLicense
+
 
 db = SQLAlchemy()
 migrate = Migrate()
@@ -37,6 +39,8 @@ class MyEncoder(JSONEncoder):
             return super(MyEncoder, self).default(obj)
 
 def create_app(config_class=Config):
+    if not verifyLicense():
+        return
     if getattr(sys, 'frozen', False):
         template_folder = os.path.join(sys._MEIPASS, 'templates')
         static_folder = os.path.join(sys._MEIPASS, 'static')

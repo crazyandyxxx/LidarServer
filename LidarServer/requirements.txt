@@ -3,6 +3,7 @@ altgraph==0.16.1
 APScheduler==3.6.1
 blinker==1.4
 Click==7.0
+Cython==0.29.13
 dominate==2.3.5
 Flask==1.0.2
 Flask-APScheduler==1.11.0
