@@ -12,7 +12,7 @@ namespace AcquisitionSocketServer.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "14.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "11.0.0.0")]
     internal sealed partial class AcquisitionServerSetting : global::System.Configuration.ApplicationSettingsBase {
         
         private static AcquisitionServerSetting defaultInstance = ((AcquisitionServerSetting)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new AcquisitionServerSetting())));
@@ -25,7 +25,7 @@ namespace AcquisitionSocketServer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("E:\\project\\temp\\LidarServer\\LidarServer\\app.db")]
+        [global::System.Configuration.DefaultSettingValueAttribute("D:\\Project\\Lidar\\LidarServer\\LidarServer\\app.db")]
         public string DBPath {
             get {
                 return ((string)(this["DBPath"]));
@@ -80,6 +80,30 @@ namespace AcquisitionSocketServer.Properties {
             }
             set {
                 this["PanPortRate"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("60")]
+        public float TemperatureThreshold {
+            get {
+                return ((float)(this["TemperatureThreshold"]));
+            }
+            set {
+                this["TemperatureThreshold"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("80")]
+        public float HumidityThreshold {
+            get {
+                return ((float)(this["HumidityThreshold"]));
+            }
+            set {
+                this["HumidityThreshold"] = value;
             }
         }
     }

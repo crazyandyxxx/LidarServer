@@ -34,7 +34,7 @@ namespace AcquisitionSocketServer
             int port = 6016;//端口
             socket.Bind(new IPEndPoint(IPAddress.Parse(host), port));
             socket.Listen(100);//设定最多100个排队连接请求             
-            Task.Factory.StartNew(() => ListenClientConnect(), TaskCreationOptions.LongRunning);//通过多线程监听客户端连接              
+            Task.Factory.StartNew(() => ListenClientConnect());//通过多线程监听客户端连接              
             Console.ReadLine();
         }
         public static void LoadOngoingTask()
@@ -56,7 +56,7 @@ namespace AcquisitionSocketServer
             while (true)
             {
                 Socket clientSocket = socket.Accept();
-                Task.Factory.StartNew(() => ReceiveMessage(clientSocket), TaskCreationOptions.LongRunning);
+                Task.Factory.StartNew(() => ReceiveMessage(clientSocket));
 
             }
         }

@@ -40,10 +40,10 @@ namespace AcquisitionSocketServer
                 Console.WriteLine("转台串口打开失败!");
                 return;
             }
-            Thread.Sleep(100);
+            Thread.Sleep(80);
             currentVerAng = CurrentPosition(AngleType.Ver);
-            Thread.Sleep(100);
             currentHorAng = CurrentPosition(AngleType.Hor);
+            SetTempeHumiThreshold();
         }
 
         private static void WaitPanToAngle()
@@ -186,9 +186,12 @@ namespace AcquisitionSocketServer
                         port.DiscardInBuffer();
                         port.DiscardOutBuffer();
                         port.Write(wrData, 0, wrData.Length);
-                        Thread.Sleep(100);                   
+                        Thread.Sleep(80);
                         if (rdData != null && port.BytesToRead != 0)
+                        {
                             port.Read(rdData, 0, rdData.Length);
+                            Thread.Sleep(80);
+                        }
                     }
                     catch (System.Exception ex)
                     {

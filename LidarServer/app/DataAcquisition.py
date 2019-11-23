@@ -94,8 +94,15 @@ def check_heading():
     s.close()
     return r['result'] 
 
-# for i in range(1,300):
-#     start_acquisition(10,'los',25000,2000,15,90,90,5,0,360,5)  
-#     time.sleep(0.05)  
+def check_tempeHumi():
+    s = socket.socket()
+    s.connect((host, port))
+    acq_params = {}
+    start_cmd={'cmdType':'temperatureHumidtity', 'cmdParams':acq_params}
+
+    s.sendall(json.dumps(start_cmd).encode())
+    r = (json.loads(s.recv(1024).decode()))
+    s.close()
+    return r['result'] 
 
 

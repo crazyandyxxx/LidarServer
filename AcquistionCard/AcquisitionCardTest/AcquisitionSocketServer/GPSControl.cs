@@ -41,7 +41,7 @@ namespace AcquisitionSocketServer
                 string resp = gpsPort.ReadLine();
                 if (resp.StartsWith("$GNGGA"))
                 {
-                    latitude = longitude = altitude = -99999;
+                    latitude = longitude = altitude = -9999;
                     string[] values = resp.Split(',');
                     if (values.Length == 15)
                     {

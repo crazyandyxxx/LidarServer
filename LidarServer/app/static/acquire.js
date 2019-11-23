@@ -1,13 +1,32 @@
 function set_require_progress(data) {    
-    $('#acquisition-progress').text(data.progress+"%  组数"+data.count);
+    $('#acquisition-progress').text("进度"+data.progress+"%  组数"+data.count);
 }
 
-function set_require_gps(progress) {  
-        $('#lonlatpos').text("    经度"+progress.longitude.toFixed(4)+"    纬度"+progress.latitude.toFixed(4)+"    海拔"+progress.altitude.toFixed(0));
+function set_require_gps(data) {  
+        $('#lonlatpos').text("    经纬度"+data.longitude.toFixed(4)+", "+data.latitude.toFixed(4)+"    海拔"+data.altitude.toFixed(0));
 }
 
-function set_require_heading(progress) {  
-        $('#pithcrollang').text("    方位角"+progress.heading.toFixed(0)+"    俯仰角"+progress.pitch.toFixed(0));
+function set_require_heading(data) {  
+        $('#pithcrollang').text("    方位角"+data.heading.toFixed(0)+"    俯仰角"+data.pitch.toFixed(0));
+}
+
+function set_require_tempe(data) {  
+    $('#tempehumi').text("    温度"+data.temperature.toFixed(0)+"    湿度"+data.humidity.toFixed(0));
+    if(data.tempeNormal){
+        $('#tempemessage').text('');
+    }else{
+        $('#tempemessage').text('内部温度过高！');
+    }
+    if(data.humiNormal){
+        $('#humimessage').text('');
+    }else{
+        $('#humimessage').text('内部湿度过高！');
+    }
+    if(data.tempeNormal && data.humiNormal){
+        $('#tempehumialert').hide();
+    }else{
+        $('#tempehumialert').show();
+    }
 }
 
 $(function() {
@@ -24,6 +43,9 @@ $(function() {
                             break;    
                         case 'acquire_heading':
                             set_require_heading(notifications[i].data);
+                            break;
+                        case 'acquire_tempe':
+                            set_require_tempe(notifications[i].data);
                             break;                                
                     }
                 }

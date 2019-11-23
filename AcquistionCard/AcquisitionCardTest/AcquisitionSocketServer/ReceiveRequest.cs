@@ -65,6 +65,10 @@ namespace AcquisitionSocketServer
                         case "headingpitch":
                             resultCode = CheckHeadingPitch();
                             break;
+
+                        case "temperatureHumidtity":
+                            resultCode = CheckTempeHumi();
+                            break;
                     }
 
                     //给Client端返回信息

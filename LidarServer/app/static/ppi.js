@@ -526,7 +526,7 @@ function setMapCenter(){
           document.getElementById('angleRange').textContent = "扫描范围"+horAngStart+" - "+horAngEnd;
           document.getElementById('angleStep').textContent = "扫描步长"+horAngStep;
           document.getElementById('angleVer').textContent = "垂直角度"+verAng;
-          document.getElementById('timeStamp').textContent = sel1.options[0].text+"至"+data.result[data.result.length-1].timestamp;
+          document.getElementById('timeStamp').textContent = sel1.options[index].text+"至"+data.result[data.result.length-1].timestamp;
         });      
       }
       var channelID = 'prr_A';

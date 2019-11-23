@@ -27,8 +27,10 @@ namespace AcquisitionSocketServer
         static float verStartAng = 0, verEndAng = 0, verAngStep = 0, horStartAng = 0, horEndAng = 0, horAngStep = 0;
         static int acquisitionCount = 0;
         static string mode;
-        static float currentVerAng = 0, currentHorAng=0;
-        static double altitude = -99999, latitude = -99999, longitude = -99999;
+        static float currentVerAng = -9999, currentHorAng=-9999;
+        static double altitude = -9999, latitude = -9999, longitude = -9999;
+        static float temperature = -9999, humidity = -9999;
+        static int tempeNormal = 1, humiNormal = 1;
 
         private static void SetAcquistionParams(dynamic cmd)
         {

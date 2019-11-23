@@ -29,7 +29,7 @@ class AcquireForm(FlaskForm):
     HorStartAngle= FloatField(('水平起始角'), validators=[NumberRange(-360,720)])
     HorEndAngle= FloatField(('水平终止角'), validators=[NumberRange(-360,720)])
     HorAngleStep= FloatField(('水平步进角'), validators=[NumberRange(0,720)])
-    MailAddress = StringField(('异常停机推送'))
+    MailAddress = StringField(('异常推送'))
     submit = SubmitField(('开始'))
 
     def __init__(self, *args, **kwargs):

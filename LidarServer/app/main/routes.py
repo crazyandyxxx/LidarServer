@@ -146,12 +146,14 @@ def browse():
 def get_device_status():
     progress = {'progress':0,'count':0}
     gps = {'longitude':-9999, 'latitude':-9999, 'altitude':-9999}
-    heading = {'heading':0,'pitch':0}
+    heading = {'heading':-9999,'pitch':-9999}
+    tempe = {'temperature':-9999,'humidity':-9999,'tempeNormal':1,'humiNormal':1}
     try:
         progress = check_acquisition_progress()
         gps = check_gps()
         heading = check_heading()
-    except:
+        tempe = check_tempeHumi()
+    except Exception as e:
         print('check device error')
     return jsonify([
         {
@@ -165,6 +167,10 @@ def get_device_status():
         {
             'name': 'acquire_heading',
             'data': heading
+        },
+        {
+            'name': 'acquire_tempe',
+            'data': tempe
         }])
 
 @bp.route('/task', methods=['GET', 'POST'])
