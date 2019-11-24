@@ -353,12 +353,14 @@ def get_ppi_data():
                 results.append(data)
         if(content=='all'):
             channel = request.values.get('channel', 0)
+            rangeMax = request.values.get('range', 0)
             task = Task.query.filter_by(id = task_id).first()
             horStartAng = task.hor_start_angle
             horEndAng = task.hor_end_angle
             horAngStep = task.hor_step
             ln = int((horEndAng-horStartAng)/horAngStep)+1
             resolution = task.resolution
+            rangeMaxI = math.ceil(float(rangeMax)/resolution)+1
             dataLength = task.bin_length
             pie_list = TaskData.query.filter_by(task_id=task_id,hor_angle=horStartAng).order_by(TaskData.timestamp).all()
             ov = np.loadtxt(r'./overlap/19000101000000_15.ov')
@@ -379,21 +381,23 @@ def get_ppi_data():
                     chB = np.frombuffer(pie_dat[j].raw_B, dtype=dt)
                     chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chA, chB, overlapA, overlapB, resolution, snrT=2, rc=15000)
                     if channel=='raw_A':
-                        channeldata.append(chA)
+                        channeldata.append(chA[:rangeMaxI])
                     elif channel=='raw_B':
-                        channeldata.append(chB)
+                        channeldata.append(chB[:rangeMaxI])
                     elif channel=='prr_A':
-                        channeldata.append(chAPR2)
+                        channeldata.append(chAPR2[:rangeMaxI])
                     elif channel=='prr_B':
-                        channeldata.append(chBPR2)
+                        channeldata.append(chBPR2[:rangeMaxI])
                     elif channel=='dep':
-                        channeldata.append(dePolar)
+                        channeldata.append(dePolar[:rangeMaxI])
                     elif channel=='ext':
-                        channeldata.append(ext_a)
+                        channeldata.append(ext_a[:rangeMaxI])
                     elif channel=='pm10':
-                        channeldata.append(243*np.power(np.where(ext_a>0,ext_a,0),1.13))
+                        pm10 = 243*np.power(np.where(ext_a>0,ext_a,0),1.13)
+                        channeldata.append(pm10[:rangeMaxI])
                     elif channel=='pm25':
-                        channeldata.append(0.5*243*np.power(np.where(ext_a>0,ext_a,0),1.13))
+                        pm25 = 0.5*243*np.power(np.where(ext_a>0,ext_a,0),1.13)
+                        channeldata.append(pm25[:rangeMaxI])
                 data['channeldata'] = channeldata
                 results.append(data)
         return jsonify(result=results)
