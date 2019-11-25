@@ -373,6 +373,9 @@ def get_ppi_data():
                 pie_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=starttime,TaskData.hor_angle<=horEndAng).order_by(TaskData.timestamp).limit(ln).all()
                 endtime = pie_dat[len(pie_dat)-1].timestamp
                 data['endtime'] = "{}".format(endtime.strftime('%Y-%m-%d %H:%M:%S'))
+                data['horStartAng'] = horStartAng
+                data['horEndAng'] = horEndAng
+                data['horAngStep'] = horAngStep
                 channeldata = []
                 for j in range(len(pie_dat)):
                     dt = np.dtype(int)

@@ -674,8 +674,10 @@ function setMapCenter(){
         async function Scan(){
           if(!isPlaying){return;}
           animI %= animData.result.length;
-          // changePie(animData.result[animI].channeldata)
           drawData = animData.result[animI].channeldata;
+          horAngStart = animData.result[animI].horStartAng;
+          horAngEnd = animData.result[animI].horEndAng;
+          horAngStep = animData.result[animI].horAngStep;
           object3Dlayer.clear();
           createPie(position,animData.result[animI].channeldata,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);
           document.getElementById('timeStamp').textContent = animData.result[animI].starttime+"至"+animData.result[animI].endtime;

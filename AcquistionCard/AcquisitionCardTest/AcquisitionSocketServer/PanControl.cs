@@ -83,7 +83,7 @@ namespace AcquisitionSocketServer
                 horTargetAng = (horTargetAng + 360) % 360;
                 ToAngle(horTargetAng, AngleType.Hor, 3, 200);
                 currentHorAng = horAng;
-
+                verTargetAng = 360 - verTargetAng;
                 ToAngle(verTargetAng, AngleType.Ver, 3, 200);
                 currentVerAng = verAng;
             }
@@ -101,7 +101,7 @@ namespace AcquisitionSocketServer
                 horTargetAng = (horTargetAng + 360) % 360;
                 ToAngle(horTargetAng, AngleType.Hor, 3, 200);
                 currentHorAng = horAng;
-
+                verTargetAng = 360 - verTargetAng;
                 ToAngle(verTargetAng, AngleType.Ver, 3, 200);
                 currentVerAng = verAng;
             }
