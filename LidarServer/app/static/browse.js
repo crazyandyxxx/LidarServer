@@ -139,7 +139,10 @@ var startTime = moment().startOf('second').subtract(3, 'days');
   function ExportDB(task_id){
     $.post(urlExportTask, { 'task id': task_id},
         function(data,status){
-          let dataCount = data.result[0];
+          let dataCount = data.result[0].dataCount;
+          let dataMode = mode[data.result[0].dataMode];
+          let sTime = data.result[0].startTime;
+          let eTime = data.result[0].endTime;
           let dataStep = 5000;
           for(let dataStart = 0; dataStart<dataCount; dataStart+=dataStep){    
             $.post(urlExportTask, { 'task id': task_id},
@@ -150,7 +153,7 @@ var startTime = moment().startOf('second').subtract(3, 'days');
                     if (this.status === 200) {
                         var a = document.createElement('a');
                         a.href = window.URL.createObjectURL(xhttp.response);
-                        a.download = "export.ldb";
+                        a.download = dataMode+sTime+"至"+eTime+".ldb";
                         a.style.display = 'none';
                         document.body.appendChild(a);
                         a.click();

@@ -466,7 +466,12 @@ def export_task():
     if request.method == 'POST':
         task_id = request.values.get('task id', 0)
         task = Task.query.filter_by(id = task_id).first()
-        return jsonify(result=[task.data_num])
+        data={}
+        data['dataCount'] = task.data_num
+        data['dataMode'] = task.mode
+        data['startTime'] = "{}".format(task.start_time.strftime('%Y-%m-%d %H:%M:%S'))
+        data['endTime'] = "{}".format(task.end_time.strftime('%Y-%m-%d %H:%M:%S'))
+        return jsonify(result=[data])
     if request.method == 'GET':
         task_id = request.args.get('task_id')
         data_start = int(request.args.get('data_start'))
