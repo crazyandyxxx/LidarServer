@@ -284,6 +284,8 @@ var linePRA=[];
           if(status == "success"){
             prepareData(data);
             lineIndex = data.result.length-1;
+            layoutLineA.annotations[0].text = timeat[lineIndex];
+            layoutLineB.annotations[0].text = timeat[lineIndex];
             setDateRange(data.result[0].timestamp, data.result[data.result.length-1].timestamp);
             plotA.removeListener('plotly_hover',plotHover);
             var update = {
