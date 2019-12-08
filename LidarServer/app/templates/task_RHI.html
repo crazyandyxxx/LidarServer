@@ -15,15 +15,25 @@
     text-align: right;
   }
   #viewDiv {
-    height: 800px;
+    height: 770px;
+  }
+  #info {
+    background-color:whitesmoke;
+    z-index: 100;
+    position: absolute; 
+    bottom: 0;
+    /* left: 50%;
+    transform: translate(-50%,0%) */
+    right: 0;
   }
   #colorbar{
     z-index: 100;
     position: absolute; 
-    bottom: 10px;
+    bottom: 60px;
     right: 10px;
   }
 </style>
+{{ super() }}
 {% endblock %}
 
 {% block app_content %}
@@ -54,6 +64,18 @@
       <div id="colorbar">
           <canvas id="canvas" width="50" height="260"></canvas>
       </div>
+      <div class="input-card" id = "info"> 
+          <div>
+            <span id="timeStamp"></span> 
+          </div>
+          <div>
+            <span id="angleRange"></span>
+            <span>&nbsp;&nbsp;</span>
+            <span id="angleStep"></span>
+            <span>&nbsp;&nbsp;</span>
+            <span id="angleHor"></span>
+          </div>
+        </div>
   </div>
 
 {% endblock %}
@@ -67,7 +89,7 @@
 <script src="../static/es5.min.js"></script>
 <script src="https://webapi.amap.com/maps?v=1.4.15&key=deccd88e5fc1ec27d19c67f6790c1c88&plugin=AMap.Geocoder,AMap.MouseTool"></script>
 <script src="//webapi.amap.com/ui/1.0/main.js?v=1.0.11"></script>
-<script src="../static/rhi.min.js"></script>
+<script src="../static/rhi.js"></script>
 
 
 {% endblock %}

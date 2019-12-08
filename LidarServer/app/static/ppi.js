@@ -176,9 +176,16 @@ function setMapCenter(){
         var sel1 = document.getElementById('timeSeries');
         for(let i=0; i<data.result.length;i++){
             sel1.options.add(new Option(data.result[i].timestamp+""));
-        };
-        $.post(urlGetPpiData, { 'task id': task_id, 'content':'timedata', 'time': sel1.options[0].text},
-          function(data,status){
+        }
+        $.ajax({
+          type: "post",
+          data: { 'task id': task_id, 'content':'timedata', 'time': sel1.options[0].text},
+          url: urlGetPpiData,
+          beforeSend:function(){
+            document.getElementById('myLoading').style.display = 'block';
+          },
+          success:function(data){
+            document.getElementById('myLoading').style.display = 'none';
             resolution = data.result[0].resolution;
             verAng = data.result[0].verAngle;
             horAngStart = data.result[0].horAngle;
@@ -195,13 +202,14 @@ function setMapCenter(){
             document.getElementById('angleVer').textContent = "垂直角度"+verAng;
             document.getElementById('timeStamp').textContent = sel1.options[0].text+"至"+data.result[data.result.length-1].timestamp;
             addMapEvents();
+          }
         });
     });
     mouseTool = new AMap.MouseTool(map);
     mouseTool.on('draw',function(e){
       var overlay = e.obj;  
   });
-    document.getElementById('playSpeed').oninput = function(){playSpeed=this.value*100};
+    document.getElementById('playSpeed').oninput = function(){playSpeed=this.value*100;};
   };
   
   
@@ -254,7 +262,7 @@ function setMapCenter(){
               if(idata<rdata.length){
                 h1 = (rdata[idata][i]-vmin)/(vmax-vmin);
               }  
-              if(h1<0){h1=0}else if(h1>3){h1=1.5}
+              if(h1<0){h1=0;}else if(h1>3){h1=1.5;}
               h1 *= -maxH;
             }
             z1.push(h1);
@@ -266,7 +274,7 @@ function setMapCenter(){
               if(idata<rdata.length-1){
                 h2 = (rdata[idata+1][i]-vmin)/(vmax-vmin);
               }    
-              if(h2<0){h2=0}else if(h2>3){h2=1.5}
+              if(h2<0){h2=0;}else if(h2>3){h2=1.5;}
               h2 *= -maxH;
             }
             z2.push(h2);
@@ -356,9 +364,9 @@ function setMapCenter(){
           altArr.push(data.result[i].altitude);
       }; 
       };
-      lonArr.sort(function(a,b){return a-b});
-      latArr.sort(function(a,b){return a-b});
-      altArr.sort(function(a,b){return a-b});
+      lonArr.sort(function(a,b){return a-b;});
+      latArr.sort(function(a,b){return a-b;});
+      altArr.sort(function(a,b){return a-b;});
       longitude = lonArr[Math.floor(lonArr.length/2)];
       latitude = latArr[Math.floor(lonArr.length/2)];
       altitude = altArr[Math.floor(lonArr.length/2)];
@@ -515,19 +523,27 @@ function setMapCenter(){
         if(isPlaying){return;}
         var sel1 = e.target;
         var index = sel1.selectedIndex;
-        $.post(urlGetPpiData, { 'task id': task_id, 'content':'timedata', 'time': sel1.options[index].text},
-        function(data,status){
-          verAng = data.result[0].verAngle;
-          horAngStart = data.result[0].horAngle;
-          horAngEnd = data.result[data.result.length-1].horAngle;
-          horAngStep = data.result[1].horAngle - data.result[0].horAngle;
-          prepareData(data);
-          SelectChannel();
-          document.getElementById('angleRange').textContent = "扫描范围"+horAngStart+" - "+horAngEnd;
-          document.getElementById('angleStep').textContent = "扫描步长"+horAngStep;
-          document.getElementById('angleVer').textContent = "垂直角度"+verAng;
-          document.getElementById('timeStamp').textContent = sel1.options[index].text+"至"+data.result[data.result.length-1].timestamp;
-        });      
+        $.ajax({
+          type: "post",
+          data: { 'task id': task_id, 'content':'timedata', 'time': sel1.options[index].text},
+          url: urlGetPpiData,
+          beforeSend:function(){
+            document.getElementById('myLoading').style.display = 'block';
+          },
+          success:function(data){
+            document.getElementById('myLoading').style.display = 'none';
+            verAng = data.result[0].verAngle;
+            horAngStart = data.result[0].horAngle;
+            horAngEnd = data.result[data.result.length-1].horAngle;
+            horAngStep = data.result[1].horAngle - data.result[0].horAngle;
+            prepareData(data);
+            SelectChannel();
+            document.getElementById('angleRange').textContent = "扫描范围"+horAngStart+" - "+horAngEnd;
+            document.getElementById('angleStep').textContent = "扫描步长"+horAngStep;
+            document.getElementById('angleVer').textContent = "垂直角度"+verAng;
+            document.getElementById('timeStamp').textContent = sel1.options[index].text+"至"+data.result[data.result.length-1].timestamp;
+          }
+        });     
       }
       var channelID = 'prr_A';
       function SelectChannel(){
@@ -653,14 +669,13 @@ function setMapCenter(){
             data: { 'task id': task_id, 'content':'all', 'channel': channelID, 'range': rangeMax},
             url: urlGetPpiData,
             beforeSend:function(){
-              var playBtn = document.getElementById('curvePlay');
               isPlaying = true;
               canBeStop = false;
-              document.getElementById('waitingPlay').style.display = 'block';
+              document.getElementById('myLoading').style.display = 'block';
             },
             success:function(data){
               var playBtn = document.getElementById('curvePlay');
-              document.getElementById('waitingPlay').style.display = 'none';
+              document.getElementById('myLoading').style.display = 'none';
               playBtn.src = '../static/stop.svg';
               playBtn.title = '停止';
               canBeStop = true;
@@ -714,7 +729,7 @@ function setMapCenter(){
             var h1 = z0-i*resl*Math.sin(verAng/180*Math.PI);
             if(is3D){
               h1 = (rdata[idata][i]-vmin)/(vmax-vmin);
-              if(h1<0){h1=0}else if(h1>3){h1=1.5};
+              if(h1<0){h1=0;}else if(h1>3){h1=1.5;}
               h1 *= -maxH;
             }
             z1.push(h1);
@@ -723,7 +738,7 @@ function setMapCenter(){
             var h2 = z0-i*resl*Math.sin(verAng/180*Math.PI);
             if(is3D){
               h2 = (rdata[idata+1][i]-vmin)/(vmax-vmin);
-              if(h2<0){h2=0}else if(h2>3){h2=1.5};
+              if(h2<0){h2=0;}else if(h2>3){h2=1.5;}
               h2 *= -maxH;
             }
             z2.push(h2);

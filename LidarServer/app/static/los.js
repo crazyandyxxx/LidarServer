@@ -159,9 +159,15 @@ var linePRA=[];
               }
           },
           function(start, end) {
-            $.post(urlGetLosData, { 'task id': task_id, 'content': 'view', 'time start':start.format('YYYY-MM-DD HH:mm:ss'), 'time end':end.format('YYYY-MM-DD HH:mm:ss') },
-              function(data,status){
-                if(status == "success"){
+            $.ajax({
+                type: "post",
+                data: { 'task id': task_id, 'content': 'view', 'time start':start.format('YYYY-MM-DD HH:mm:ss'), 'time end':end.format('YYYY-MM-DD HH:mm:ss') },
+                url: urlGetLosData,
+                beforeSend:function(){
+                  document.getElementById('myLoading').style.display = 'block';
+                },
+                success:function(data){
+                  document.getElementById('myLoading').style.display = 'none';
                   prepareData(data);
                   lineIndex = 0;
                   plotA.removeListener('plotly_hover',plotHover);
@@ -179,14 +185,19 @@ var linePRA=[];
                   SelectChannelB();
                   plotA.on('plotly_hover',plotHover);
                 }
-              });    
+              });  
             }
           );
       }
-
-    $.post(urlGetLosData, { 'task id': task_id, 'content': 'view' },
-        function(data,status){
-        if(status == "success"){
+      $.ajax({
+        type: "post",
+        data: { 'task id': task_id, 'content': 'view' },
+        url: urlGetLosData,
+        beforeSend:function(){
+          document.getElementById('myLoading').style.display = 'block';
+        },
+        success:function(data){
+          document.getElementById('myLoading').style.display = 'none';
           prepareData(data);
           setDateRange(data.result[0].timestamp, data.result[data.result.length-1].timestamp);
           drawDataA = linePRA;
@@ -273,8 +284,8 @@ var linePRA=[];
           Plotly.newPlot('lineBDiv',[traceB],layoutLineB,layoutConfig);
 
           plotA.on('plotly_hover',plotHover);
-          plotB.on('plotly_hover',plotHover);
-        };  
+          plotB.on('plotly_hover',plotHover);     
+        }
       });
     
     function getRealTimeData(){

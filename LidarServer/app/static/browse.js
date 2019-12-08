@@ -96,13 +96,15 @@ var startTime = moment().startOf('second').subtract(3, 'days');
     typeDB.checked = false;
     var modal = document.getElementById("myModal");
     var span = document.getElementsByClassName("close")[0];
+    var loadingPage = document.getElementById("myLoading");
     modal.style.display = "block";
     span.onclick = function() {
       modal.style.display = "none";
-    }
+    };
 
     typeTxt.onclick = function(){
       modal.style.display = "none";
+      loadingPage.style.display = "block";
       switch(task_mode){
         case '水平切面':
           ExportPPI(task_id);
@@ -121,8 +123,9 @@ var startTime = moment().startOf('second').subtract(3, 'days');
 
     typeDB.onclick = function(){
       modal.style.display = "none";
+      loadingPage.style.display = "block";
       ExportDB(task_id);
-    }
+    };
   }
 
 
@@ -159,6 +162,7 @@ var startTime = moment().startOf('second').subtract(3, 'days');
                         a.click();
                         document.body.removeChild(a);
                     }
+                    document.getElementById("myLoading").style.display="none";
                 };
                 xhttp.open("GET", urlf, true);
                 xhttp.responseType = 'blob';
@@ -174,6 +178,7 @@ var startTime = moment().startOf('second').subtract(3, 'days');
         for(let i=0; i<dataList.result.length;i++){
         $.post(urlPPI, { 'task id': task_id, 'content':'timedata', 'time': dataList.result[i].timestamp},
             function(data,status){
+              document.getElementById("myLoading").style.display="none";
               let csvContent = "";
               csvContent += 'Data Count,'+data.result.length+'\r\n';
               csvContent += 'Data Length,'+data.result[0].raw_A.length+'\r\n';
@@ -257,6 +262,7 @@ var startTime = moment().startOf('second').subtract(3, 'days');
         for(let i=0; i<dataList.result.length;i++){
         $.post(urlRHI, { 'task id': task_id, 'content':'timedata', 'time': dataList.result[i].timestamp},
             function(data,status){
+              document.getElementById("myLoading").style.display="none";
               let csvContent = "";
               csvContent += 'Data Count,'+data.result.length+'\r\n';
               csvContent += 'Data Length,'+data.result[0].raw_A.length+'\r\n';
@@ -342,6 +348,7 @@ var startTime = moment().startOf('second').subtract(3, 'days');
           for(let dataStart = 0; dataStart<dataCount; dataStart+=dataStep){ 
         $.post(urlLOS, { 'task id': task_id, 'content':'export', 'data start':dataStart, 'data end':dataStart+dataStep},
             function(data,status){
+              document.getElementById("myLoading").style.display="none";
               let csvContent = "";
               csvContent += 'Data Count,'+data.result.length+'\r\n';
               csvContent += 'Data Length,'+data.result[0].raw_A.length+'\r\n';
@@ -405,6 +412,7 @@ var startTime = moment().startOf('second').subtract(3, 'days');
           for(let dataStart = 0; dataStart<dataCount; dataStart+=dataStep){ 
         $.post(urlMOV, { 'task id': task_id, 'content':'export', 'data start':dataStart, 'data end':dataStart+dataStep},
             function(data,status){
+              document.getElementById("myLoading").style.display="none";
               let csvContent = "";
               csvContent += 'Data Count,'+data.result.length+'\r\n';
               csvContent += 'Data Length,'+data.result[0].raw_A.length+'\r\n';
@@ -466,13 +474,13 @@ var startTime = moment().startOf('second').subtract(3, 'days');
     input.accept = '.ldb'
     input.style.visibility='hidden';
     input.onchange = function(e){
-      document.getElementById('importWaiting').style.visibility="visible";
+      document.getElementById('myLoading').style.display="block";
       let file = e.target.files[0];
       let formData = new FormData();
       formData.append("task_file", file);
       fetch(urlImportTask, {method: "POST", body: formData}).then(function(response){
         checkTask();
-        document.getElementById('importWaiting').style.visibility="hidden";
+        document.getElementById('myLoading').style.display="none";
       });
     };
     document.body.appendChild(input);

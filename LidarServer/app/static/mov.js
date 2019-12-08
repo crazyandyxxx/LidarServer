@@ -97,9 +97,16 @@ map.on('click', function (ev) {
   }
 });
 
-$.post(urlGetMovData, { 'task id': task_id, 'content':'view'},
-      function(data,status){
-        var channel = document.getElementById('channel');
+$.ajax({
+  type: "post",
+  data: { 'task id': task_id, 'content':'view'},
+  url: urlGetMovData,
+  beforeSend:function(){
+    document.getElementById('myLoading').style.display = 'block';
+  },
+  success:function(data){
+    document.getElementById('myLoading').style.display = 'none';
+    var channel = document.getElementById('channel');
         channel.addEventListener("change", SelectChannel);
         var colorMax = document.getElementById('colorMax');
         colorMax.addEventListener("change", ChangeMaxValue);
@@ -169,9 +176,10 @@ $.post(urlGetMovData, { 'task id': task_id, 'content':'view'},
                               position:locations[lineIndex],
                               height:rangeMax*scal*rangeScale,
                               map:map
-                            }) 
+                            }); 
 
         setPositionLabel();
+      }
     });
 };
 
@@ -184,7 +192,7 @@ function createRectangle(pt1, pt2, resl, zMin, zMax, zScale, idata, rdata, vmin,
     var nmax = Math.floor(zMax/resl);
     var nmin = Math.floor(zMin/resl);
     resl *= zScale;
-    for(var i = nmin; i<nmax+1; i++){
+    for(let i = nmin; i<nmax+1; i++){
       x1.push(v1xy.x);
       y1.push(v1xy.y);
       z1.push(v1z-i*resl);
@@ -198,7 +206,7 @@ function createRectangle(pt1, pt2, resl, zMin, zMax, zScale, idata, rdata, vmin,
     rectangle.backOrFront = 'both';
 
     var geometry = rectangle.geometry;
-    for(var i = 0; i<nmax-nmin; i++){
+    for(let i = 0; i<nmax-nmin; i++){
       geometry.vertices.push(x1[i], y1[i], z1[i]);
       geometry.vertices.push(x1[i+1], y1[i+1], z1[i+1]);
       geometry.vertices.push(x2[i+1], y2[i+1], z2[i+1]);
@@ -459,7 +467,7 @@ function setPositionLabel(){
               direction: 'right' //设置文本标注方位
           });
       }else{
-          log.error('根据经纬度查询地址失败')
+          log.error('根据经纬度查询地址失败');
       }
   });
 }
@@ -543,7 +551,7 @@ function SelectChannel(){
       case '污染边界层':
         tracePbl.visible = true;
         break;
-    };
+    }
     object3Dlayer.clear();
     createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity);
     createWallIndicator();

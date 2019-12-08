@@ -157,15 +157,31 @@ $.post(urlGetRhiData, { 'task id': task_id, 'content':'list' },
       opacity.addEventListener("change", ChangeColorOpacity);
       for(let i=0; i<data.result.length;i++){
           sel1.options.add(new Option(data.result[i].timestamp+""));
-      };
-      $.post(urlGetRhiData, { 'task id': task_id, 'content':'timedata', 'time': sel1.options[0].text},
-        function(data,status){
-            prepareData(data);
-            drawData = rdata.prr_A;
-            createPie(position,drawData,resolution,rangeMax,horAng,verAngStart,verAngEnd,verAngStep,vMin,vMax,colorOpacity);
-            map.setCenter(position);
-            map.setFitView();
-        });
+      }
+      $.ajax({
+        type: "post",
+        data: { 'task id': task_id, 'content':'timedata', 'time': sel1.options[0].text},
+        url: urlGetRhiData,
+        beforeSend:function(){
+          document.getElementById('myLoading').style.display = 'block';
+        },
+        success:function(data){
+          document.getElementById('myLoading').style.display = 'none';
+          prepareData(data);
+          drawData = rdata.prr_A;
+          createPie(position,drawData,resolution,rangeMax,horAng,verAngStart,verAngEnd,verAngStep,vMin,vMax,colorOpacity);
+          map.setCenter(position);
+          map.setFitView();
+          horAng = data.result[0].horAngle;
+          verAngStart = data.result[0].verAngle;
+          verAngEnd = data.result[data.result.length-1].verAngle;
+          verAngStep = data.result[1].verAngle - data.result[0].verAngle;
+          document.getElementById('angleRange').textContent = "扫描范围"+verAngStart+" - "+verAngEnd;
+          document.getElementById('angleStep').textContent = "扫描步长"+verAngStep;
+          document.getElementById('angleHor').textContent = "方位角"+horAng;
+          document.getElementById('timeStamp').textContent = sel1.options[0].text+"至"+data.result[data.result.length-1].timestamp;
+        }
+      });
     });
 };
   
@@ -303,8 +319,8 @@ $.post(urlGetRhiData, { 'task id': task_id, 'content':'list' },
         lonArr.push(data.result[i].longitude);
         latArr.push(data.result[i].latitude);
         altArr.push(data.result[i].altitude);
-    }; 
-    };
+      }
+    }
     lonArr.sort(function(a,b){return a-b});
     latArr.sort(function(a,b){return a-b});
     altArr.sort(function(a,b){return a-b});
@@ -321,7 +337,7 @@ $.post(urlGetRhiData, { 'task id': task_id, 'content':'list' },
       rdata.dep.push(data.result[i].dep);
       rdata.pm10.push(data.result[i].ext.map(x => x>0? 243*Math.pow(x,1.13) : 0));
       rdata.pm25.push(data.result[i].ext.map(x => x>0? 121.5*Math.pow(x,1.13) : 0));
-    };
+    }
   }
   
   function Gps84ToGcj02(lon,lat){
@@ -370,11 +386,27 @@ $.post(urlGetRhiData, { 'task id': task_id, 'content':'list' },
   function SelectTime(){
     var sel1 = document.getElementById('timeSeries');
     var index = sel1.selectedIndex;
-    $.post(urlGetRhiData, { 'task id': task_id, 'content':'timedata', 'time': sel1.options[index].text},
-    function(data,status){
-      prepareData(data);
-      SelectChannel();
-    });      
+    $.ajax({
+      type: "post",
+      data: { 'task id': task_id, 'content':'timedata', 'time': sel1.options[index].text},
+      url: urlGetRhiData,
+      beforeSend:function(){
+        document.getElementById('myLoading').style.display = 'block';
+      },
+      success:function(data){
+        document.getElementById('myLoading').style.display = 'none';
+        prepareData(data);
+        SelectChannel();
+        horAng = data.result[0].horAngle;
+        verAngStart = data.result[0].verAngle;
+        verAngEnd = data.result[data.result.length-1].verAngle;
+        verAngStep = data.result[1].verAngle - data.result[0].verAngle;
+        document.getElementById('angleRange').textContent = "扫描范围"+verAngStart+" - "+verAngEnd;
+        document.getElementById('angleStep').textContent = "扫描步长"+verAngStep;
+        document.getElementById('angleHor').textContent = "方位角"+horAng;
+        document.getElementById('timeStamp').textContent = sel1.options[index].text+"至"+data.result[data.result.length-1].timestamp;
+    }
+    });     
   }
 
   function SelectChannel(){
@@ -405,7 +437,7 @@ $.post(urlGetRhiData, { 'task id': task_id, 'content':'list' },
       case 'PM2.5':
         drawData = rdata.pm25;
         break;
-    };
+    }
     object3Dlayer.clear();
     createPie(position,drawData,resolution,rangeMax,horAng,verAngStart,verAngEnd,verAngStep,vMin,vMax,colorOpacity);
   }

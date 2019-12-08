@@ -133,6 +133,7 @@
   }
   /* .html2canvas-container { width: 1500px !important; height: 1500px !important; } */
 </style>
+{{ super() }}
 {% endblock %}
 
 {% block app_content %}
@@ -175,7 +176,6 @@
       <span>&nbsp;&nbsp;</span>
       <span id="angleVer"></span>
     </div>
-    
   </div>
   <input id="setCenter" type="image" title="居中" src="../static/setCenter.png" />
   <input id="addMarker" type="image" title="添加标记" src="../static/marker.png" />
@@ -201,5 +201,5 @@
 <script src="//webapi.amap.com/ui/1.0/main.js?v=1.0.11"></script>
 <script src="../static/html2canvas.min.js"></script>
 <script src="../static/jquery.min.js"></script>
-<script src="../static/ppi.min.js"></script>
+<script src="../static/ppi.js"></script>
 {% endblock %}
