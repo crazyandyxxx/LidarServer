@@ -186,22 +186,18 @@ function setMapCenter(){
           },
           success:function(data){
             document.getElementById('myLoading').style.display = 'none';
-            resolution = data.result[0].resolution;
-            verAng = data.result[0].verAngle;
-            horAngStart = data.result[0].horAngle;
-            horAngEnd = data.result[data.result.length-1].horAngle;
-            horAngStep = data.result[1].horAngle - data.result[0].horAngle;
+            addMapEvents();
             prepareData(data);
             drawData = rdata.prr_A;
-            createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);
-            map.setCenter(position);
-            map.setFitView();
   
             document.getElementById('angleRange').textContent = "扫描范围"+horAngStart+" - "+horAngEnd;
             document.getElementById('angleStep').textContent = "扫描步长"+horAngStep;
             document.getElementById('angleVer').textContent = "垂直角度"+verAng;
             document.getElementById('timeStamp').textContent = sel1.options[0].text+"至"+data.result[data.result.length-1].timestamp;
-            addMapEvents();
+
+            map.setCenter(position);
+            createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);
+            map.setFitView();
           }
         });
     });
@@ -354,6 +350,11 @@ function setMapCenter(){
       rdata.dep = [];
       rdata.pm10 = [];
       rdata.pm25 = [];
+      resolution = data.result[0].resolution;
+      verAng = data.result[0].verAngle;
+      horAngStart = data.result[0].horAngle;
+      horAngEnd = data.result[data.result.length-1].horAngle;
+      horAngStep = data.result.length-1 > 0 ? data.result[1].horAngle-data.result[0].horAngle : 0;
       let lonArr = [];
       let latArr = [];
       let altArr = [];
@@ -362,8 +363,8 @@ function setMapCenter(){
           lonArr.push(data.result[i].longitude);
           latArr.push(data.result[i].latitude);
           altArr.push(data.result[i].altitude);
-      }; 
-      };
+        } 
+      }
       lonArr.sort(function(a,b){return a-b;});
       latArr.sort(function(a,b){return a-b;});
       altArr.sort(function(a,b){return a-b;});
@@ -532,16 +533,16 @@ function setMapCenter(){
           },
           success:function(data){
             document.getElementById('myLoading').style.display = 'none';
-            verAng = data.result[0].verAngle;
-            horAngStart = data.result[0].horAngle;
-            horAngEnd = data.result[data.result.length-1].horAngle;
-            horAngStep = data.result[1].horAngle - data.result[0].horAngle;
             prepareData(data);
-            SelectChannel();
+            
             document.getElementById('angleRange').textContent = "扫描范围"+horAngStart+" - "+horAngEnd;
             document.getElementById('angleStep').textContent = "扫描步长"+horAngStep;
             document.getElementById('angleVer').textContent = "垂直角度"+verAng;
             document.getElementById('timeStamp').textContent = sel1.options[index].text+"至"+data.result[data.result.length-1].timestamp;
+
+            map.setCenter(position);
+            SelectChannel();
+            map.setFitView();
           }
         });     
       }
@@ -583,7 +584,7 @@ function setMapCenter(){
             drawData = rdata.pm25;
             channelID = 'pm25';
             break;
-        };
+        }
         object3Dlayer.clear();
         createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);
       }

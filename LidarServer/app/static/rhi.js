@@ -169,17 +169,15 @@ $.post(urlGetRhiData, { 'task id': task_id, 'content':'list' },
           document.getElementById('myLoading').style.display = 'none';
           prepareData(data);
           drawData = rdata.prr_A;
-          createPie(position,drawData,resolution,rangeMax,horAng,verAngStart,verAngEnd,verAngStep,vMin,vMax,colorOpacity);
-          map.setCenter(position);
-          map.setFitView();
-          horAng = data.result[0].horAngle;
-          verAngStart = data.result[0].verAngle;
-          verAngEnd = data.result[data.result.length-1].verAngle;
-          verAngStep = data.result[1].verAngle - data.result[0].verAngle;
+
           document.getElementById('angleRange').textContent = "扫描范围"+verAngStart+" - "+verAngEnd;
           document.getElementById('angleStep').textContent = "扫描步长"+verAngStep;
           document.getElementById('angleHor').textContent = "方位角"+horAng;
           document.getElementById('timeStamp').textContent = sel1.options[0].text+"至"+data.result[data.result.length-1].timestamp;
+
+          map.setCenter(position);
+          createPie(position,drawData,resolution,rangeMax,horAng,verAngStart,verAngEnd,verAngStep,vMin,vMax,colorOpacity);
+          map.setFitView();
         }
       });
     });
@@ -234,12 +232,12 @@ $.post(urlGetRhiData, { 'task id': task_id, 'content':'list' },
         z2.push(z0-i*resl*Math.sin(verAngEnd/180*Math.PI));
       }
 
-      var triangle = new AMap.Object3D.Mesh()
+      var triangle = new AMap.Object3D.Mesh();
       triangle.transparent = true;
       triangle.backOrFront = 'both';
 
       var geometry = triangle.geometry;
-      for(var i = 0; i<nmax; i++){
+      for(let i = 0; i<nmax; i++){
         geometry.vertices.push(x1[i], y1[i], z1[i]);
         geometry.vertices.push(x1[i+1], y1[i+1], z1[i+1]);
         geometry.vertices.push(x2[i+1], y2[i+1], z2[i+1]);
@@ -310,7 +308,7 @@ $.post(urlGetRhiData, { 'task id': task_id, 'content':'list' },
     horAng = data.result[0].horAngle;
     verAngStart = data.result[0].verAngle;
     verAngEnd = data.result[data.result.length-1].verAngle;
-    verAngStep = data.result[1].verAngle - data.result[0].verAngle;
+    verAngStep = data.result.length-1 > 0 ? data.result[1].verAngle-data.result[0].verAngle : 0;
     let lonArr = [];
     let latArr = [];
     let altArr = [];
@@ -396,15 +394,15 @@ $.post(urlGetRhiData, { 'task id': task_id, 'content':'list' },
       success:function(data){
         document.getElementById('myLoading').style.display = 'none';
         prepareData(data);
-        SelectChannel();
-        horAng = data.result[0].horAngle;
-        verAngStart = data.result[0].verAngle;
-        verAngEnd = data.result[data.result.length-1].verAngle;
-        verAngStep = data.result[1].verAngle - data.result[0].verAngle;
+
         document.getElementById('angleRange').textContent = "扫描范围"+verAngStart+" - "+verAngEnd;
         document.getElementById('angleStep').textContent = "扫描步长"+verAngStep;
         document.getElementById('angleHor').textContent = "方位角"+horAng;
         document.getElementById('timeStamp').textContent = sel1.options[index].text+"至"+data.result[data.result.length-1].timestamp;
+
+        map.setCenter(position);
+        SelectChannel();
+        map.setFitView();
     }
     });     
   }

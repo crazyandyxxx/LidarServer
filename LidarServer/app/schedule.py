@@ -4,6 +4,7 @@ from app import db, mail, scheduler
 from app.models import Task
 from app.dataAcquisition import *
 from apscheduler.triggers.interval import IntervalTrigger
+import os, win32api, time
 
 @scheduler.task(IntervalTrigger(seconds=120))
 def CheckExceptionStop():
@@ -12,9 +13,16 @@ def CheckExceptionStop():
         if task:
             dt = (datetime.now()-task.end_time).seconds 
             if(dt>10*task.duration):
+                acquisitionPath = ''
                 try:
-                    restart_acquisition()
-                except:
+                    with open("./config/acquisitionParameters.json",'r') as load_f:
+                        acqParas = json.load(load_f)
+                        acquisitionPath = acqParas['acquisitionPath']
+                        (filepath,acquisitionExe) = os.path.split(acquisitionPath)
+                    os.system("taskkill /F /IM "+acquisitionExe)    
+                    time.sleep(10)     
+                    win32api.ShellExecute(0, 'open', acquisitionPath, '','',1)
+                except Exception as e:
                     print('restart error')
 
                 mailAddresses = ''
