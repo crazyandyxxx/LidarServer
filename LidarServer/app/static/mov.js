@@ -124,6 +124,7 @@ $.ajax({
         prepareData(data);
         drawData = rdata.prr_A;
         createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity);
+        createBound();
         map.setCenter(locations[0]);
         map.setFitView();
         createWallIndicator();
@@ -230,9 +231,7 @@ function createRectangle(pt1, pt2, resl, zMin, zMax, zScale, idata, rdata, vmin,
 
 function createWall(pts,rdata,resl,zMin,zMax,zScale,vmin,vmax,opacity) {
     var n =  pts.length - 1;
-    var v0xy = map.lngLatToGeodeticCoord(pts[0]);
-    var v1xy = map.lngLatToGeodeticCoord(pts[0].offset(5000,0));
-    scal = (v1xy.x-v0xy.x)/5000;
+    scal = 1/map.getResolution(locCenter, 20);
     resl *= scal;
     zMax *= scal;
     zMin *= scal;
@@ -297,6 +296,7 @@ var rangeScale = 1;
 var scal = 1;
 var resolution = 15;
 var locations = [];
+var locCenter;
 var drawData = [];
 var timeat=[];
 var height = [];
@@ -364,6 +364,8 @@ function prepareData(data){
   for(let i = 0;i<leng;i++){
       height.push((i+1)*resolution/1000);
   }
+  let lonAver = 0;
+  let latAver = 0;
   for(let i=0; i<data.result.length;i++){
       if(data.result[i].longitude>-180){
           timeat.push(data.result[i].timestamp);
@@ -379,9 +381,14 @@ function prepareData(data){
           var longitude = data.result[i].longitude;
           var latitude = data.result[i].latitude;
           var altitude = data.result[i].altitude;
+          lonAver += longitude;
+          latAver += latitude;
           locations.push(Gps84ToGcj02(longitude,latitude));
       }             
   }
+  lonAver /= data.result.length;
+  latAver /= data.result.length;
+  locCenter = Gps84ToGcj02(lonAver,latAver);
 }
 
 function createWallIndicator(){
@@ -475,6 +482,66 @@ function setPositionLabel(){
 function hideMarker(){
   poistionLabel.hide();
 }
+
+function createBound(){
+  if(!geocoder){
+      geocoder = new AMap.Geocoder({
+          city: "010", //城市设为北京，默认：“全国”
+          radius: 1000 //范围，默认：500
+      });
+  } 
+  geocoder.getAddress(locCenter, function(status, result) {
+      if (status === 'complete'&&result.regeocode) {
+          var provinceCode = result.regeocode.addressComponent.adcode;
+          provinceCode = parseInt(provinceCode.substr(0,2)+'0000');
+          initPro(provinceCode,1);
+      }else{
+          log.error('根据经纬度查询所在省份失败');
+      }
+  });
+}
+
+var disProvince;
+    function initPro(code, dep) {
+        dep = typeof dep == 'undefined' ? 2 : dep;
+        adCode = code;
+        depth = dep;
+
+        disProvince && disProvince.setMap(null);
+
+        disProvince = new AMap.DistrictLayer.Province({
+            zIndex: 12,
+            adcode: [code],
+            depth: dep,
+            styles: {
+                'fill': function (properties) {
+                    // properties为可用于做样式映射的字段，包含
+                    // NAME_CHN:中文名称
+                    // adcode_pro
+                    // adcode_cit
+                    // adcode
+                    var adcode = properties.adcode;
+                    return getColorByAdcode(adcode);
+                },
+                'province-stroke': 'brown',
+                'city-stroke': 'white', // 中国地级市边界
+                'county-stroke': 'rgba(255,255,255,0.5)' // 中国区县边界
+            }
+        });
+
+        disProvince.setMap(map);
+    }
+
+    // 颜色辅助方法
+    var colors = {};
+    var getColorByAdcode = function (adcode) {
+        if (!colors[adcode]) {
+            var gb = Math.random() * 155 + 50;
+            colors[adcode] = 'rgba(' + gb + ',' + gb + ',160,0.3)';
+        }
+
+        return colors[adcode];
+    };
 
 function Gps84ToGcj02(lon,lat){
   if (outOfChina(lon, lat)) {

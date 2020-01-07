@@ -1,7 +1,13 @@
 import numpy as np
 import math
 
-def aerosol_calc(chA,chB,overlapA,overlapB,resolution=15,snrT=2,pblT=0.5,rc=15000,sa=40,waveLen=532,verAngle=90):
+def aerosol_calc(chARaw,chBRaw,overlapA,overlapB,frequency,duration,resolution=15,snrT=2,pblT=0.5,rc=15000,sa=40,waveLen=532,verAngle=90,pulsePairRes=20):
+    crr = chARaw*pulsePairRes/(frequency*resolution/0.15*duration)
+    crr = np.where(crr>0.95,0.95,crr)
+    chA = chARaw/(1-crr)
+    crr = chBRaw*pulsePairRes/(frequency*resolution/0.15*duration)
+    crr = np.where(crr>0.95,0.95,crr)
+    chB = chBRaw/(1-crr)
     r = np.arange(len(chA))+1
     r = r*resolution
     bn=int(len(chA)*5/6)
@@ -41,4 +47,4 @@ def aerosol_calc(chA,chB,overlapA,overlapB,resolution=15,snrT=2,pblT=0.5,rc=1500
     beta = Xr/(10000+Xrs)
     beta_a = beta - beta_m
     ext_a = sa*beta_a
-    return chAPR2,chBPR2,dePolar,ext_a,pbl
+    return chA,chB,chAPR2,chBPR2,dePolar,ext_a,pbl

@@ -211,6 +211,8 @@ def get_los_data():
 
         task = Task.query.filter_by(id = task_id).first()
         resolution = task.resolution
+        duration = task.duration
+        frequency = task.laser_freq
         task_dat = []
 
         if(content=='total count'):
@@ -219,9 +221,9 @@ def get_los_data():
             time_start = request.values.get('time start', 0)
             time_end = request.values.get('time end', 0)
             if(time_start and time_end):
-                task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=time_start,TaskData.timestamp<=time_end).order_by(func.random()).limit(300).from_self().order_by(TaskData.timestamp).all()
+                task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=time_start,TaskData.timestamp<=time_end).order_by(func.random()).limit(500).from_self().order_by(TaskData.timestamp).all()
             else:
-                task_dat = TaskData.query.filter_by(task_id=task_id).order_by(func.random()).limit(300).from_self().order_by(TaskData.timestamp).all()
+                task_dat = TaskData.query.filter_by(task_id=task_id).order_by(func.random()).limit(500).from_self().order_by(TaskData.timestamp).all()
             # task_dat = TaskData.query.filter_by(task_id=task_id).slice(task.data_num-200 if task.data_num>200 else 0,task.data_num).all()
         if(content=='export'):
             data_start = int(request.values.get('data start', 0))
@@ -237,9 +239,9 @@ def get_los_data():
             data['timestamp']="{}".format(ts.strftime('%Y-%m-%d %H:%M:%S'))
             dt = np.dtype(int)
             dt = dt.newbyteorder('<')
-            chA = np.frombuffer(task_dat[i].raw_A, dtype=dt)
-            chB = np.frombuffer(task_dat[i].raw_B, dtype=dt)
-            chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chA, chB, overlapA, overlapB, resolution, snrT=2, rc=15000)
+            chARaw = np.frombuffer(task_dat[i].raw_A, dtype=dt)
+            chBRaw = np.frombuffer(task_dat[i].raw_B, dtype=dt)
+            chA,chB,chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chARaw, chBRaw, overlapA, overlapB, frequency, duration, resolution, snrT=2, rc=15000)
             data['raw_A'] = chA
             data['raw_B'] = chB
             data['prr_A'] = chAPR2
@@ -261,6 +263,9 @@ def get_mov_data():
 
         task = Task.query.filter_by(id = task_id).first()
         resolution = task.resolution
+        duration = task.duration
+        frequency = task.laser_freq
+        rangeMaxI = math.ceil(10000/resolution)+1
         task_dat = []
 
         if(content=='total count'):
@@ -282,16 +287,16 @@ def get_mov_data():
             data['timestamp']="{}".format(ts.strftime('%Y-%m-%d %H:%M:%S'))
             dt = np.dtype(int)
             dt = dt.newbyteorder('<')
-            chA = np.frombuffer(task_dat[i].raw_A, dtype=dt)
-            chB = np.frombuffer(task_dat[i].raw_B, dtype=dt)
-            chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chA, chB, overlapA, overlapB, resolution, snrT=2, rc=15000)
-            data['raw_A'] = chA
-            data['raw_B'] = chB
-            data['prr_A'] = chAPR2
-            data['prr_B'] = chBPR2
+            chARaw = np.frombuffer(task_dat[i].raw_A, dtype=dt)
+            chBRaw = np.frombuffer(task_dat[i].raw_B, dtype=dt)
+            chA,chB,chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chARaw, chBRaw, overlapA, overlapB, frequency, duration, resolution, snrT=2, rc=15000)
+            data['raw_A'] = chA[:rangeMaxI]
+            data['raw_B'] = chB[:rangeMaxI]
+            data['prr_A'] = chAPR2[:rangeMaxI]
+            data['prr_B'] = chBPR2[:rangeMaxI]
             data['pbl'] = pbl
-            data['ext'] = ext_a
-            data['dep'] = dePolar
+            data['ext'] = ext_a[:rangeMaxI]
+            data['dep'] = dePolar[:rangeMaxI]
             data['resolution'] = resolution
             data['longitude'] = task_dat[i].longitude
             data['latitude'] = task_dat[i].latitude
@@ -324,6 +329,8 @@ def get_ppi_data():
             timeat = request.values.get('time',0)
             resolution = task.resolution
             dataLength = task.bin_length
+            duration = task.duration
+            frequency = task.laser_freq
             task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=timeat,TaskData.hor_angle<=horEndAng).order_by(TaskData.timestamp).limit(ln).all()
             ov = np.loadtxt(r'./overlap/19000101000000_15.ov')
             overlapA = ov[:,0]
@@ -339,9 +346,9 @@ def get_ppi_data():
                 data['horAngle'] = task_dat[i].hor_angle
                 dt = np.dtype(int)
                 dt = dt.newbyteorder('<')
-                chA = np.frombuffer(task_dat[i].raw_A, dtype=dt)
-                chB = np.frombuffer(task_dat[i].raw_B, dtype=dt)
-                chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chA, chB, overlapA, overlapB, resolution, snrT=2, rc=15000)
+                chARaw = np.frombuffer(task_dat[i].raw_A, dtype=dt)
+                chBRaw = np.frombuffer(task_dat[i].raw_B, dtype=dt)
+                chA,chB,chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chARaw, chBRaw, overlapA, overlapB, frequency, duration, resolution, snrT=2, rc=15000)
                 data['raw_A'] = chA
                 data['raw_B'] = chB
                 data['prr_A'] = chAPR2
@@ -360,6 +367,8 @@ def get_ppi_data():
             horAngStep = task.hor_step
             ln = int((horEndAng-horStartAng)/horAngStep)+1
             resolution = task.resolution
+            duration = task.duration
+            frequency = task.laser_freq
             rangeMaxI = math.ceil(float(rangeMax)/resolution)+1
             dataLength = task.bin_length
             pie_list = TaskData.query.filter_by(task_id=task_id,hor_angle=horStartAng).order_by(TaskData.timestamp).all()
@@ -380,9 +389,9 @@ def get_ppi_data():
                 for j in range(len(pie_dat)):
                     dt = np.dtype(int)
                     dt = dt.newbyteorder('<')
-                    chA = np.frombuffer(pie_dat[j].raw_A, dtype=dt)
-                    chB = np.frombuffer(pie_dat[j].raw_B, dtype=dt)
-                    chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chA, chB, overlapA, overlapB, resolution, snrT=2, rc=15000)
+                    chARaw = np.frombuffer(pie_dat[j].raw_A, dtype=dt)
+                    chBRaw = np.frombuffer(pie_dat[j].raw_B, dtype=dt)
+                    chA,chB,chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chARaw, chBRaw, overlapA, overlapB, frequency, duration, resolution, snrT=2, rc=15000)
                     if channel=='raw_A':
                         channeldata.append(chA[:rangeMaxI])
                     elif channel=='raw_B':
@@ -429,6 +438,8 @@ def get_rhi_data():
             ln = int((verEndAng-verStartAng)/verAngStep)+1
             timeat = request.values.get('time',0)
             resolution = task.resolution
+            duration = task.duration
+            frequency = task.laser_freq
             dataLength = task.bin_length
             ri = np.arange(dataLength)+1
             task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=timeat,TaskData.ver_angle<=verEndAng).order_by(TaskData.timestamp).limit(ln).all()
@@ -446,9 +457,9 @@ def get_rhi_data():
                 data['horAngle'] = task_dat[i].hor_angle
                 dt = np.dtype(int)
                 dt = dt.newbyteorder('<')
-                chA = np.frombuffer(task_dat[i].raw_A, dtype=dt)
-                chB = np.frombuffer(task_dat[i].raw_B, dtype=dt)
-                chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chA, chB, overlapA, overlapB, resolution, snrT=2, rc=15000)
+                chARaw = np.frombuffer(task_dat[i].raw_A, dtype=dt)
+                chBRaw = np.frombuffer(task_dat[i].raw_B, dtype=dt)
+                chA,chB,chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chARaw, chBRaw, overlapA, overlapB, frequency, duration, resolution, snrT=2, rc=15000)
                 data['raw_A'] = chA
                 data['raw_B'] = chB
                 data['prr_A'] = chAPR2
