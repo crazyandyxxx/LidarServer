@@ -56,6 +56,7 @@
   <option>垂直通道原始信号</option>
   <option>PM10</option>
   <option>PM2.5</option>
+  <option>气溶胶光学厚度</option>
 </select>
 <span>
   &nbsp;&nbsp;&nbsp;&nbsp;从<input type="number" id="zMinA" value="0" class="inputNum" max="30000" min="15" onchange="ChangeChannelARangeMin()">
@@ -91,6 +92,7 @@
     <option>垂直通道原始信号</option>
     <option>PM10</option>
     <option>PM2.5</option>
+    <option>气溶胶光学厚度</option>
   </select>
   <span>
     &nbsp;&nbsp;&nbsp;&nbsp;从<input type="number" id="zMinB" value="0" class="inputNum" max="30000" min="15" onchange="ChangeChannelBRangeMin()">
@@ -121,7 +123,7 @@
 <script src="../static/jquery.min.js"></script>
 <script src="../static/moment.min.js"></script>
 <script src="../static/daterangepicker.js"></script>
-<script src="../static/los.min.js"></script>
+<script src="../static/los.js"></script>
 
 
 {% endblock %}

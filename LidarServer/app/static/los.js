@@ -7,6 +7,7 @@ var linePRA=[];
     var lineExt = [];
     var lineDep = [];
     var linePbl = [];
+    var lineAOD = [];
     var linePM10 = [];
     var linePM25 = [];
     var AMin = 0;
@@ -113,6 +114,7 @@ var linePRA=[];
       lineExt = [];
       lineDep = [];
       linePbl = [];
+      lineAOD = [];
       linePM10 = [];
       linePM25 = [];
       res = data.result[0].resolution/1000;
@@ -129,6 +131,8 @@ var linePRA=[];
         lineExt.push(data.result[i].ext);
         lineDep.push(data.result[i].dep);
         linePbl.push(data.result[i].pbl/1000);
+        let aod = data.result[i].ext.slice(0,Math.round(3/res)).reduce(( acc, cur ) => acc + cur)*res;
+        lineAOD.push(aod>15?15:aod);
         linePM10.push(data.result[i].ext.map(x => x>0? 243*Math.pow(x,1.13) : 0));
         linePM25.push(data.result[i].ext.map(x => x>0? 121.5*Math.pow(x,1.13) : 0));
       };
@@ -179,8 +183,6 @@ var linePRA=[];
                   Plotly.relayout('PRBDiv',update);
                   tracePblA.x = timeat;
                   tracePblB.x = timeat;
-                  tracePblA.y = linePbl;
-                  tracePblB.y = linePbl;
                   SelectChannelA();
                   SelectChannelB();
                   plotA.on('plotly_hover',plotHover);
@@ -307,8 +309,6 @@ var linePRA=[];
             Plotly.relayout('PRBDiv',update);
             tracePblA.x = timeat;
             tracePblB.x = timeat;
-            tracePblA.y = linePbl;
-            tracePblB.y = linePbl;
             SelectChannelA();
             SelectChannelB();
             plotA.on('plotly_hover',plotHover);
@@ -419,9 +419,14 @@ var linePRA=[];
             break;
           case '污染边界层':
             drawDataA = lineExt;
+            tracePblA.y = linePbl;
             tracePblA.visible = true;
             break;
-        };
+          case '气溶胶光学厚度':
+            drawDataA = lineExt;
+            tracePblA.y = lineAOD;
+            tracePblA.visible = true;
+        }
         PRA_data.x = timeat;
         PRA_data.z = drawDataA;
         traceA.x = drawDataA[lineIndex].slice(layoutLineA.yaxis.range[0]/res,layoutLineA.yaxis.range[1]/res);
@@ -535,9 +540,14 @@ var linePRA=[];
             break;
           case '污染边界层':
             drawDataB = lineExt;
+            tracePblB.y = linePbl;
             tracePblB.visible = true;
             break;
-        };
+          case '气溶胶光学厚度':
+            drawDataB = lineExt;
+            tracePblB.y = lineAOD;
+            tracePblB.visible = true;
+        }
         PRB_data.x = timeat;
         PRB_data.z = drawDataB;
         traceB.x = drawDataB[lineIndex].slice(layoutLineB.yaxis.range[0]/res,layoutLineB.yaxis.range[1]/res);
@@ -593,8 +603,7 @@ var linePRA=[];
     }
 
     function SaveHeatB(){
-    	Plotly.downloadImage('PRBDiv', {format: 'png', width: 1000, height: 500, filename: drawNameB+'从'
-    		                 +timeat[0]+'至'+timeat[timeat.length-1]});
+    	Plotly.downloadImage('PRBDiv', {format: 'png', width: 1000, height: 500, filename: drawNameB+'从'+timeat[0]+'至'+timeat[timeat.length-1]});
     }
 
     function SaveLineB(){

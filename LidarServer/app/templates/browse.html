@@ -9,7 +9,6 @@
   /* The Modal (background) */
   .modal {
     display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
     z-index: 1; /* Sit on top */
     padding-top: 100px; /* Location of the box */
     left: 0;
@@ -17,7 +16,6 @@
     width: 100%; /* Full width */
     height: 100%; /* Full height */
     overflow: auto; /* Enable scroll if needed */
-    background-color: rgb(0,0,0); /* Fallback color */
     background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
   }
   
@@ -27,7 +25,10 @@
     margin: auto;
     padding: 20px;
     border: 1px solid #888;
-    width: 40%;
+    width: 45%;
+  }
+  .modal-btn {
+    position: relative;
   }
   
   /* The Close Button */
@@ -37,16 +38,22 @@
     font-size: 28px;
     font-weight: bold;
   }
-  
+  #confirm {
+    /* position: absolute;
+    bottom: 0;
+    right: 0; */
+    float: right;
+  }
+  #dataKind {
+    display: none;
+  }
   .close:hover,
   .close:focus {
     color: #000;
     text-decoration: none;
     cursor: pointer;
   }
-  #confirmType{
-    float:right;
-  }
+
 </style>
 {{ super() }}
 {% endblock %}
@@ -92,7 +99,53 @@
         <input type="radio" name="exportType" id="txt"> 文本文件
         <span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
         <input type="radio" name="exportType" id="db" > 数据库文件
+        <div class="data" id="dataKind">    
+          <span>
+          <input name = "rkind" type="checkbox" value="ChAB"/>
+          <label>原始信号</label>
+          </span>   
+      
+          <span>
+          <input name = "rkind" type="checkbox" value="ChABPR2"/>
+          <label>距离校正信号</label>
+          </span>
+
+          <span>
+            <input name = "rkind" type="checkbox" value="Ext"/>
+            <label>消光系数</label>
+            </span> 
+        
+            <span>
+            <input name = "rkind" type="checkbox" value="Dep"/>
+            <label>退偏比</label>
+            </span>    
+        
+            <span>
+            <input name = "rkind" type="checkbox" value="PBL"/>
+            <label>污染边界层</label>
+            </span>
+  
+            <span>
+              <input name = "rkind" type="checkbox" value="PM10"/>
+              <label>PM10</label>
+            </span>
+
+            <span>
+              <input name = "rkind" type="checkbox" value="PM25"/>
+              <label>PM2.5</label>
+              </span>
+    
+              <span>
+                <input name = "rkind" type="checkbox" value="AOD"/>
+                <label>气溶胶光学厚度</label>
+              </span>
+        </div>
+        <div class="modal-btn">
+          <input type="button" value="确定"  id="confirm"/>
+          <span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        </div>
       </div>
+      
     </div>
 {% endblock %}
 
@@ -112,5 +165,5 @@
 <script type="text/javascript" src="../static/moment.min.js"></script>
 <script type="text/javascript" src="../static/daterangepicker.js"></script>
 <script src="../static/bootstrap-table.min.js"></script>
-<script src="../static/browse.min.js"></script>
+<script src="../static/browse.js"></script>
 {% endblock %}
