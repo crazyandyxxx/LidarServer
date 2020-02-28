@@ -191,6 +191,7 @@ var linePRA=[];
             }
           );
       }
+      
       $.ajax({
         type: "post",
         data: { 'task id': task_id, 'content': 'view' },

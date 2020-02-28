@@ -349,6 +349,32 @@ var layoutConfig = {
 };
 var PRA_data ={},traceA={},tracePbl={};
 
+function getRealTimeData(){
+  if(document.getElementById('realTime').checked){
+    $.post(urlGetMovData, { 'task id': task_id, 'content': 'view' },
+    function(data,status){
+      if(status == "success"){
+        prepareData(data);
+        lineIndex = timeat.length-1;
+        layoutLineA.annotations[0].text = timeat[lineIndex];
+
+        plotA.removeListener('plotly_hover',plotHover);
+        var update = {
+          'xaxis.range[0]':timeat[0],
+          'xaxis.range[1]':timeat[timeat.length-1]
+        };
+        Plotly.relayout('PRADiv',update);
+        tracePbl.x = timeat;
+        SelectChannel();
+        setPositionLabel();
+        plotA.on('plotly_hover',plotHover);
+        setTimeout(getRealTimeData,10*1000);
+      }
+    });
+  }  
+}
+
+
 function prepareData(data){
   rdata.raw_A = [];
   rdata.raw_B = [];
@@ -357,12 +383,16 @@ function prepareData(data){
   rdata.ext = [];
   rdata.dep = [];
   rdata.pbl = [];
+  rdata.aod = [];
   rdata.pm10 = [];
   rdata.pm25 = [];
-  resolution = data.result[0].resolution;
+  timeat = [];
+  locations = [];
+  height = [];
+  res = data.result[0].resolution/1000;
   var leng = data.result[0].raw_A.length;        
   for(let i = 0;i<leng;i++){
-      height.push((i+1)*resolution/1000);
+      height.push((i+1)*res);
   }
   let lonAver = 0;
   let latAver = 0;
@@ -376,6 +406,8 @@ function prepareData(data){
           rdata.ext.push(data.result[i].ext);
           rdata.dep.push(data.result[i].dep);
           rdata.pbl.push(data.result[i].pbl/1000);
+          let aod = data.result[i].ext.slice(0,Math.round(3/res)).reduce(( acc, cur ) => acc + cur)*res;
+          rdata.aod.push(aod>15?15:aod);
           rdata.pm10.push(data.result[i].ext.map(x => x>0? 243*Math.pow(x,1.13) : 0));
           rdata.pm25.push(data.result[i].ext.map(x => x>0? 121.5*Math.pow(x,1.13) : 0));
           var longitude = data.result[i].longitude;
@@ -616,13 +648,21 @@ function SelectChannel(){
         drawData = rdata.pm25;
         break;
       case '污染边界层':
+        drawData = rdata.ext;
+        tracePbl.y = rdata.pbl;
         tracePbl.visible = true;
         break;
+      case '气溶胶光学厚度':
+          drawData = rdata.ext;
+          tracePbl.y = rdata.aod;
+          tracePbl.visible = true;
+          break;
     }
     object3Dlayer.clear();
     createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity);
     createWallIndicator();
 
+    PRA_data.x = timeat;
     PRA_data.z = drawData;
     traceA.x = drawData[lineIndex].slice(layoutLineA.yaxis.range[0]/resolution*1000,layoutLineA.yaxis.range[1]/resolution*1000);
     

@@ -347,14 +347,14 @@ var startTime = moment().startOf('second').subtract(3, 'days');
         $.post(urlRHI, { 'task id': task_id, 'content':'timedata', 'time': dataList.result[i].timestamp},
             function(data,status){
               document.getElementById("myLoading").style.display="none";
-              let csvContent = "";
-              csvContent += 'Data Count,'+data.result.length+'\r\n';
-              csvContent += 'Data Length,'+data.result[0].raw_A.length+'\r\n';
-              csvContent += 'Resolution,'+data.result[0].resolution+'\r\n';
-              csvContent += 'Horizontal Angle,'+data.result[0].horAngle+'\r\n';
-              csvContent += 'Vertical Angle Start,'+data.result[0].verAngle+'\r\n';
-              csvContent += 'Vertical Angle End,'+data.result[data.result.length-1].verAngle+'\r\n';
-              csvContent += 'Vertical Angle Step,'+(data.result.length-1 > 0 ? data.result[1].verAngle-data.result[0].verAngle : 0)+'\r\n';
+              let csvContent = { str : "" };
+              csvContent.str += 'Data Count,'+data.result.length+'\r\n';
+              csvContent.str += 'Data Length,'+data.result[0].raw_A.length+'\r\n';
+              csvContent.str += 'Resolution,'+data.result[0].resolution+'\r\n';
+              csvContent.str += 'Horizontal Angle,'+data.result[0].horAngle+'\r\n';
+              csvContent.str += 'Vertical Angle Start,'+data.result[0].verAngle+'\r\n';
+              csvContent.str += 'Vertical Angle End,'+data.result[data.result.length-1].verAngle+'\r\n';
+              csvContent.str += 'Vertical Angle Step,'+(data.result.length-1 > 0 ? data.result[1].verAngle-data.result[0].verAngle : 0)+'\r\n';
               let lonArr = [];
               let latArr = [];
               let altArr = [];
@@ -371,15 +371,15 @@ var startTime = moment().startOf('second').subtract(3, 'days');
               longitude = lonArr[Math.floor(lonArr.length/2)];
               latitude = latArr[Math.floor(lonArr.length/2)];
               altitude = altArr[Math.floor(lonArr.length/2)];
-              csvContent += 'Longitude,'+longitude+'\r\n';
-              csvContent += 'Latitude,'+latitude+'\r\n';
-              csvContent += 'Altitude,'+altitude+'\r\n';
+              csvContent.str += 'Longitude,'+longitude+'\r\n';
+              csvContent.str += 'Latitude,'+latitude+'\r\n';
+              csvContent.str += 'Altitude,'+altitude+'\r\n';
 
               for(let i = 0; i<checkChannels.length; i++){
                 WrtieTypeContent('rhi',checkChannels[i].value, data, csvContent);
               }
 
-              var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+              var blob = new Blob([csvContent.str], { type: 'text/csv;charset=utf-8;' });
               if (navigator.msSaveBlob) { // IE 10+
                   navigator.msSaveBlob(blob, "垂直切面_"+data.result[0].timestamp+".csv");
               } else {
@@ -409,16 +409,16 @@ var startTime = moment().startOf('second').subtract(3, 'days');
         $.post(urlLOS, { 'task id': task_id, 'content':'export', 'data start':dataStart, 'data end':dataStart+dataStep},
             function(data,status){
               document.getElementById("myLoading").style.display="none";
-              let csvContent = "";
-              csvContent += 'Data Count,'+data.result.length+'\r\n';
-              csvContent += 'Data Length,'+data.result[0].raw_A.length+'\r\n';
-              csvContent += 'Resolution,'+data.result[0].resolution+'\r\n';
+              let csvContent = { str : "" };
+              csvContent.str += 'Data Count,'+data.result.length+'\r\n';
+              csvContent.str += 'Data Length,'+data.result[0].raw_A.length+'\r\n';
+              csvContent.str += 'Resolution,'+data.result[0].resolution+'\r\n';
 
               for(let i = 0; i<checkChannels.length; i++){
                 WrtieTypeContent('los',checkChannels[i].value, data, csvContent);
               }
 
-              var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+              var blob = new Blob([csvContent.str], { type: 'text/csv;charset=utf-8;' });
               if (navigator.msSaveBlob) { // IE 10+
                   navigator.msSaveBlob(blob, "定点扫描_"+data.result[0].timestamp+".csv");
               } else {
@@ -448,16 +448,16 @@ var startTime = moment().startOf('second').subtract(3, 'days');
         $.post(urlMOV, { 'task id': task_id, 'content':'export', 'data start':dataStart, 'data end':dataStart+dataStep},
             function(data,status){
               document.getElementById("myLoading").style.display="none";
-              let csvContent = "";
-              csvContent += 'Data Count,'+data.result.length+'\r\n';
-              csvContent += 'Data Length,'+data.result[0].raw_A.length+'\r\n';
-              csvContent += 'Resolution,'+data.result[0].resolution+'\r\n';
+              let csvContent = { str : "" };
+              csvContent.str += 'Data Count,'+data.result.length+'\r\n';
+              csvContent.str += 'Data Length,'+data.result[0].raw_A.length+'\r\n';
+              csvContent.str += 'Resolution,'+data.result[0].resolution+'\r\n';
 
               for(let i = 0; i<checkChannels.length; i++){
                 WrtieTypeContent('mov',checkChannels[i].value, data, csvContent);
               }
 
-              var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+              var blob = new Blob([csvContent.str], { type: 'text/csv;charset=utf-8;' });
               if (navigator.msSaveBlob) { // IE 10+
                   navigator.msSaveBlob(blob, "走航扫描_"+data.result[0].timestamp+".csv");
               } else {
