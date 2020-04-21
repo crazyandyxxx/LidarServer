@@ -1,10 +1,14 @@
 from flask_mail import Message
 from datetime import datetime
-from app import db, mail, scheduler
-from app.models import Task
-from app.dataAcquisition import *
+from flask_mail import Mail
+from flask_apscheduler import APScheduler
+from app.models import Task, db
+from app import dataAcquisition
 from apscheduler.triggers.interval import IntervalTrigger
 import os, win32api, time
+
+mail = Mail()
+scheduler=APScheduler()
 
 @scheduler.task(IntervalTrigger(seconds=120))
 def CheckExceptionStop():
@@ -53,3 +57,10 @@ def CheckExceptionStop():
                             conn.send(msg)    
                 except Exception as e:
                     print('send mail error', e)      
+
+@scheduler.task(IntervalTrigger(seconds=1))
+def CheckDeviceStatus():
+    dataAcquisition.check_acquisition_progress()
+    dataAcquisition.check_gps()
+    dataAcquisition.check_heading()
+    dataAcquisition.check_tempeHumi()

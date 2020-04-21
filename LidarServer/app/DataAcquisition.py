@@ -1,10 +1,10 @@
 import socket               # 导入 socket 模块
 import json 
 import time
+from app import status
         
 host = '127.0.0.1' # 获取本地主机名
 port = 6016                # 设置端口号
- 
 
 def start_acquisition(taskId, mode, frequency, duration, binNum, resolution, verStartAng, verEndAng, verAngStep, horStartAng, horEndAng, horAngStep):   
     s = socket.socket() # 创建 socket 对象
@@ -59,6 +59,7 @@ def check_acquisition_progress():
     s.sendall(json.dumps(start_cmd).encode())
     r = (json.loads(s.recv(1024).decode()))
     s.close()
+    status.progress = r['result']
     return r['result']
 
 def check_acquisition_running():
@@ -81,6 +82,7 @@ def check_gps():
     s.sendall(json.dumps(start_cmd).encode())
     r = (json.loads(s.recv(1024).decode()))
     s.close()
+    status.gps = r['result']
     return r['result'] 
 
 def check_heading():
@@ -92,6 +94,7 @@ def check_heading():
     s.sendall(json.dumps(start_cmd).encode())
     r = (json.loads(s.recv(1024).decode()))
     s.close()
+    status.heading = r['result']
     return r['result'] 
 
 def check_tempeHumi():
@@ -103,6 +106,7 @@ def check_tempeHumi():
     s.sendall(json.dumps(start_cmd).encode())
     r = (json.loads(s.recv(1024).decode()))
     s.close()
+    status.tempe = r['result'] 
     return r['result'] 
 
 

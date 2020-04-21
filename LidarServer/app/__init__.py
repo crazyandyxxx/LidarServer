@@ -1,31 +1,32 @@
 import logging
 from logging.handlers import SMTPHandler, RotatingFileHandler
 import os
-from flask import Flask, request, current_app
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask
 from flask_migrate import Migrate
 from flask_login import LoginManager
-from flask_mail import Mail
 from flask_bootstrap import Bootstrap
 from flask_moment import Moment
 from config import Config
 from flask.json import JSONEncoder
 from flask_cors import CORS
-from flask_apscheduler import APScheduler
 import numpy
 import sys
 from app.checkLicense import verifyLicense
+from app import status
+from app.models import db, User
+from app.schedule import mail, scheduler
 
-
-db = SQLAlchemy()
 migrate = Migrate()
 login = LoginManager()
 login.login_view = 'auth.login'
 login.login_message = 'Please log in to access this page.'
-mail = Mail()
 bootstrap = Bootstrap()
 moment = Moment()
-scheduler=APScheduler()
+status.init()
+
+@login.user_loader
+def load_user(id):
+    return User.query.get(int(id))
 
 class MyEncoder(JSONEncoder):
     def default(self, obj):
@@ -106,6 +107,3 @@ def create_app(config_class=Config):
         app.logger.info('LidarServer startup')
 
     return app
-
-from app import models
-from app import schedule

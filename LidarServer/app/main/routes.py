@@ -13,6 +13,7 @@ import pickle
 import io, os
 import json
 from sqlalchemy import func
+import app.status
 
 @bp.before_app_request
 def before_request():
@@ -144,33 +145,33 @@ def browse():
 @bp.route('/getDeviceStatus')
 @login_required
 def get_device_status():
-    progress = {'progress':0,'count':0}
-    gps = {'longitude':-9999, 'latitude':-9999, 'altitude':-9999}
-    heading = {'heading':-9999,'pitch':-9999}
-    tempe = {'temperature':-9999,'humidity':-9999,'tempeNormal':1,'humiNormal':1}
-    try:
-        progress = check_acquisition_progress()
-        gps = check_gps()
-        heading = check_heading()
-        tempe = check_tempeHumi()
-    except Exception as e:
-        print('check device error')
+    # try:
+    #     progress = check_acquisition_progress()
+    #     gps = check_gps()
+    #     heading = check_heading()
+    #     tempe = check_tempeHumi()
+    # except Exception as e:
+    #     print('check device error')
+    # global progress
+    # global gps
+    # global heading
+    # global tempe
     return jsonify([
         {
             'name': 'acquire_progress',
-            'data': progress
+            'data': status.progress
         },
         {
             'name': 'acquire_gps',
-            'data': gps
+            'data': status.gps
         },
         {
             'name': 'acquire_heading',
-            'data': heading
+            'data': status.heading
         },
         {
             'name': 'acquire_tempe',
-            'data': tempe
+            'data': status.tempe
         }])
 
 @bp.route('/task', methods=['GET', 'POST'])
