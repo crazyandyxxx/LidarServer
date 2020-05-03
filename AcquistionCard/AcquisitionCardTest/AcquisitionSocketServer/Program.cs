@@ -39,7 +39,7 @@ namespace AcquisitionSocketServer
         }
         public static void LoadOngoingTask()
         {
-            var r = GetAquisitionParams();
+            var r = GetAquisitionParamsLoop();
             if (r)
             {
                 ConstructAcquisitionStartCmd();

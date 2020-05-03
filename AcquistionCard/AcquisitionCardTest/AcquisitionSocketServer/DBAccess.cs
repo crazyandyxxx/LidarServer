@@ -9,9 +9,29 @@ namespace AcquisitionSocketServer
 {
     partial class Program
     {
-        private static void UpdateAcquisitionDB(double lon, double lat, double alti, double ver, double hor, byte[] A, byte[] B)
+        private static void UpdateAcquisitionDBLoop(double lon, double lat, double alti, double ver, double hor, byte[] A, byte[] B)
         {
+            bool success = false;
             SQLiteConnection cn = new SQLiteConnection("data source=" + Properties.AcquisitionServerSetting.Default.DBPath);
+            var dt = DateTime.Now.ToString("s");
+            while (!success)
+            {
+                try
+                {
+                    UpdateAcquisitionDBCon(cn, dt, lon, lat, alti, ver, hor, A, B);
+                    success = true;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    cn.Close();
+                    System.Threading.Thread.Sleep(20);
+                }
+            }
+        }
+
+        private static void UpdateAcquisitionDBCon(SQLiteConnection cn, string dt, double lon, double lat, double alti, double ver, double hor, byte[] A, byte[] B)
+        {
             if (cn.State != System.Data.ConnectionState.Open)
             {
                 cn.Open();
@@ -30,8 +50,7 @@ namespace AcquisitionSocketServer
 
                 cmd.CommandText = "UPDATE task SET data_num=@score,end_time=@time WHERE id=@id";
                 cmd.Parameters.Add("id", DbType.String).Value = s;
-                cmd.Parameters.Add("score", DbType.Int32).Value = n + 1;
-                var dt = DateTime.Now.ToString("s");
+                cmd.Parameters.Add("score", DbType.Int32).Value = n + 1;              
                 cmd.Parameters.Add("time", DbType.DateTime).Value = dt;
                 cmd.ExecuteNonQuery();
 
@@ -50,10 +69,30 @@ namespace AcquisitionSocketServer
             cn.Close();
         }
 
-        private static bool GetAquisitionParams()
+        private static bool GetAquisitionParamsLoop()
         {
+            bool success = false;
             bool res = false;
             SQLiteConnection cn = new SQLiteConnection("data source=" + Properties.AcquisitionServerSetting.Default.DBPath);
+            while (!success)
+            {
+                try
+                {
+                    res = GetAquisitionParamsCon(cn);
+                    success = true;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    cn.Close();
+                    System.Threading.Thread.Sleep(20);
+                }
+            }
+            return res;
+        }
+
+        private static bool GetAquisitionParamsCon(SQLiteConnection cn)
+        {
             if (cn.State != System.Data.ConnectionState.Open)
             {
                 cn.Open();
@@ -108,12 +147,11 @@ namespace AcquisitionSocketServer
                     cmd.Parameters.Add("p15", DbType.Single).Value = horAngStep;
                     cmd.Parameters.Add("p16", DbType.Boolean).Value = false;
                     cmd.ExecuteNonQuery();
-
-                    res = true;
+                    return true;
                 }
             }
             cn.Close();
-            return res;
+            return false;
         }
     }
 }

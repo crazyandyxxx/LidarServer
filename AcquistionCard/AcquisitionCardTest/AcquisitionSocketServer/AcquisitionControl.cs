@@ -91,7 +91,7 @@ namespace AcquisitionSocketServer
 
                         acquisitionCount++;//采集组数递增
                         Console.WriteLine(DateTime.Now + "   " + acquisitionCount+"   "+ currentAccumNum);
-                        dbThread = new Thread(()=>UpdateAcquisitionDB(longitude, latitude, altitude, currentVerAng, currentHorAng, chA, chB));//数据入库
+                        dbThread = new Thread(()=>UpdateAcquisitionDBLoop(longitude, latitude, altitude, currentVerAng, currentHorAng, chA, chB));//数据入库
                         dbThread.Start();                      
                         //Task.Factory.StartNew(() => UpdateAcquisitionDB());
                     }
@@ -123,18 +123,25 @@ namespace AcquisitionSocketServer
 
         private static void WaitAcquistionFinish()
         {
+            int wloop = 2;
+            int[] curNum = new int[wloop];
             while (true)
             {
-                int len = 2;
-                byte[] buf = new byte[] { 0xC1, 0x01 };
-                CtrlEndPt.Write(ref buf, ref len);
+                for (int i = 0; i < wloop; i++)
+                {
+                    int len = 2;
+                    byte[] buf = new byte[] { 0xC1, 0x01 };
+                    CtrlEndPt.Write(ref buf, ref len);
 
-                len = 512;
-                buf = new byte[len];
+                    len = 512;
+                    buf = new byte[len];
 
-                MyDevice.BulkInEndPt.XferData(ref buf, ref len);
-                currentAccumNum = (int)BitConverter.ToUInt32(buf, 1);
-                Thread.Sleep(200);
+                    MyDevice.BulkInEndPt.XferData(ref buf, ref len);
+                    curNum[i] = (int)BitConverter.ToUInt32(buf, 1);
+                    Thread.Sleep(100);
+                }
+                Array.Sort(curNum);
+                currentAccumNum = curNum[0];
                 if (currentAccumNum >= accumTimes) break;
             }
         }

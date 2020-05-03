@@ -697,6 +697,7 @@ function setMapCenter(){
           object3Dlayer.clear();
           createPie(position,animData.result[animI].channeldata,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity);
           document.getElementById('timeStamp').textContent = animData.result[animI].starttime+"至"+animData.result[animI].endtime;
+          document.getElementById('angleRange').textContent = "扫描范围"+horAngStart+" - "+horAngEnd;
           animI++;
           await sleep(playSpeed);
           AMap.Util.requestAnimFrame(Scan);

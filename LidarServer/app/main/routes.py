@@ -15,11 +15,11 @@ import json
 from sqlalchemy import func
 import app.status
 
-@bp.before_app_request
-def before_request():
-    if current_user.is_authenticated:
-        current_user.last_seen = datetime.now()
-        db.session.commit()
+# @bp.before_app_request
+# def before_request():
+#     if current_user.is_authenticated:
+#         current_user.last_seen = datetime.now()
+#         db.session.commit()
 
 @bp.route('/', methods=['GET', 'POST'])
 @bp.route('/index', methods=['GET', 'POST'])
@@ -145,17 +145,6 @@ def browse():
 @bp.route('/getDeviceStatus')
 @login_required
 def get_device_status():
-    # try:
-    #     progress = check_acquisition_progress()
-    #     gps = check_gps()
-    #     heading = check_heading()
-    #     tempe = check_tempeHumi()
-    # except Exception as e:
-    #     print('check device error')
-    # global progress
-    # global gps
-    # global heading
-    # global tempe
     return jsonify([
         {
             'name': 'acquire_progress',
