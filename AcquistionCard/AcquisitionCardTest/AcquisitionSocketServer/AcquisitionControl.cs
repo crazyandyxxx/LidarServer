@@ -74,6 +74,7 @@ namespace AcquisitionSocketServer
                 {
                     try
                     {
+                        Console.SetCursorPosition(0, 4);
                         Console.WriteLine("采集周期启动");
 
                         WaitPanToAngle();//等待电机转到指定位置
@@ -84,6 +85,7 @@ namespace AcquisitionSocketServer
 
                         Thread.Sleep(200);
                         WaitAcquistionFinish();//等待采集结束
+                        Console.WriteLine("");
                         Console.WriteLine("采集结束");
 
                         CheckAcquisitionChannelData(chA, chB);//读取通道数据
@@ -123,10 +125,13 @@ namespace AcquisitionSocketServer
 
         private static void WaitAcquistionFinish()
         {
-            int wloop = 2;
+            int wloop = 3;
             int[] curNum = new int[wloop];
+            int rN = 5;
+            int r0 = 0;
             while (true)
             {
+                r0++;
                 for (int i = 0; i < wloop; i++)
                 {
                     int len = 2;
@@ -142,6 +147,8 @@ namespace AcquisitionSocketServer
                 }
                 Array.Sort(curNum);
                 currentAccumNum = curNum[0];
+                r0 %= rN;
+                if (r0 == 0) Console.Write("\r{0}% ", (int)(currentAccumNum*100.0f/accumTimes));
                 if (currentAccumNum >= accumTimes) break;
             }
         }
