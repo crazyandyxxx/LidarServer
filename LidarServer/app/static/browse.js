@@ -1,85 +1,85 @@
 var startTime = moment().startOf('second').subtract(3, 'days');
-      var endTime = moment().startOf('second');
-      var scanType = 'ALL';
-        $(function() {
-            $('input[name="datetimes"]').daterangepicker({
-                timePicker: true,
-                timePicker24Hour: true,
-                timePickerSeconds:true,
-                startDate: startTime,
-                endDate: endTime,
-                locale: {
-                    format: 'YYYY/MM/DD HH:mm:ss',
-                    applyLabel: '确定',
-                    cancelLabel: '取消',
-                    fromLabel: '从',
-                    toLabel: '至',
-                    customRangeLabel: 'Custom',
-                    weekLabel: '周',
-                    daysOfWeek: ['日', '一', '二', '三', '四', '五','六'],
-                    monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
-                    firstDay: 1
-                }
-            },
-            function(start, end) {
-              startTime = start;
-              endTime = end;    
-              }
-            );
-        });
-        var mode = {"LOS":"定点扫描",
-                    "MOV":'走航扫描',
-                    'PPI':'水平切面',
-                    'RHI':'垂直切面'}
-        var srId={};
-        function checkTask(){
-          var tbody = $('#task-rows');     
-          $.post(urlBrowse,
-           { 'start time': startTime.format('YYYY-MM-DD HH:mm:ss'),
-             'end time': endTime.format('YYYY-MM-DD HH:mm:ss') ,
-            'scan type': scanType},
-           function(data,status){
-            tbody.empty();
-            if(status == "success"){
-              var taskdata=[];
-              srId = {};
-              for(let i=0; i<data.result.length;i++){
-                var obj = {};
-                obj.serialN = i+1;
-                obj.timespan = data.result[i].start_time+' - '+data.result[i].end_time;
-                obj.mode = mode[data.result[i].mode];
-                obj.datanum = data.result[i].data_num;
-                taskdata.push(obj);
-                srId[obj.serialN] = data.result[i].id;
-              };
-              $('#task-table').bootstrapTable({
-                    data: taskdata,
-                  });
-              $('#task-table').bootstrapTable('load', taskdata);
-            };  
-          });
-        }
-
-        function selectScanType(){
-          var type = document.getElementById('type');
-        switch(type.options[type.selectedIndex].text){
-          case '全部':
-            scanType = 'ALL';
-            break;
-          case '水平切面':
-          scanType = 'PPI';
-            break;
-          case '垂直切面':
-          scanType = 'RHI';
-            break;
-          case '定点扫描':
-          scanType = 'LOS';
-            break;
-          case '走航扫描':
-          scanType = 'MOV';
-            break;
-        };
+var endTime = moment().startOf('second');
+var scanType = 'ALL';
+$(function() {
+  $('input[name="datetimes"]').daterangepicker({
+      timePicker: true,
+      timePicker24Hour: true,
+      timePickerSeconds:true,
+      startDate: startTime,
+      endDate: endTime,
+      locale: {
+          format: 'YYYY/MM/DD HH:mm:ss',
+          applyLabel: '确定',
+          cancelLabel: '取消',
+          fromLabel: '从',
+          toLabel: '至',
+          customRangeLabel: 'Custom',
+          weekLabel: '周',
+          daysOfWeek: ['日', '一', '二', '三', '四', '五','六'],
+          monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+          firstDay: 1
       }
+  },
+  function(start, end) {
+    startTime = start;
+    endTime = end;    
+    }
+  );
+});
+var mode = {"LOS":"定点扫描",
+            "MOV":'走航扫描',
+            'PPI':'水平切面',
+            'RHI':'垂直切面'};
+var srId={};
+function checkTask(){
+  var tbody = $('#task-rows');     
+  $.post(urlBrowse,
+    { 'start time': startTime.format('YYYY-MM-DD HH:mm:ss'),
+      'end time': endTime.format('YYYY-MM-DD HH:mm:ss') ,
+      'scan type': scanType},
+    function(data,status){
+    tbody.empty();
+    if(status == "success"){
+      var taskdata=[];
+      srId = {};
+      for(let i=0; i<data.result.length;i++){
+        var obj = {};
+        obj.serialN = i+1;
+        obj.timespan = data.result[i].start_time+' - '+data.result[i].end_time;
+        obj.mode = mode[data.result[i].mode];
+        obj.datanum = data.result[i].data_num;
+        taskdata.push(obj);
+        srId[obj.serialN] = data.result[i].id;
+      };
+      $('#task-table').bootstrapTable({
+            data: taskdata,
+          });
+      $('#task-table').bootstrapTable('load', taskdata);
+    };  
+  });
+}
+
+function selectScanType(){
+  var type = document.getElementById('type');
+  switch(type.options[type.selectedIndex].text){
+    case '全部':
+      scanType = 'ALL';
+      break;
+    case '水平切面':
+    scanType = 'PPI';
+      break;
+    case '垂直切面':
+    scanType = 'RHI';
+      break;
+    case '定点扫描':
+    scanType = 'LOS';
+      break;
+    case '走航扫描':
+    scanType = 'MOV';
+      break;
+  }
+}
 
   function LinkFormatter(value, row, index) {
     return "<a class='view' href='javascript:void(0)' onclick='ViewTask(\""+srId[row.serialN]+"\"); return false;'>查看</a>    "+

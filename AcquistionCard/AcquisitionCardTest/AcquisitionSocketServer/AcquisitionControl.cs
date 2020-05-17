@@ -149,7 +149,7 @@ namespace AcquisitionSocketServer
                 currentAccumNum = curNum[0];
                 r0 %= rN;
                 if (r0 == 0) Console.Write("\r{0}% ", (int)(currentAccumNum*100.0f/accumTimes));
-                if (currentAccumNum >= accumTimes) break;
+                if (currentAccumNum == accumTimes) break;
             }
         }
 

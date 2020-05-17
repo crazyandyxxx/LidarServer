@@ -34,12 +34,3 @@ class AcquireForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         super(AcquireForm, self).__init__(*args, **kwargs)
-        # self.Frequency.data = 2500
-        # self.Duration.data = 30
-        # self.BinLen.data = 2000
-        # self.VerStartAngle.data = 90
-        # self.VerEndAngle.data = 90
-        # self.VerAngleStep.data = 5
-        # self.HorStartAngle.data = 0
-        # self.HorEndAngle.data = 360
-        # self.HorAngleStep.data = 5

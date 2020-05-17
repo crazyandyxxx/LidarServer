@@ -2,63 +2,62 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block styles  %}
-<link rel="stylesheet" type="text/css" href="../static/daterangepicker.css" />
-<link rel="stylesheet" type="text/css" href="../static/bootstrap-table.min.css">
-<link rel="stylesheet" type="text/css" href="../static/bootstrap.min.css">
-<style type="text/css">
-  /* The Modal (background) */
-  .modal {
-    display: none; /* Hidden by default */
-    z-index: 1; /* Sit on top */
-    padding-top: 100px; /* Location of the box */
-    left: 0;
-    top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-  }
-  
-  /* Modal Content */
-  .modal-content {
-    background-color: #fefefe;
-    margin: auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 45%;
-  }
-  .modal-btn {
-    position: relative;
-  }
-  
-  /* The Close Button */
-  .close {
-    color: #aaaaaa;
-    float:right;
-    font-size: 28px;
-    font-weight: bold;
-  }
-  #confirm {
-    /* position: absolute;
-    bottom: 0;
-    right: 0; */
-    float: right;
-  }
-  #dataKind {
-    display: none;
-  }
-  .close:hover,
-  .close:focus {
-    color: #000;
-    text-decoration: none;
-    cursor: pointer;
-  }
-
-</style>
-{{ super() }}
+  {{ super() }}
+  <link rel="stylesheet" type="text/css" href="../static/daterangepicker.css" />
+  <link rel="stylesheet" type="text/css" href="../static/bootstrap-table.min.css">
+  <style type="text/css">
+    /* The Modal (background) */
+    .modal {
+      display: none; /* Hidden by default */
+      z-index: 1; /* Sit on top */
+      padding-top: 100px; /* Location of the box */
+      left: 0;
+      top: 0;
+      width: 100%; /* Full width */
+      height: 100%; /* Full height */
+      overflow: auto; /* Enable scroll if needed */
+      background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    }
+    
+    /* Modal Content */
+    .modal-content {
+      background-color: #fefefe;
+      margin: auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 45%;
+    }
+    .modal-btn {
+      position: relative;
+    }
+    
+    /* The Close Button */
+    .close {
+      color: #aaaaaa;
+      float:right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+    #confirm {
+      /* position: absolute;
+      bottom: 0;
+      right: 0; */
+      float: right;
+    }
+    #dataKind {
+      display: none;
+    }
+    .close:hover,
+    .close:focus {
+      color: #000;
+      text-decoration: none;
+      cursor: pointer;
+    }
+  </style>
 {% endblock %}
 
 {% block app_content %}
+  <div class="container">
     <input type="text" name="datetimes" size="40"/>
     <select  id="type" onchange="selectScanType()"> 
       <option>全部</option>
@@ -75,7 +74,7 @@
       <div class="panel-heading">检索结果</div>
     
       <!-- Table -->
-      <table class="table table-hover" id="task-table">
+      <table class="table table-hover table-striped" id="task-table">
           <thead>
             <tr>
               <th data-field="serialN">序号</th>
@@ -89,7 +88,7 @@
           </tbody>
       </table>
     </div>
-
+  </div>
     <!-- The Modal -->
     <div id="myModal" class="modal">
       <!-- Modal content -->
@@ -161,9 +160,9 @@
   var urlLOS = "{{ url_for('main.get_los_data') }}";
   var urlImportTask = "{{ url_for('main.import_task') }}";
 </script>
-<script type="text/javascript" src="../static/jquery.min.js"></script>
 <script type="text/javascript" src="../static/moment.min.js"></script>
-<script type="text/javascript" src="../static/daterangepicker.js"></script>
-<script src="../static/bootstrap-table.min.js"></script>
-<script src="../static/browse.min.js"></script>
+<script type="text/javascript" src="../static/daterangepicker.min.js"></script>
+<script type="text/javascript" src="../static/bootstrap-table.min.js"></script>
+<script type="text/javascript" src="../static/bootstrap-table-zh-CN.min.js"></script>
+<script type="text/javascript" src="../static/browse.min.js"></script>
 {% endblock %}

@@ -60,7 +60,6 @@ def acquire():
             stop_acquisition()
             task.complete = True
             db.session.commit()
-            startAcq = 0
         else: 
             task_id = str(uuid.uuid4())
             if not os.path.exists('./config'):
@@ -204,22 +203,32 @@ def get_los_data():
         duration = task.duration
         frequency = task.laser_freq
         task_dat = []
+        snrT = 2
+        pblT = 0.5
+        rc = 15000
+        sa = 40
 
         if(content=='total count'):
             return jsonify(result=[task.data_num])
         if(content=='view'):           
             time_start = request.values.get('time start', 0)
             time_end = request.values.get('time end', 0)
+            calc_param = request.values.get('calc param', 0)
             if(time_start and time_end):
                 task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=time_start,TaskData.timestamp<=time_end).order_by(func.random()).limit(500).from_self().order_by(TaskData.timestamp).all()
             else:
                 task_dat = TaskData.query.filter_by(task_id=task_id).order_by(func.random()).limit(500).from_self().order_by(TaskData.timestamp).all()
-            # task_dat = TaskData.query.filter_by(task_id=task_id).slice(task.data_num-200 if task.data_num>200 else 0,task.data_num).all()
+            if(calc_param):
+                calcParam = json.loads(calc_param)
+                snrT = calcParam['snrT']
+                pblT = calcParam['pblT']
+                rc = calcParam['rc']
+                sa = calcParam['sa']
         if(content=='export'):
             data_start = int(request.values.get('data start', 0))
             data_end = int(request.values.get('data end', 0))
             task_dat = TaskData.query.filter_by(task_id=task_id).slice(data_start,data_end).all()
-
+            
         ov = np.loadtxt(r'./overlap/19000101000000_15.ov')
         overlapA = ov[:,0]
         overlapB = ov[:,1]
@@ -231,7 +240,7 @@ def get_los_data():
             dt = dt.newbyteorder('<')
             chARaw = np.frombuffer(task_dat[i].raw_A, dtype=dt)
             chBRaw = np.frombuffer(task_dat[i].raw_B, dtype=dt)
-            chA,chB,chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chARaw, chBRaw, overlapA, overlapB, frequency, duration, resolution, snrT=2, rc=15000)
+            chA,chB,chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chARaw, chBRaw, overlapA, overlapB, frequency, duration, resolution, snrT=snrT, rc=rc, sa=sa, pblT=pblT)
             data['raw_A'] = chA
             data['raw_B'] = chB
             data['prr_A'] = chAPR2

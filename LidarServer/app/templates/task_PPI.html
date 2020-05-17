@@ -1,14 +1,7 @@
 {% extends "base.html" %}
 
-{% block metas %}
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
-{% endblock %}
-
 {% block styles %}
-<link rel="stylesheet" href="../static/main1119.css"/>
-<link rel="stylesheet" href="../static/bootstrap.min.css">
+{{ super() }}
 <style type="text/css">
   .inputNum {
     width: 4em;
@@ -133,10 +126,10 @@
   }
   /* .html2canvas-container { width: 1500px !important; height: 1500px !important; } */
 </style>
-{{ super() }}
 {% endblock %}
 
 {% block app_content %}
+<div class="container">
  <select class = 'tS' id="timeSeries">
 
  </select>
@@ -161,34 +154,34 @@
     旋转<input type="number" id="rotation" value="0" class="inputNum">
   </span>
   
-<div id="viewDiv" class = "map">
-  <div id="colorbar">
-      <canvas id="canvas" width="50" height="260"></canvas>
-  </div>
-  <div class="input-card" id = "info"> 
-    <div>
-      <span id="timeStamp"></span> 
+  <div id="viewDiv" class = "map">
+    <div id="colorbar">
+        <canvas id="canvas" width="50" height="260"></canvas>
     </div>
-    <div>
-      <span id="angleRange"></span>
-      <span>&nbsp;&nbsp;</span>
-      <span id="angleStep"></span>
-      <span>&nbsp;&nbsp;</span>
-      <span id="angleVer"></span>
+    <div class="input-card" id = "info"> 
+      <div>
+        <span id="timeStamp"></span> 
+      </div>
+      <div>
+        <span id="angleRange"></span>
+        <span>&nbsp;&nbsp;</span>
+        <span id="angleStep"></span>
+        <span>&nbsp;&nbsp;</span>
+        <span id="angleVer"></span>
+      </div>
     </div>
+    <input id="setCenter" type="image" title="居中" src="../static/setCenter.png" />
+    <input id="addMarker" type="image" title="添加标记" src="../static/marker.png" />
+    <input id="addRuler" type="image" title="距离测量" src="../static/ruler.png" />
+    <input id="addMeasurer" type="image" title="面积测量" src="../static/measurer.png" />
+    <input id="clearOverlay" type="image" title="清除" src="../static/clear.png" />
+    <input id="createISOCurve" type="image" title="3D热度图" src="../static/3dHeatmap.png"/>
+    <input id="curvePlay" type="image" title="播放" src="../static/play.svg"/>
+    <input id="waitingPlay" type="image" src="../static/35.gif"/>
+    <input id="playSpeed" type="range" min="0" max="19" value="10">
+    <input id="savePic" type="image" title="保存图片" src="../static/savePic.png" />
   </div>
-  <input id="setCenter" type="image" title="居中" src="../static/setCenter.png" />
-  <input id="addMarker" type="image" title="添加标记" src="../static/marker.png" />
-  <input id="addRuler" type="image" title="距离测量" src="../static/ruler.png" />
-  <input id="addMeasurer" type="image" title="面积测量" src="../static/measurer.png" />
-  <input id="clearOverlay" type="image" title="清除" src="../static/clear.png" />
-  <input id="createISOCurve" type="image" title="3D热度图" src="../static/3dHeatmap.png"/>
-  <input id="curvePlay" type="image" title="播放" src="../static/play.svg"/>
-  <input id="waitingPlay" type="image" src="../static/35.gif"/>
-  <input id="playSpeed" type="range" min="0" max="19" value="10">
-  <input id="savePic" type="image" title="保存图片" src="../static/savePic.png" />
 </div>
-
 {% endblock %}
 
 {% block app_scripts %}
@@ -196,10 +189,8 @@
   var task_id = '{{task_id}}';
   var urlGetPpiData = "{{ url_for('main.get_ppi_data') }}";
 </script>
-<script src="../static/es5.min.js"></script>
 <script src="https://webapi.amap.com/maps?v=1.4.15&key=deccd88e5fc1ec27d19c67f6790c1c88&plugin=AMap.Geocoder,AMap.MouseTool"></script>
 <script src="//webapi.amap.com/ui/1.0/main.js?v=1.0.11"></script>
 <script src="../static/html2canvas.min.js"></script>
-<script src="../static/jquery.min.js"></script>
-<script defer src="../static/ppi.min.js"></script>
+<script defer src="../static/ppi.js"></script>
 {% endblock %}

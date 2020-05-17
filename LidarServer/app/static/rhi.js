@@ -163,10 +163,10 @@ $.post(urlGetRhiData, { 'task id': task_id, 'content':'list' },
         data: { 'task id': task_id, 'content':'timedata', 'time': sel1.options[0].text},
         url: urlGetRhiData,
         beforeSend:function(){
-          document.getElementById('myLoading').style.display = 'block';
+          $('#myLoading').modal('show');
         },
         success:function(data){
-          document.getElementById('myLoading').style.display = 'none';
+          $('#myLoading').modal('hide');
           prepareData(data);
           drawData = rdata.prr_A;
 
@@ -389,10 +389,10 @@ $.post(urlGetRhiData, { 'task id': task_id, 'content':'list' },
       data: { 'task id': task_id, 'content':'timedata', 'time': sel1.options[index].text},
       url: urlGetRhiData,
       beforeSend:function(){
-        document.getElementById('myLoading').style.display = 'block';
+        $('#myLoading').modal('show');
       },
       success:function(data){
-        document.getElementById('myLoading').style.display = 'none';
+        $('#myLoading').modal('hide');
         prepareData(data);
 
         document.getElementById('angleRange').textContent = "扫描范围"+verAngStart+" - "+verAngEnd;

@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block app_content %}
+<div class="container">
 <div id="menu">
     <h3 class="item">设备序列号</h3>
     <p class="description">{{ insID }}</p>
@@ -10,5 +11,6 @@
   <p class="description">{{ panID }}</p>
   <h3 class="item">软件版本</h3>
   <p class="description">{{ softVer }}</p>
+</div>
 </div>
 {% endblock %}

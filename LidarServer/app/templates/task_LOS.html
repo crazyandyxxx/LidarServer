@@ -1,129 +1,201 @@
 {% extends "base.html" %}
 
 {% block styles  %}
-<link rel="stylesheet" type="text/css" href="../static/bootstrap.min.css">
-<link rel="stylesheet" type="text/css" href="../static/daterangepicker.css" />
-<style type="text/css">
-  .inputNum {
-    width: 6em;
-    text-align: right;
-  }
-  .PRDiv{
-    position: relative;
-    float: right;
-    width:75%;
-    padding: 0;
-    z-index: 100;
-  }
-  .lineDiv{
-    position: relative;
-    float: right;
-    width:25%;
-    margin-left:-50px;
-    z-index: 10;
-  }
-  .saveLine{
-    z-index: 100;
-    position: absolute;
-    right: 60px;
-    top: 42px;
-    border-radius: 3px;
-    background-color: rgb(255, 255, 255);
-  }
-  .savePic{
-    z-index: 100;
-    position: absolute;
-    right: 10px;
-    top: 42px;
-    border-radius: 3px;
-    background-color: rgb(255, 255, 255);
-  } 
-</style>
-{{ super() }}
+  {{ super() }}
+  <link rel="stylesheet" type="text/css" href="../static/daterangepicker.css"/>
+  <style type="text/css">
+    .PRDiv{
+      position: relative;
+      float: left;
+      width:70%;
+    }
+    .lineDiv{
+      position: relative;
+      float: left;
+      width:25%;
+    }
+    .savePic{
+      z-index: 100;
+      position: absolute;
+      right: -2%;
+      top: 10%;
+      border: none;
+      background-color: transparent;
+    } 
+    .saveLine{
+      z-index: 100;
+      position: absolute;
+      right: 10%;
+      top: 10%;
+      border: none;
+      background-color: transparent;
+    }
+    .calc{
+      border: none;
+      background-color: transparent;
+    }
+  </style>
 {% endblock %}
 
 {% block app_content %}
-
-
-<div>
-<select  id="channelA" onchange="SelectChannelA()">
-  <option>平行通道距离校正信号</option>
-  <option>垂直通道距离校正信号</option>
-  <option>消光系数</option>
-  <option>退偏比</option>
-  <option>污染边界层</option>
-  <option>平行通道原始信号</option>
-  <option>垂直通道原始信号</option>
-  <option>PM10</option>
-  <option>PM2.5</option>
-  <option>气溶胶光学厚度</option>
-</select>
-<span>
-  &nbsp;&nbsp;&nbsp;&nbsp;从<input type="number" id="zMinA" value="0" class="inputNum" max="30000" min="15" onchange="ChangeChannelARangeMin()">
-  至<input type="number" id="zMaxA" value="3000" class="inputNum" max="30000" min="15" onchange="ChangeChannelARangeMax()">&nbsp;&nbsp;&nbsp;&nbsp;
-</span>
-<span>
-  色标最小值<input type="number" id="colorMinA" value="0" class="inputNum" onchange="ChangeChannelAMin()">
-  色标最大值<input type="number" id="colorMaxA" value="10000" class="inputNum" onchange="ChangeChannelAMax()">&nbsp;&nbsp;&nbsp;&nbsp;
-</span>
-<span>
-  <input type="checkbox" id="realTime" onclick="getRealTimeData()">
-  <label>实时刷新</label>
-  <input type="image" id='date' name='dateRange' src="../static/date.png">
-</span>
-</div>
-<div>
-    <div class = 'lineDiv' id='lineADiv'>  
-        <input class="saveLine" type="image" title="保存廓线" src="../static/save.png" onclick="SaveLineA()"/>
-    </div>
-    <div class = 'PRDiv' id="PRADiv"><!-- Plotly chart will be drawn inside this DIV -->
-      <input class="savePic" type="image" title="保存图片" src="../static/save.png" onclick="SaveHeatA()"/>
-    </div>
-</div>
-
-<div style="clear:both">
-<select  id="channelB" onchange="SelectChannelB()">
-    <option>垂直通道距离校正信号</option>
-    <option>平行通道距离校正信号</option>
-    <option>消光系数</option>
-    <option>退偏比</option>
-    <option>污染边界层</option>
-    <option>平行通道原始信号</option>
-    <option>垂直通道原始信号</option>
-    <option>PM10</option>
-    <option>PM2.5</option>
-    <option>气溶胶光学厚度</option>
-  </select>
-  <span>
-    &nbsp;&nbsp;&nbsp;&nbsp;从<input type="number" id="zMinB" value="0" class="inputNum" max="30000" min="15" onchange="ChangeChannelBRangeMin()">
-    至<input type="number" id="zMaxB" value="3000" class="inputNum" max="30000" min="15" onchange="ChangeChannelBRangeMax()">&nbsp;&nbsp;&nbsp;&nbsp;
-  </span>
-  <span>
-    色标最小值<input type="number" id="colorMinB" value="0" class="inputNum" onchange="ChangeChannelBMin()">
-    色标最大值<input type="number" id="colorMaxB" value="10000" class="inputNum" onchange="ChangeChannelBMax()">&nbsp;&nbsp;&nbsp;&nbsp;
-  </span>
-</div>
-  <div>
-      <div class = 'lineDiv' id='lineBDiv'>
-        <input class="saveLine" type="image" title="保存廓线" src="../static/save.png" onclick="SaveLineB()"/>
-      </div>
-      <div class = 'PRDiv' id="PRBDiv"><!-- Plotly chart will be drawn inside this DIV -->
-        <input class="savePic" type="image" title="保存图片" src="../static/save.png" onclick="SaveHeatB()"/>
-      </div>
+<div class="container">
+<form class="form-inline">
+  <div class="form-group">
+    <select  class="form-control" id="channelA" onchange="SelectChannelA()">
+      <option>平行通道距离校正信号</option>
+      <option>垂直通道距离校正信号</option>
+      <option>消光系数</option>
+      <option>退偏比</option>
+      <option>污染边界层</option>
+      <option>平行通道原始信号</option>
+      <option>垂直通道原始信号</option>
+      <option>PM10</option>
+      <option>PM2.5</option>
+      <option>气溶胶光学厚度</option>
+    </select>
   </div>
+  <p class="form-control-static">&nbsp;&nbsp;&nbsp;&nbsp;</p>
+  <div class="form-group">
+    <p class="form-control-static">从</p>
+    <input type="number" id="zMinA" value="0" class="form-control" style="width: 8em; text-align: right;" max="30000" min="0" step="15" onchange="ChangeChannelARangeMin()">
+    <p class="form-control-static">至</p>
+    <input type="number" id="zMaxA" value="3000" class="form-control" style="width: 8em; text-align: right;" max="30000" min="15" step="15" onchange="ChangeChannelARangeMax()">
+  </div>
+  <p class="form-control-static">&nbsp;&nbsp;&nbsp;&nbsp;</p>
+  <div class="form-group">
+    <p class="form-control-static">色标下限</p>
+    <input type="number" id="colorMinA" value="0" class="form-control" style="width: 8em; text-align: right;" onchange="ChangeChannelAMin()">
+    <p class="form-control-static">色标上限</p>
+    <input type="number" id="colorMaxA" value="10000" class="form-control" style="width: 8em; text-align: right;" onchange="ChangeChannelAMax()">
+  </div>
+  <p class="form-control-static">&nbsp;&nbsp;&nbsp;&nbsp;</p>
+  <div class="checkbox">
+    <label>
+      <input type="checkbox" id="realTime" onclick="getRealTimeData()">
+      实时刷新
+    </label>
+  </div>
+  <p class="form-control-static">&nbsp;&nbsp;</p>
+  <div class="form-group" data-toggle="tooltip" data-placement="right" title="重新解算">
+    <button type="button" class="btn btn-default calc" data-toggle="modal"  data-target="#calcModal" data-placement="right" title="重新解算" >
+      <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+    </button>
+  </div>
+</form>
 
+<div class="row">
+  <div class="col-xs-12">
+    <div class="PRDiv" id="PRADiv">
+      <button type="button" class="btn btn-default btn-lg savePic" data-toggle="tooltip" data-placement="left" title="保存图片" onclick="SaveHeatA()">
+        <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
+      </button>
+    </div>
+    <div class="lineDiv" id='lineADiv'>  
+      <button type="button" class="btn btn-default btn-lg saveLine" data-toggle="tooltip" data-placement="left" title="保存廓线" onclick="SaveLineA()">
+        <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
+      </button>
+    </div>   
+  </div>
+</div>
+
+<form class="form-inline">
+  <div class="form-group">
+    <select  class="form-control" id="channelB" onchange="SelectChannelB()">
+      <option>平行通道距离校正信号</option>
+      <option selected>垂直通道距离校正信号</option>
+      <option>消光系数</option>
+      <option>退偏比</option>
+      <option>污染边界层</option>
+      <option>平行通道原始信号</option>
+      <option>垂直通道原始信号</option>
+      <option>PM10</option>
+      <option>PM2.5</option>
+      <option>气溶胶光学厚度</option>
+    </select>
+  </div>
+  <p class="form-control-static">&nbsp;&nbsp;&nbsp;&nbsp;</p>
+  <div class="form-group">
+    <p class="form-control-static">从</p>
+    <input type="number" id="zMinB" value="0" class="form-control" style="width: 8em; text-align: right;" max="30000" min="0" step="15" onchange="ChangeChannelBRangeMin()">
+    <p class="form-control-static">至</p>
+    <input type="number" id="zMaxB" value="3000" class="form-control" style="width: 8em; text-align: right;" max="30000" min="15" step="15" onchange="ChangeChannelBRangeMax()">
+  </div>
+  <p class="form-control-static">&nbsp;&nbsp;&nbsp;&nbsp;</p>
+  <div class="form-group">
+    <p class="form-control-static">色标下限</p>
+    <input type="number" id="colorMinB" value="0" class="form-control" style="width: 8em; text-align: right;" onchange="ChangeChannelBMin()">
+    <p class="form-control-static">色标上限</p>
+    <input type="number" id="colorMaxB" value="10000" class="form-control" style="width: 8em; text-align: right;" onchange="ChangeChannelBMax()">
+  </div>
+</form>
+
+<div class="row">
+  <div class="col-xs-12">
+    <div class = 'PRDiv' id="PRBDiv">
+      <button type="button" class="btn btn-default btn-lg savePic" data-toggle="tooltip" data-placement="left" title="保存图片" onclick="SaveHeatB()">
+        <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
+      </button>
+    </div>
+    <div class = 'lineDiv' id='lineBDiv'>
+      <button type="button" class="btn btn-default btn-lg saveLine" data-toggle="tooltip" data-placement="left" title="保存廓线" onclick="SaveLineB()">
+        <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
+      </button>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="modal fade" id="calcModal" tabindex="-1" role="dialog" data-backdrop="static">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="exampleModalLabel">解算参数</h4>
+      </div>
+      <div class="modal-body">
+        <div class="row text-left">
+          <div class="col-md-7">
+            <form>
+              <div class="form-group">
+                <label for="dateRange" class="control-label">时间范围</label>
+                <input type="text" class="form-control" id="dateRange">
+              </div>
+              <div class="form-group">
+                <label for="rz" class="control-label">参考点距离</label>
+                <input type="number" class="form-control" value="15000" max="30000" min="0" step="15" id="rc">
+              </div>
+              <div class="form-group">
+                <label for="sa" class="control-label">雷达比</label>
+                <input type="number" class="form-control" value="40" max="100" min="1" step="1" id="sa">
+              </div>
+              <div class="form-group">
+                <label for="snrT" class="control-label">信噪比阈值</label>
+                <input type="number" class="form-control" value="2" max="10000" min="0" step="1" id="snrT">
+              </div>
+              <div class="form-group">
+                <label for="pblT" class="control-label">边界层阈值</label>
+                <input type="number" class="form-control" value="0.5" max="1" min="0" step="0.05" id="pblT">
+              </div>
+            </form>           
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+        <button type="button" class="btn btn-primary" onclick="ReCalculation()">确定</button>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block app_scripts %}
-<script>
-    var task_id = '{{task_id}}';
-    var urlGetLosData = "{{ url_for('main.get_los_data') }}";
-</script>
-<script src="../static/plotly-latest.min.js"></script>
-<script src="../static/jquery.min.js"></script>
-<script src="../static/moment.min.js"></script>
-<script src="../static/daterangepicker.js"></script>
-<script src="../static/los.min.js"></script>
-
-
+  <script>
+      var task_id = '{{task_id}}';
+      var urlGetLosData = "{{ url_for('main.get_los_data') }}";
+  </script>
+  <script src="../static/plotly-latest.min.js"></script>
+  <script src="../static/moment.min.js"></script>
+  <script src="../static/daterangepicker.min.js"></script>
+  <script src="../static/los.js"></script>
 {% endblock %}

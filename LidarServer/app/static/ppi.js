@@ -182,10 +182,10 @@ function setMapCenter(){
           data: { 'task id': task_id, 'content':'timedata', 'time': sel1.options[0].text},
           url: urlGetPpiData,
           beforeSend:function(){
-            document.getElementById('myLoading').style.display = 'block';
+            $('#myLoading').modal('show');
           },
           success:function(data){
-            document.getElementById('myLoading').style.display = 'none';
+            $('#myLoading').modal('hide');
             addMapEvents();
             prepareData(data);
             drawData = rdata.prr_A;
@@ -529,10 +529,10 @@ function setMapCenter(){
           data: { 'task id': task_id, 'content':'timedata', 'time': sel1.options[index].text},
           url: urlGetPpiData,
           beforeSend:function(){
-            document.getElementById('myLoading').style.display = 'block';
+            $('#myLoading').modal('show');
           },
           success:function(data){
-            document.getElementById('myLoading').style.display = 'none';
+            $('#myLoading').modal('hide');
             prepareData(data);
             
             document.getElementById('angleRange').textContent = "扫描范围"+horAngStart+" - "+horAngEnd;

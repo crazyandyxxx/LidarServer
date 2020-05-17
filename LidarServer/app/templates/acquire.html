@@ -1,29 +1,26 @@
 {% extends "base.html" %}
 {% import 'bootstrap/wtf.html' as wtf %}
 
-{% block styles  %}
-<link rel="stylesheet" type="text/css" href="../static/bootstrap.min.css">
-{% endblock %}
-
 {% block app_content %}
-    <h1>{{ '数据采集' }}</h1>
-    <div class="alert alert-success" role="alert">
-        <span id="acquisition-progress"></span>
+    <div class="container">
+        <h1>{{ '数据采集' }}</h1>
+        <div class="alert alert-success" role="alert">
+            <span id="acquisition-progress"></span>
 
-        <span id="lonlatpos"></span>
+            <span id="lonlatpos"></span>
 
-        <span id="pithcrollang"></span>
+            <span id="pithcrollang"></span>
 
-        <span id="tempehumi"></span>
-    </div>
-    <div class="alert alert-danger collapse" role="alert" id="tempehumialert">
-        <span id="tempemessage"></span>
-
-        <span id="humimessage"></span>
-      </div>
-    <div class="row">
-        <div class="col-md-4">
-            {{ wtf.quick_form(form) }}
+            <span id="tempehumi"></span>
+        </div>
+        <div class="alert alert-danger collapse" role="alert" id="tempehumialert">
+            <span id="tempemessage"></span>
+            <span id="humimessage"></span>
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                {{ wtf.quick_form(form) }}
+            </div>
         </div>
     </div>
 {% endblock %}
@@ -32,6 +29,5 @@
 <script>
     var urlGetDeviceStatus = "{{ url_for('main.get_device_status') }}";
 </script>
-<script type="text/javascript" src="../static/jquery.min.js"></script>
 <script type="text/javascript" src="../static/acquire.min.js"></script>
 {% endblock %}

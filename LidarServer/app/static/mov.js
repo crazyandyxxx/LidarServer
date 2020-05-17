@@ -102,10 +102,10 @@ $.ajax({
   data: { 'task id': task_id, 'content':'view'},
   url: urlGetMovData,
   beforeSend:function(){
-    document.getElementById('myLoading').style.display = 'block';
+    $('#myLoading').modal('show');
   },
   success:function(data){
-    document.getElementById('myLoading').style.display = 'none';
+    $('#myLoading').modal('hide');
     var channel = document.getElementById('channel');
         channel.addEventListener("change", SelectChannel);
         var colorMax = document.getElementById('colorMax');
@@ -316,7 +316,9 @@ var layoutA = {
         title: '距离(km)',
         showline: true,
         range:[0,3]
-      }
+      },
+      paper_bgcolor: 'transparent',
+      plot_bgcolor: 'transparent'    
     };
 var layoutLineA = {
       xaxis: {
@@ -324,24 +326,28 @@ var layoutLineA = {
         showline: true,
         tickmode:'auto',
         showexponent:"last",
-        exponentformat:"power"
+        exponentformat:"power",
+        showgrid: false
       },
       yaxis: {
         showline: true,
         range:[0,3],
-        ticks:'outside'
+        ticks:'outside',
+        showgrid: false
       },
       annotations: [{
-      showarrow: false,
-      text: "",
-      font: {
-        color: 'black'
-      },
-      xref: 'paper',
-      yref: 'paper',
-      x: 0.5,
-      y: 0.5
-    }]
+        showarrow: false,
+        text: "",
+        font: {
+          color: 'black'
+        },
+        xref: 'paper',
+        yref: 'paper',
+        x: 0.5,
+        y: 0.5 
+      }],
+      paper_bgcolor: 'transparent',
+      plot_bgcolor: 'transparent'
   };
 var layoutConfig = {
   displayModeBar: false,
