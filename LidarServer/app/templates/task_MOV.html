@@ -8,48 +8,64 @@
     text-align: right;
   }
   #viewDiv {
-    height: 800px;
+    height: 840px;
+  }
+  #setPara {
+    background-color: rgba(245,245,245,0.5);
+    z-index: 100;
+    position: absolute; 
+    top: 10px;
+    left: 150px;
+    border-radius: 5px;
+    margin: 5px;
   }
   #heatDiv {
-    background-color: transparent;
+    background-color: rgba(245,245,245,0.5);
     z-index: 100;
     position: absolute; 
     bottom: 0;
     right: 0;
-    width: 60%;
-    height: 40%;
+    width: 55%;
+    height: 35%;
   }
 
   .PRDiv{
     position: relative;
-    float:right;
-    width:70%;
+    float:left;
+    width:78%;
     height: 100%;
-    margin-bottom: -5%;
   }
   .lineDiv{
     position: relative;
-    float:right;
-    width:30%;
+    float:left;
+    width:22%;
     height: 100%;
-    margin-left: -7%;
-    margin-bottom: -5%;
   }
   .saveLine{
-    z-index: 100;
     position: absolute;
-    right: 60px;
-    top: 42px;
+    right: 30px;
+    top: 0px;
     border-radius: 3px;
     background-color: transparent;
   }
   .savePic{
-    z-index: 100;
     position: absolute;
     right: 10px;
-    top: 42px;
+    top: 0px;
     border-radius: 3px;
     background-color: transparent;
+  }
+  #close-heat {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+  }
+  #show-heat {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      display: none;
+      z-index: 100;
   }
   .close-btn {
       position: absolute;
@@ -71,42 +87,51 @@
 
 {% block app_content %}
 <div class="container">
-<select  id="channel">
-    <option>平行通道距离校正信号</option>
-    <option>垂直通道距离校正信号</option>
-    <option>消光系数</option>
-    <option>退偏比</option>
-    <option>污染边界层</option>
-    <option>平行通道原始信号</option>
-    <option>垂直通道原始信号</option>
-    <option>PM10</option>
-    <option>PM2.5</option>
-    <option>气溶胶光学厚度</option>
-</select>
-<span>
-    &nbsp;&nbsp;&nbsp;&nbsp;从<input type="number" id="zMin" value="0" class="inputNum" max="30000" min="15">
-    至<input type="number" id="zMax" value="3000" class="inputNum" max="30000" min="15">&nbsp;&nbsp;&nbsp;&nbsp;
-</span>
-<span>
-    色标最小值<input type="number" id="colorMin" value="0" class="inputNum">
-    色标最大值<input type="number" id="colorMax" value="10000" class="inputNum">
-    &nbsp;&nbsp;&nbsp;&nbsp;
-    透明度<input type="number" id="opacity" value="0.5" class="inputNum">
-    比例×<input type="number" id="scale" value="1" class="inputNum">
-</span>
-<span>
-  <input type="checkbox" id="realTime" onclick="getRealTimeData()">
-  <label>实时刷新</label>
-</span>
+
   
 <div id="viewDiv">
+  <div id="setPara">
+    <select  id="channel">
+      <option>平行通道距离校正信号</option>
+      <option>垂直通道距离校正信号</option>
+      <option>消光系数</option>
+      <option>退偏比</option>
+      <option>污染边界层</option>
+      <option>平行通道原始信号</option>
+      <option>垂直通道原始信号</option>
+      <option>PM10</option>
+      <option>PM2.5</option>
+      <option>气溶胶光学厚度</option>
+    </select>
+    <span>
+        &nbsp;&nbsp;&nbsp;&nbsp;从<input type="number" id="zMin" value="0" class="inputNum" max="30000" min="15">
+        至<input type="number" id="zMax" value="3000" class="inputNum" max="30000" min="15">&nbsp;&nbsp;&nbsp;&nbsp;
+    </span>
+    <span>
+        色标最小值<input type="number" id="colorMin" value="0" class="inputNum">
+        色标最大值<input type="number" id="colorMax" value="10000" class="inputNum">
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        透明度<input type="number" id="opacity" value="0.5" class="inputNum">
+        比例×<input type="number" id="scale" value="1" class="inputNum">
+    </span>
+    <span>
+      <input type="checkbox" id="realTime" onclick="getRealTimeData()">
+      <label>实时刷新</label>
+    </span>
+  </div>
   <div id="heatDiv">
+    <div class = 'PRDiv' id="PRADiv">
+      <div id="close-heat">
+        <span class="glyphicon glyphicon-remove-circle" aria-hidden="true" onclick="CloseHeatMap()"></span>
+      </div>
+      <input class="savePic" type="image" title="保存图片" src="../static/save.png" onclick="SaveHeatA()"/>
+    </div>
     <div class = 'lineDiv' id='lineADiv'>  
         <input class="saveLine" type="image" title="保存廓线" src="../static/save.png" onclick="SaveLineA()"/>
     </div>
-    <div class = 'PRDiv' id="PRADiv">
-      <input class="savePic" type="image" title="保存图片" src="../static/save.png" onclick="SaveHeatA()"/>
-    </div>
+  </div>
+  <div id='show-heat'>
+    <span class="glyphicon glyphicon-chevron-left" aria-hidden="true" onclick="ShowHeatMap()"></span>
   </div>
 </div>
 </div>

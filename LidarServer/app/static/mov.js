@@ -318,7 +318,12 @@ var layoutA = {
         range:[0,3]
       },
       paper_bgcolor: 'transparent',
-      plot_bgcolor: 'transparent'    
+      plot_bgcolor: 'transparent',
+      margin:{
+        t: 30,
+        l: 60,
+        b: 57
+      }    
     };
 var layoutLineA = {
       xaxis: {
@@ -327,13 +332,11 @@ var layoutLineA = {
         tickmode:'auto',
         showexponent:"last",
         exponentformat:"power",
-        showgrid: false
       },
       yaxis: {
         showline: true,
         range:[0,3],
         ticks:'outside',
-        showgrid: false
       },
       annotations: [{
         showarrow: false,
@@ -347,13 +350,29 @@ var layoutLineA = {
         y: 0.5 
       }],
       paper_bgcolor: 'transparent',
-      plot_bgcolor: 'transparent'
+      plot_bgcolor: 'transparent',
+      margin:{
+        t: 30,
+        l: 20,
+        r: 40,
+        b: 57
+      }
   };
 var layoutConfig = {
   displayModeBar: false,
   responsive: true
 };
 var PRA_data ={},traceA={},tracePbl={};
+
+function CloseHeatMap(){
+  $('#heatDiv').fadeOut();
+  $('#show-heat').show();
+}
+
+function ShowHeatMap(){
+  $('#heatDiv').fadeIn();
+  $('#show-heat').hide();
+}
 
 function getRealTimeData(){
   if(document.getElementById('realTime').checked){

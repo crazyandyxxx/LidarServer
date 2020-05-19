@@ -31,6 +31,9 @@ var layoutA = {
     title: '距离(km)',
     showline: true,
     range:[0,3]
+  },
+  margin: {
+    t: 60
   }
 };
 var layoutB = {
@@ -46,6 +49,9 @@ var layoutB = {
     title: '距离(km)',
     showline: true,
     range:[0,3]
+  },
+  margin: {
+    t: 60
   }
 };  
 var layoutLineA = {
@@ -71,7 +77,10 @@ var layoutLineA = {
     yref: 'paper',
     x: 0.5,
     y: 0.5
-  }]
+  }],
+  margin: {
+    t: 60
+  }
 };
 var layoutLineB = {
   xaxis: {
@@ -87,16 +96,19 @@ var layoutLineB = {
     ticks:'outside'
   },
   annotations: [{
-  showarrow: false,
-  text: "",
-  font: {
-    color: 'black'
-  },
-  xref: 'paper',
-  yref: 'paper',
-  x: 0.5,
-  y: 0.5
-}]
+    showarrow: false,
+    text: "",
+    font: {
+      color: 'black'
+    },
+    xref: 'paper',
+    yref: 'paper',
+    x: 0.5,
+    y: 0.5
+  }],
+  margin: {
+    t: 60
+  }
 };
 var layoutConfig = {
   displayModeBar: false,
