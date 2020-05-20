@@ -1,0 +1,109 @@
+.inputNum {
+    width: 4em;
+    text-align: right;
+  }
+  #viewDiv {
+    height: 830px;
+  }
+  #setPara {
+    background-color: rgba(245,245,245,0.5);
+    z-index: 100;
+    position: absolute; 
+    top: 10px;
+    left: 10%;
+    width: 80%;
+    border-radius: 15px;
+    margin: 5px;
+    text-align: center;
+  }
+  #heatDiv {
+    background-color: rgba(245,245,245,0.5);
+    z-index: 100;
+    position: absolute; 
+    bottom: 0;
+    right: 0;
+    width: 55%;
+    height: 35%;
+  }
+
+  .PRDiv{
+    position: relative;
+    float:left;
+    width:78%;
+    height: 100%;
+  }
+  .lineDiv{
+    position: relative;
+    float:left;
+    width:22%;
+    height: 100%;
+  }
+  .saveLine{
+    position: absolute;
+    right: 30px;
+    top: 0px;
+    border-radius: 3px;
+    background-color: transparent;
+    border: none;
+  }
+  .savePic{
+    position: absolute;
+    right: 10px;
+    top: 0px;
+    border-radius: 3px;
+    background-color: transparent;
+    border: none;
+  }
+  #close-heat {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+  }
+  #show-heat {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      display: none;
+      z-index: 100;
+  }
+  .close-btn {
+      position: absolute;
+      top: -6px;
+      right: -8px;
+      width: 15px;
+      height: 15px;
+      font-size: 12px;
+      background: #ccc;
+      border-radius: 50%;
+      color: #fff;
+      text-align: center;
+      line-height: 15px;
+      box-shadow: -1px 1px 1px rgba(10, 10, 10, .2);
+  }
+  .calc{
+    border: none;
+    background-color: transparent;
+  }
+  #colorbar{
+    z-index: 100;
+    position: absolute; 
+    bottom: 60px;
+    right: 10px;
+    display: none;
+  }
+  #setCenter{
+    z-index: 100;
+    position: absolute;
+    right: 31px;
+    top: 70px;
+    border-radius: 3px;
+    background-color: white;
+  }
+  #saveMap{
+    z-index: 100;
+    position: absolute;
+    right: 31px;
+    top: 107px;
+    border-radius: 3px;
+    background-color: white;
+  }

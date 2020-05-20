@@ -2,159 +2,36 @@
 
 {% block styles %}
 {{ super() }}
-<style type="text/css">
-  .inputNum {
-    width: 4em;
-    text-align: right;
-  }
-  #viewDiv {
-    height: 770px;
-  }
-  #info {
-    background-color:whitesmoke;
-    z-index: 100;
-    position: absolute; 
-    bottom: 0;
-    /* left: 50%;
-    transform: translate(-50%,0%) */
-    right: 0;
-  }
-  .close-btn {
-      position: absolute;
-      top: -6px;
-      right: -8px;
-      width: 15px;
-      height: 15px;
-      font-size: 12px;
-      background: #ccc;
-      border-radius: 50%;
-      color: #fff;
-      text-align: center;
-      line-height: 15px;
-      box-shadow: -1px 1px 1px rgba(10, 10, 10, .2);
-      cursor:pointer;
-  }
-  #colorbar{
-    z-index: 100;
-    position: absolute; 
-    bottom: 60px;
-    right: 10px;
-  }
-  #setCenter{
-    z-index: 100;
-    position: absolute;
-    right: 31px;
-    top: 70px;
-    border-radius: 3px;
-    background-color: white;
-  }
-  #addMarker{
-    z-index: 100;
-    position: absolute;
-    right: 31px;
-    top: 107px;
-    border-radius: 3px;
-    background-color: white;
-  }
-  #addRuler{
-    z-index: 100;
-    position: absolute;
-    right: 31px;
-    top: 144px;
-    border-radius: 3px;
-    background-color: white;
-  }
-  #addMeasurer{
-    z-index: 100;
-    position: absolute;
-    right: 31px;
-    top: 181px;
-    border-radius: 3px;
-    background-color: white;
-  }
-  #clearOverlay{
-    z-index: 100;
-    position: absolute;
-    right: 31px;
-    top: 218px;
-    border-radius: 3px;
-    background-color: white;
-  }
-  #createISOCurve{
-    z-index: 100;
-    position: absolute;
-    right: 31px;
-    top: 255px;
-    border-radius: 3px;
-    background-color: white;
-  }
-  #curvePlay{
-    z-index: 100;
-    position: absolute;
-    right: 31px;
-    top: 292px;
-    border-radius: 3px;
-    background-color: white;
-  }
-  #waitingPlay{
-    z-index: 101;
-    position: absolute;
-    right: 31px;
-    top: 292px;
-    border-radius: 3px;
-    background-color: white;
-    display: none;
-  }
-  #playSpeed{
-    display: none;
-    z-index: 100;
-    position: absolute;
-    right: 65px;
-    height: 32px;
-    width: 64px;
-    top: 292px;
-    border-radius: 3px;
-    background-color: white;
-  }
-  #savePic{
-    z-index: 100;
-    position: absolute;
-    right: 31px;
-    top: 329px;
-    border-radius: 3px;
-    background-color: white;
-  }
-  /* .html2canvas-container { width: 1500px !important; height: 1500px !important; } */
-</style>
+<link rel="stylesheet" type="text/css" href="../static/ppi.css"/>
 {% endblock %}
 
 {% block app_content %}
 <div class="container">
- <select class = 'tS' id="timeSeries">
-
- </select>
-  <select  class = 'ch' id="channel">
-    <option>平行通道距离校正信号</option>
-    <option>垂直通道距离校正信号</option>
-    <option>消光系数</option>
-    <option>退偏比</option>
-    <option>平行通道原始信号</option>
-    <option>垂直通道原始信号</option>
-    <option>PM10</option>
-    <option>PM2.5</option>
-  </select>
-  <span>
-    &nbsp;&nbsp;&nbsp;&nbsp;从<input type="number" id="zMin" value="0" class="inputNum" max="30000" min="15">
-    至<input type="number" id="zMax" value="6000" class="inputNum" max="30000" min="15">&nbsp;&nbsp;&nbsp;&nbsp;
-  </span>
-  <span>
-    色标最小值<input type="number" id="colorMin" value="0" class="inputNum">
-    色标最大值<input type="number" id="colorMax" value="10000" class="inputNum">&nbsp;&nbsp;&nbsp;&nbsp;
-    透明度<input type="number" id="opacity" value="0.5" class="inputNum">
-    旋转<input type="number" id="rotation" value="0" class="inputNum">
-  </span>
-  
   <div id="viewDiv" class = "map">
+    <div id="setPara">
+      <select class = 'tS' id="timeSeries">
+      </select>
+      <select  class = 'ch' id="channel">
+        <option>平行通道距离校正信号</option>
+        <option>垂直通道距离校正信号</option>
+        <option>消光系数</option>
+        <option>退偏比</option>
+        <option>平行通道原始信号</option>
+        <option>垂直通道原始信号</option>
+        <option>PM10</option>
+        <option>PM2.5</option>
+      </select>
+      <span>
+        &nbsp;&nbsp;从<input type="number" id="zMin" value="0" class="inputNum" max="30000" min="15">
+        至<input type="number" id="zMax" value="6000" class="inputNum" max="30000" min="15">&nbsp;&nbsp;
+      </span>
+      <span>
+        色谱下限<input type="number" id="colorMin" value="0" class="inputNum">
+        色谱上限<input type="number" id="colorMax" value="10000" class="inputNum">&nbsp;&nbsp;
+        透明度<input type="number" id="opacity" value="0.5" class="inputNum">
+        旋转<input type="number" id="rotation" value="0" class="inputNum">
+      </span>
+   </div>
     <div id="colorbar">
         <canvas id="canvas" width="50" height="260"></canvas>
     </div>
@@ -179,7 +56,7 @@
     <input id="curvePlay" type="image" title="播放" src="../static/play.svg"/>
     <input id="waitingPlay" type="image" src="../static/35.gif"/>
     <input id="playSpeed" type="range" min="0" max="19" value="10">
-    <input id="savePic" type="image" title="保存图片" src="../static/savePic.png" />
+    <input id="saveMap" type="image" title="保存截图" src="../static/savePic.png" />
   </div>
 </div>
 {% endblock %}
@@ -191,6 +68,8 @@
 </script>
 <script src="https://webapi.amap.com/maps?v=1.4.15&key=deccd88e5fc1ec27d19c67f6790c1c88&plugin=AMap.Geocoder,AMap.MouseTool"></script>
 <script src="//webapi.amap.com/ui/1.0/main.js?v=1.0.11"></script>
+<script src="../static/plotly-latest.min.js"></script>
 <script src="../static/html2canvas.min.js"></script>
+<script src="../static/colorbar.js"></script>
 <script defer src="../static/ppi.js"></script>
 {% endblock %}

@@ -1,7 +1,145 @@
 var map;
 var object3Dlayer;
+var rdata = {};
+var rangeMax = 3000;
+var rangeMin = 0;
+var vMax = 10000;
+var vMin = 0;
+var colorOpacity = 0.5;
+var rangeScale = 1;
+var scal = 1;
+var resolution = 15;
+var locations = [];
+var locCenter;
+var drawData = [];
+var timeat=[];
+var height = [];
+var lines, points3D;
+var drawName = '平行通道距离校正信号';
+var poistionLabel;
+var layoutA = {
+      xaxis: {
+        title: '时间',
+        showline: true,
+        tickmode:'auto',
+        range:[],
+        showspikes: true,
+        spikemode: 'across'
+      },
+      yaxis: {
+        title: '距离(km)',
+        showline: true,
+        range:[0,3]
+      },
+      paper_bgcolor: 'transparent',
+      plot_bgcolor: 'transparent',
+      margin:{
+        t: 30,
+        l: 60,
+        b: 57
+      }    
+    };
+var layoutLineA = {
+    xaxis: {
+      title: '强度',
+      showline: true,
+      tickmode:'auto',
+      showexponent:"last",
+      exponentformat:"power",
+    },
+    yaxis: {
+      showline: true,
+      range:[0,3],
+      ticks:'outside',
+    },
+    annotations: [{
+      showarrow: false,
+      text: "",
+      font: {
+        color: 'black'
+      },
+      xref: 'paper',
+      yref: 'paper',
+      x: 0.5,
+      y: 0.5 
+    }],
+    paper_bgcolor: 'transparent',
+    plot_bgcolor: 'transparent',
+    margin:{
+      t: 30,
+      l: 20,
+      r: 40,
+      b: 57
+    }
+};
+var layoutConfig = {
+  displayModeBar: false,
+  responsive: true
+};
+var PRA_data ={},traceA={},tracePbl={};
+var lineIndex = 0;
+var plotA = document.getElementById('PRADiv');
+var geocoder;
+var disProvince;
+var colors = {};
+var rc = 15000;
+var sa = 40;
+var snrT = 2;
+var pblT = 0.5;
+
+function setMapCenter(){
+  map.setCenter(locations[0]);
+}
+
+function ShowRecalc(){
+  $('#calcModal').modal('show');
+}
+
+function ReCalculation(){
+  $('#calcModal').modal('hide');
+  rc = $('#rc').val();
+  sa = $('#sa').val();
+  snrT = $('#snrT').val();
+  pblT = $('#pblT').val();
+  $.ajax({
+    type: "post",
+    data: { 'task id': task_id, 
+            'content': 'view', 
+            'calc param': `{"rc": ${rc}, "sa": ${sa}, "snrT": ${snrT}, "pblT": ${pblT} }` },
+    url: urlGetMovData,
+    beforeSend:function(){
+      $('#myLoading').modal('show');
+    },
+    success:function(data){
+      $('#myLoading').modal('hide');
+      prepareData(data);
+      SelectChannel();
+    }
+  });
+}
+
+function saveMap(){
+  html2canvas(document.getElementById('viewDiv')).then(function(canvas) {
+    var myImage = canvas.toBlob(function(blob){
+      var link = document.createElement("a");
+      if (link.download !== undefined) { // feature detection
+        // Browsers that support HTML5 download attribute
+        var url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", "走航扫描_"+timeat[0]+"-"+timeat[timeat.length-1]+".png");
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    });
+  });
+}
 
 window.onload=function(){
+  drawColorbar(11);
+  drawTicks();
+  drawTickText();
 map = new AMap.Map('viewDiv', {
     viewMode:'3D',  
     expandZoomRange:true,
@@ -58,13 +196,27 @@ AMapUI.loadUI(['control/BasicControl'], function(BasicControl) {
   //图层切换控件
   map.addControl(layerCtrl);
   map.setLayers(layerCtrl.getEnabledLayers());
+  layerCtrl.on('layerPropChanged',function(e){
+    if(e.props.enable){
+      if(e.layer.id.includes('satellite')){
+        tickColor = '#FFF';
+        textColor = '#FFF';
+        drawTicks();
+        drawTickText();
+      }else if(e.layer.id.includes('tile')){
+        tickColor = '#000';
+        textColor = '#000';
+        drawTicks();
+        drawTickText();
+      }
+    }
+  });
 });
 
 AMap.plugin([
     'AMap.ControlBar',
     'AMap.Scale'
 ], function(){
-
     // 添加 3D 罗盘控制
     map.addControl(new AMap.ControlBar({
         position: {left:'-90px'} 
@@ -86,7 +238,6 @@ map.on('mousemove', function (ev) {
   }
 });
 
-
 map.on('click', function (ev) {
   var pixel = ev.pixel;
   var px = new AMap.Pixel(pixel.x, pixel.y);
@@ -97,6 +248,29 @@ map.on('click', function (ev) {
   }
 });
 
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip();
+});
+
+function addEvents(){
+  document.getElementById('channel').addEventListener("change", SelectChannel);
+  document.getElementById('colorMax').addEventListener("change", ChangeMaxValue);
+  document.getElementById('colorMin').addEventListener("change", ChangeMinValue);
+  document.getElementById('zMax').addEventListener("change", ChangeRangeMax);
+  document.getElementById('zMin').addEventListener("change", ChangeRangeMin);
+  document.getElementById('opacity').addEventListener("change", ChangeColorOpacity);
+  document.getElementById('scale').addEventListener("change", ChangeRangeScale);
+  document.getElementById('realTime').addEventListener("click", getRealTimeData);
+  document.getElementById('reCalc').addEventListener("click", ReCalculation);
+  document.getElementById('saveMap').addEventListener("click", saveMap);
+  document.getElementById('showRecalc').addEventListener("click", ShowRecalc);
+  document.getElementById('closeHeat').addEventListener("click", CloseHeatMap);
+  document.getElementById('showHeat').addEventListener("click", ShowHeatMap);
+  document.getElementById('savePicA').addEventListener("click",SaveHeatA);
+  document.getElementById('saveLineA').addEventListener("click",SaveLineA);
+  document.getElementById('setCenter').addEventListener("click",setMapCenter);
+}
+
 $.ajax({
   type: "post",
   data: { 'task id': task_id, 'content':'view'},
@@ -106,21 +280,7 @@ $.ajax({
   },
   success:function(data){
     $('#myLoading').modal('hide');
-    var channel = document.getElementById('channel');
-        channel.addEventListener("change", SelectChannel);
-        var colorMax = document.getElementById('colorMax');
-        colorMax.addEventListener("change", ChangeMaxValue);
-        var colorMin = document.getElementById('colorMin');
-        colorMin.addEventListener("change", ChangeMinValue);
-        var zMax = document.getElementById('zMax');
-        zMax.addEventListener("change", ChangeRangeMax);
-        var zMin = document.getElementById('zMin');
-        zMin.addEventListener("change", ChangeRangeMin);
-        var opacity = document.getElementById('opacity');
-        opacity.addEventListener("change", ChangeColorOpacity);
-        var scale = document.getElementById('scale');
-        scale.addEventListener("change", ChangeRangeScale);
-
+        addEvents();
         prepareData(data);
         drawData = rdata.prr_A;
         createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity);
@@ -202,7 +362,7 @@ function createRectangle(pt1, pt2, resl, zMin, zMax, zScale, idata, rdata, vmin,
       z2.push(v2z-i*resl);
     }
 
-    var rectangle = new AMap.Object3D.Mesh()
+    var rectangle = new AMap.Object3D.Mesh();
     rectangle.transparent = true;
     rectangle.backOrFront = 'both';
 
@@ -286,97 +446,23 @@ function createColorScale(n){
   return colorScale;
 }
 
-var rdata = {};
-var rangeMax = 3000;
-var rangeMin = 0;
-var vMax = 10000;
-var vMin = 0;
-var colorOpacity = 0.5;
-var rangeScale = 1;
-var scal = 1;
-var resolution = 15;
-var locations = [];
-var locCenter;
-var drawData = [];
-var timeat=[];
-var height = [];
-var lines, points3D;
-var drawName = '平行通道距离校正信号';
-var poistionLabel;
-var layoutA = {
-      xaxis: {
-        title: '时间',
-        showline: true,
-        tickmode:'auto',
-        range:[],
-        showspikes: true,
-        spikemode: 'across'
-      },
-      yaxis: {
-        title: '距离(km)',
-        showline: true,
-        range:[0,3]
-      },
-      paper_bgcolor: 'transparent',
-      plot_bgcolor: 'transparent',
-      margin:{
-        t: 30,
-        l: 60,
-        b: 57
-      }    
-    };
-var layoutLineA = {
-      xaxis: {
-        title: '强度',
-        showline: true,
-        tickmode:'auto',
-        showexponent:"last",
-        exponentformat:"power",
-      },
-      yaxis: {
-        showline: true,
-        range:[0,3],
-        ticks:'outside',
-      },
-      annotations: [{
-        showarrow: false,
-        text: "",
-        font: {
-          color: 'black'
-        },
-        xref: 'paper',
-        yref: 'paper',
-        x: 0.5,
-        y: 0.5 
-      }],
-      paper_bgcolor: 'transparent',
-      plot_bgcolor: 'transparent',
-      margin:{
-        t: 30,
-        l: 20,
-        r: 40,
-        b: 57
-      }
-  };
-var layoutConfig = {
-  displayModeBar: false,
-  responsive: true
-};
-var PRA_data ={},traceA={},tracePbl={};
-
 function CloseHeatMap(){
   $('#heatDiv').fadeOut();
   $('#show-heat').show();
+  $('#colorbar').show();
 }
 
 function ShowHeatMap(){
   $('#heatDiv').fadeIn();
   $('#show-heat').hide();
+  $('#colorbar').hide();
 }
 
 function getRealTimeData(){
   if(document.getElementById('realTime').checked){
-    $.post(urlGetMovData, { 'task id': task_id, 'content': 'view' },
+    $.post(urlGetMovData, { 'task id': task_id, 
+                            'content': 'view',
+                            'calc param': `{"rc": ${rc}, "sa": ${sa}, "snrT": ${snrT}, "pblT": ${pblT} }`},
     function(data,status){
       if(status == "success"){
         prepareData(data);
@@ -398,7 +484,6 @@ function getRealTimeData(){
     });
   }  
 }
-
 
 function prepareData(data){
   rdata.raw_A = [];
@@ -476,9 +561,6 @@ function createWallIndicator(){
   object3Dlayer.add(points3D);
 }
 
-var lineIndex = 0;
-var plotA = document.getElementById('PRADiv');
-var geocoder;
 function plotHover(data){
   var pn='';
   for(let i=0;i<data.points.length;i++){
@@ -558,47 +640,46 @@ function createBound(){
   });
 }
 
-var disProvince;
-    function initPro(code, dep) {
-        dep = typeof dep == 'undefined' ? 2 : dep;
-        adCode = code;
-        depth = dep;
 
-        disProvince && disProvince.setMap(null);
+function initPro(code, dep) {
+    dep = typeof dep == 'undefined' ? 2 : dep;
+    adCode = code;
+    depth = dep;
 
-        disProvince = new AMap.DistrictLayer.Province({
-            zIndex: 12,
-            adcode: [code],
-            depth: dep,
-            styles: {
-                'fill': function (properties) {
-                    // properties为可用于做样式映射的字段，包含
-                    // NAME_CHN:中文名称
-                    // adcode_pro
-                    // adcode_cit
-                    // adcode
-                    var adcode = properties.adcode;
-                    return getColorByAdcode(adcode);
-                },
-                'province-stroke': 'brown',
-                'city-stroke': 'white', // 中国地级市边界
-                'county-stroke': 'rgba(255,255,255,0.5)' // 中国区县边界
-            }
-        });
+    disProvince && disProvince.setMap(null);
 
-        disProvince.setMap(map);
+    disProvince = new AMap.DistrictLayer.Province({
+        zIndex: 12,
+        adcode: [code],
+        depth: dep,
+        styles: {
+            'fill': function (properties) {
+                // properties为可用于做样式映射的字段，包含
+                // NAME_CHN:中文名称
+                // adcode_pro
+                // adcode_cit
+                // adcode
+                var adcode = properties.adcode;
+                return getColorByAdcode(adcode);
+            },
+            'province-stroke': 'brown',
+            'city-stroke': 'white', // 中国地级市边界
+            'county-stroke': 'rgba(255,255,255,0.5)' // 中国区县边界
+        }
+    });
+
+    disProvince.setMap(map);
+}
+
+// 颜色辅助方法
+var getColorByAdcode = function (adcode) {
+    if (!colors[adcode]) {
+        var gb = Math.random() * 155 + 50;
+        colors[adcode] = 'rgba(' + gb + ',' + gb + ',160,0.3)';
     }
 
-    // 颜色辅助方法
-    var colors = {};
-    var getColorByAdcode = function (adcode) {
-        if (!colors[adcode]) {
-            var gb = Math.random() * 155 + 50;
-            colors[adcode] = 'rgba(' + gb + ',' + gb + ',160,0.3)';
-        }
-
-        return colors[adcode];
-    };
+    return colors[adcode];
+};
 
 function Gps84ToGcj02(lon,lat){
   if (outOfChina(lon, lat)) {
@@ -706,6 +787,7 @@ function SelectChannel(){
       zmax:vMax
     };
     Plotly.restyle('PRADiv',update);
+    drawTickText();
   }
 
   function ChangeMinValue(){
@@ -719,7 +801,7 @@ function SelectChannel(){
       zmin:vMin
     };
     Plotly.restyle('PRADiv',update); 
-
+    drawTickText();
   }
 
   function ChangeRangeMax(){
@@ -777,8 +859,7 @@ function SelectChannel(){
   }
 
   function SaveHeatA(){
-    Plotly.downloadImage('PRADiv', {format: 'png', width: 1000, height: 500, filename: drawName+'从'
-                      +timeat[0]+'至'+timeat[timeat.length-1]});
+    Plotly.downloadImage('PRADiv', {format: 'png', width: 1000, height: 500, filename: drawName+'从'+timeat[0]+'至'+timeat[timeat.length-1]});
   }
 
   function SaveLineA(){

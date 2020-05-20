@@ -1,0 +1,132 @@
+.inputNum {
+    width: 4em;
+    text-align: right;
+  }
+  #viewDiv {
+    height: 815px;
+  }
+  #setPara {
+    background-color: rgba(245,245,245,0.5);
+    z-index: 100;
+    position: absolute; 
+    top: 10px;
+    left: 10%;
+    width: 80%;
+    border-radius: 5px;
+    padding: 2px;
+    text-align: center;
+  }
+  #info {
+    background-color:rgba(245,245,245,0.5);
+    z-index: 100;
+    position: absolute; 
+    bottom: 0;
+    /* left: 50%;
+    transform: translate(-50%,0%) */
+    right: 0;
+  }
+  .close-btn {
+      position: absolute;
+      top: -6px;
+      right: -8px;
+      width: 15px;
+      height: 15px;
+      font-size: 12px;
+      background: #ccc;
+      border-radius: 50%;
+      color: #fff;
+      text-align: center;
+      line-height: 15px;
+      box-shadow: -1px 1px 1px rgba(10, 10, 10, .2);
+      cursor:pointer;
+  }
+  #colorbar{
+    z-index: 100;
+    position: absolute; 
+    bottom: 60px;
+    right: 10px;
+  }
+  #setCenter{
+    z-index: 100;
+    position: absolute;
+    right: 31px;
+    top: 70px;
+    border-radius: 3px;
+    background-color: white;
+  }
+  #addMarker{
+    z-index: 100;
+    position: absolute;
+    right: 31px;
+    top: 107px;
+    border-radius: 3px;
+    background-color: white;
+  }
+  #addRuler{
+    z-index: 100;
+    position: absolute;
+    right: 31px;
+    top: 144px;
+    border-radius: 3px;
+    background-color: white;
+  }
+  #addMeasurer{
+    z-index: 100;
+    position: absolute;
+    right: 31px;
+    top: 181px;
+    border-radius: 3px;
+    background-color: white;
+  }
+  #clearOverlay{
+    z-index: 100;
+    position: absolute;
+    right: 31px;
+    top: 218px;
+    border-radius: 3px;
+    background-color: white;
+  }
+  #createISOCurve{
+    z-index: 100;
+    position: absolute;
+    right: 31px;
+    top: 255px;
+    border-radius: 3px;
+    background-color: white;
+  }
+  #curvePlay{
+    z-index: 100;
+    position: absolute;
+    right: 31px;
+    top: 292px;
+    border-radius: 3px;
+    background-color: white;
+  }
+  #waitingPlay{
+    z-index: 101;
+    position: absolute;
+    right: 31px;
+    top: 292px;
+    border-radius: 3px;
+    background-color: white;
+    display: none;
+  }
+  #playSpeed{
+    display: none;
+    z-index: 100;
+    position: absolute;
+    right: 65px;
+    height: 32px;
+    width: 64px;
+    top: 292px;
+    border-radius: 3px;
+    background-color: white;
+  }
+  #saveMap{
+    z-index: 100;
+    position: absolute;
+    right: 31px;
+    top: 329px;
+    border-radius: 3px;
+    background-color: white;
+  }

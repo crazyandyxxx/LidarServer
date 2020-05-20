@@ -228,6 +228,25 @@ $(function () {
   $('[data-toggle="tooltip"]').tooltip();
 });
 
+function addEvents(){
+  document.getElementById('channelA').addEventListener("change", SelectChannelA);
+  document.getElementById('zMinA').addEventListener("change", ChangeChannelARangeMin);
+  document.getElementById('zMaxA').addEventListener("change", ChangeChannelARangeMax);
+  document.getElementById('colorMinA').addEventListener("change", ChangeChannelAMin);
+  document.getElementById('colorMaxA').addEventListener("change", ChangeChannelAMax);
+  document.getElementById('channelB').addEventListener("change", SelectChannelB);
+  document.getElementById('zMinB').addEventListener("change", ChangeChannelBRangeMin);
+  document.getElementById('zMaxB').addEventListener("change", ChangeChannelBRangeMax);
+  document.getElementById('colorMinB').addEventListener("change", ChangeChannelBMin);
+  document.getElementById('colorMaxB').addEventListener("change", ChangeChannelBMax);
+  document.getElementById('realTime').addEventListener("click", getRealTimeData);
+  document.getElementById('reCalc').addEventListener("click", ReCalculation);
+  document.getElementById('savePicA').addEventListener("click", SaveHeatA);
+  document.getElementById('saveLineA').addEventListener("click", SaveLineA);
+  document.getElementById('savePicB').addEventListener("click",SaveHeatB);
+  document.getElementById('saveLineB').addEventListener("click",SaveLineB);
+}
+
 $.ajax({
   type: "post",
   data: { 'task id': task_id, 
@@ -239,6 +258,7 @@ $.ajax({
   },
   success:function(data){
     $('#myLoading').modal('hide');
+    addEvents();
     prepareData(data);
     startTime = data.result[0].timestamp;
     endTime = data.result[data.result.length-1].timestamp;

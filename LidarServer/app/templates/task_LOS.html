@@ -3,45 +3,14 @@
 {% block styles  %}
   {{ super() }}
   <link rel="stylesheet" type="text/css" href="../static/daterangepicker.css"/>
-  <style type="text/css">
-    .PRDiv{
-      position: relative;
-      float: left;
-      width:70%;
-    }
-    .lineDiv{
-      position: relative;
-      float: left;
-      width:25%;
-    }
-    .savePic{
-      z-index: 100;
-      position: absolute;
-      right: -2%;
-      top: 5px;
-      border: none;
-      background-color: transparent;
-    } 
-    .saveLine{
-      z-index: 100;
-      position: absolute;
-      right: 10%;
-      top: 5px;
-      border: none;
-      background-color: transparent;
-    }
-    .calc{
-      border: none;
-      background-color: transparent;
-    }
-  </style>
+  <link rel="stylesheet" type="text/css" href="../static/los.css"/>
 {% endblock %}
 
 {% block app_content %}
 <div class="container">
 <form class="form-inline">
   <div class="form-group">
-    <select  class="form-control" id="channelA" onchange="SelectChannelA()">
+    <select  class="form-control" id="channelA">
       <option>平行通道距离校正信号</option>
       <option>垂直通道距离校正信号</option>
       <option>消光系数</option>
@@ -57,27 +26,27 @@
   <p class="form-control-static">&nbsp;&nbsp;&nbsp;&nbsp;</p>
   <div class="form-group">
     <p class="form-control-static">从</p>
-    <input type="number" id="zMinA" value="0" class="form-control" style="width: 8em; text-align: right;" max="30000" min="0" step="15" onchange="ChangeChannelARangeMin()">
+    <input type="number" id="zMinA" value="0" class="form-control" style="width: 8em; text-align: right;" max="30000" min="0" step="15">
     <p class="form-control-static">至</p>
-    <input type="number" id="zMaxA" value="3000" class="form-control" style="width: 8em; text-align: right;" max="30000" min="15" step="15" onchange="ChangeChannelARangeMax()">
+    <input type="number" id="zMaxA" value="3000" class="form-control" style="width: 8em; text-align: right;" max="30000" min="15" step="15">
   </div>
   <p class="form-control-static">&nbsp;&nbsp;&nbsp;&nbsp;</p>
   <div class="form-group">
-    <p class="form-control-static">色标下限</p>
-    <input type="number" id="colorMinA" value="0" class="form-control" style="width: 8em; text-align: right;" onchange="ChangeChannelAMin()">
-    <p class="form-control-static">色标上限</p>
-    <input type="number" id="colorMaxA" value="10000" class="form-control" style="width: 8em; text-align: right;" onchange="ChangeChannelAMax()">
+    <p class="form-control-static">色谱下限</p>
+    <input type="number" id="colorMinA" value="0" class="form-control" style="width: 8em; text-align: right;">
+    <p class="form-control-static">色谱上限</p>
+    <input type="number" id="colorMaxA" value="10000" class="form-control" style="width: 8em; text-align: right;">
   </div>
   <p class="form-control-static">&nbsp;&nbsp;&nbsp;&nbsp;</p>
   <div class="checkbox">
     <label>
-      <input type="checkbox" id="realTime" onclick="getRealTimeData()">
+      <input type="checkbox" id="realTime">
       实时刷新
     </label>
   </div>
   <p class="form-control-static">&nbsp;&nbsp;</p>
   <div class="form-group" data-toggle="tooltip" data-placement="right" title="重新解算">
-    <button type="button" class="btn btn-default calc" data-toggle="modal"  data-target="#calcModal" data-placement="right" title="重新解算" >
+    <button type="button" class="btn btn-default calc" data-toggle="modal"  data-target="#calcModal" >
       <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
     </button>
   </div>
@@ -86,12 +55,12 @@
 <div class="row">
   <div class="col-xs-12">
     <div class="PRDiv" id="PRADiv">
-      <button type="button" class="btn btn-default btn-lg savePic" data-toggle="tooltip" data-placement="left" title="保存图片" onclick="SaveHeatA()">
+      <button type="button" id="savePicA" class="btn btn-default btn-lg savePic" data-toggle="tooltip" data-placement="left" title="保存图片">
         <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
       </button>
     </div>
     <div class="lineDiv" id='lineADiv'>  
-      <button type="button" class="btn btn-default btn-lg saveLine" data-toggle="tooltip" data-placement="left" title="保存廓线" onclick="SaveLineA()">
+      <button type="button" id="saveLineA" class="btn btn-default btn-lg saveLine" data-toggle="tooltip" data-placement="left" title="保存廓线">
         <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
       </button>
     </div>   
@@ -100,7 +69,7 @@
 
 <form class="form-inline">
   <div class="form-group">
-    <select  class="form-control" id="channelB" onchange="SelectChannelB()">
+    <select  class="form-control" id="channelB">
       <option>平行通道距离校正信号</option>
       <option selected>垂直通道距离校正信号</option>
       <option>消光系数</option>
@@ -116,28 +85,28 @@
   <p class="form-control-static">&nbsp;&nbsp;&nbsp;&nbsp;</p>
   <div class="form-group">
     <p class="form-control-static">从</p>
-    <input type="number" id="zMinB" value="0" class="form-control" style="width: 8em; text-align: right;" max="30000" min="0" step="15" onchange="ChangeChannelBRangeMin()">
+    <input type="number" id="zMinB" value="0" class="form-control" style="width: 8em; text-align: right;" max="30000" min="0" step="15">
     <p class="form-control-static">至</p>
-    <input type="number" id="zMaxB" value="3000" class="form-control" style="width: 8em; text-align: right;" max="30000" min="15" step="15" onchange="ChangeChannelBRangeMax()">
+    <input type="number" id="zMaxB" value="3000" class="form-control" style="width: 8em; text-align: right;" max="30000" min="15" step="15">
   </div>
   <p class="form-control-static">&nbsp;&nbsp;&nbsp;&nbsp;</p>
   <div class="form-group">
-    <p class="form-control-static">色标下限</p>
-    <input type="number" id="colorMinB" value="0" class="form-control" style="width: 8em; text-align: right;" onchange="ChangeChannelBMin()">
-    <p class="form-control-static">色标上限</p>
-    <input type="number" id="colorMaxB" value="10000" class="form-control" style="width: 8em; text-align: right;" onchange="ChangeChannelBMax()">
+    <p class="form-control-static">色谱下限</p>
+    <input type="number" id="colorMinB" value="0" class="form-control" style="width: 8em; text-align: right;">
+    <p class="form-control-static">色谱上限</p>
+    <input type="number" id="colorMaxB" value="10000" class="form-control" style="width: 8em; text-align: right;">
   </div>
 </form>
 
 <div class="row">
   <div class="col-xs-12">
     <div class = 'PRDiv' id="PRBDiv">
-      <button type="button" class="btn btn-default btn-lg savePic" data-toggle="tooltip" data-placement="left" title="保存图片" onclick="SaveHeatB()">
+      <button type="button" id="savePicB" class="btn btn-default btn-lg savePic" data-toggle="tooltip" data-placement="left" title="保存图片">
         <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
       </button>
     </div>
     <div class = 'lineDiv' id='lineBDiv'>
-      <button type="button" class="btn btn-default btn-lg saveLine" data-toggle="tooltip" data-placement="left" title="保存廓线" onclick="SaveLineB()">
+      <button type="button" id="saveLineB" class="btn btn-default btn-lg saveLine" data-toggle="tooltip" data-placement="left" title="保存廓线">
         <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
       </button>
     </div>
@@ -150,7 +119,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="exampleModalLabel">解算参数</h4>
+        <h4 class="modal-title" id="exampleModalLabel">设置参数</h4>
       </div>
       <div class="modal-body">
         <div class="row text-left">
@@ -182,7 +151,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-        <button type="button" class="btn btn-primary" onclick="ReCalculation()">确定</button>
+        <button type="button" id="reCalc" class="btn btn-primary">确定</button>
       </div>
     </div>
   </div>

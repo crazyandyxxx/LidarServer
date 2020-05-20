@@ -266,11 +266,22 @@ def get_mov_data():
         frequency = task.laser_freq
         rangeMaxI = math.ceil(10000/resolution)+1
         task_dat = []
+        snrT = 2
+        pblT = 0.5
+        rc = 15000
+        sa = 40
 
         if(content=='total count'):
             return jsonify(result=[task.data_num])
         if(content=='view'):
+            calc_param = request.values.get('calc param', 0)
             task_dat = TaskData.query.filter_by(task_id=task_id).all()
+            if(calc_param):
+                calcParam = json.loads(calc_param)
+                snrT = calcParam['snrT']
+                pblT = calcParam['pblT']
+                rc = calcParam['rc']
+                sa = calcParam['sa']
             # task_dat = TaskData.query.filter_by(task_id=task_id).slice(task.data_num-200 if task.data_num>200 else 0,task.data_num).all()
         if(content=='export'):
             data_start = int(request.values.get('data start', 0))
@@ -288,7 +299,7 @@ def get_mov_data():
             dt = dt.newbyteorder('<')
             chARaw = np.frombuffer(task_dat[i].raw_A, dtype=dt)
             chBRaw = np.frombuffer(task_dat[i].raw_B, dtype=dt)
-            chA,chB,chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chARaw, chBRaw, overlapA, overlapB, frequency, duration, resolution, snrT=2, rc=15000)
+            chA,chB,chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chARaw, chBRaw, overlapA, overlapB, frequency, duration, resolution, snrT=snrT, rc=rc, sa=sa, pblT=pblT)
             data['raw_A'] = chA[:rangeMaxI]
             data['raw_B'] = chB[:rangeMaxI]
             data['prr_A'] = chAPR2[:rangeMaxI]
