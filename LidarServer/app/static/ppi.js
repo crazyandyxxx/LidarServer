@@ -98,6 +98,7 @@ var sa = 40;
 var snrT = 2;
 var pblT = 0.5;
 var zoomLevel = 13;
+var positionLabel;
 
 function setMapCenter(){
   map.setZoomAndCenter(zoomLevel,position);
@@ -136,7 +137,9 @@ window.onload = function(){
       pitch:0,
       center:[116.396132,39.900444]
   });
-  
+  positionLabel = new AMap.Text({
+    map:map
+  });
   $(function () {
     $('[data-toggle="tooltip"]').tooltip();
   });
@@ -296,6 +299,7 @@ function plotHover(data){
   }
   lineIndex = pn[1];
   let rM = rangeMax / map.getResolution(position, 20);
+  let z = rM*Math.sin(verAng/180*Math.PI);
   let x = rM*Math.cos(verAng/180*Math.PI)*Math.sin((horAngStart+lineIndex*horAngStep)/180*Math.PI);
   let y = -rM*Math.cos(verAng/180*Math.PI)*Math.cos((horAngStart+lineIndex*horAngStep)/180*Math.PI);
 
@@ -317,12 +321,21 @@ function plotHover(data){
 
   layoutLineA.annotations[0].text = timeat[lineIndex];
   Plotly.react('lineADiv',[traceA],layoutLineA);
+
+  let p0 = map.lngLatToGeodeticCoord(position);
+  let pixel =  new AMap.Pixel(p0.x+x,p0.y+y);
+  let ll = map.geodeticCoordToLngLat(pixel);
+  positionLabel.setText((horAngStart+lineIndex*horAngStep).toString());
+  positionLabel.setHeight(z);
+  positionLabel.setPosition(ll);
+  positionLabel.show();
 }
 
 function plotUnHover(data){
   object3Dlayer.remove(lines);
   object3Dlayer.remove(points3D);
   hoverAdd = false;
+  positionLabel.hide();
 }
 
 function createPieIndicator(){

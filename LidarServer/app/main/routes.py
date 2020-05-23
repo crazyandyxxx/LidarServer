@@ -447,13 +447,30 @@ def get_rhi_data():
     if request.method == 'POST':
         task_id = request.values.get('task id', 0)
         content = request.values.get('content', 0)
+        snrT = 2
+        pblT = 0.5
+        rc = 15000
+        sa = 40
+        calc_param = request.values.get('calc param', 0)
+        if(calc_param):
+            calcParam = json.loads(calc_param)
+            snrT = calcParam['snrT']
+            pblT = calcParam['pblT']
+            rc = calcParam['rc']
+            sa = calcParam['sa']
         if(content=='list'):
             task = Task.query.filter_by(id = task_id).first()
             verStartAng = task.ver_start_angle
+            verStep = task.ver_step
             task_dat = TaskData.query.filter_by(task_id=task_id,ver_angle=verStartAng).order_by(TaskData.timestamp.desc()).all()
-            for i in range(len(task_dat)):
+            task_dat2 = TaskData.query.filter_by(task_id=task_id,ver_angle=verStartAng+verStep).all()
+            lt = len(task_dat)
+            lt2 = len(task_dat2)
+            for i in range(lt2):
                 data = {}
                 ts = task_dat[i].timestamp
+                if(lt2<lt):
+                    ts = task_dat[i+1].timestamp
                 data['timestamp']="{}".format(ts.strftime('%Y-%m-%d %H:%M:%S'))
                 results.append(data)
         if(content=='timedata'):
@@ -464,10 +481,9 @@ def get_rhi_data():
             ln = int((verEndAng-verStartAng)/verAngStep)+1
             timeat = request.values.get('time',0)
             resolution = task.resolution
+            dataLength = task.bin_length
             duration = task.duration
             frequency = task.laser_freq
-            dataLength = task.bin_length
-            ri = np.arange(dataLength)+1
             task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=timeat,TaskData.ver_angle<=verEndAng).order_by(TaskData.timestamp).limit(ln).all()
             ov = np.loadtxt(r'./overlap/19000101000000_15.ov')
             overlapA = ov[:,0]
@@ -485,7 +501,7 @@ def get_rhi_data():
                 dt = dt.newbyteorder('<')
                 chARaw = np.frombuffer(task_dat[i].raw_A, dtype=dt)
                 chBRaw = np.frombuffer(task_dat[i].raw_B, dtype=dt)
-                chA,chB,chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chARaw, chBRaw, overlapA, overlapB, frequency, duration, resolution, snrT=2, rc=15000)
+                chA,chB,chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chARaw, chBRaw, overlapA, overlapB, frequency, duration, resolution, snrT=snrT, rc=rc, sa=sa, pblT=pblT)
                 data['raw_A'] = chA
                 data['raw_B'] = chB
                 data['prr_A'] = chAPR2
@@ -494,6 +510,61 @@ def get_rhi_data():
                 data['ext'] = ext_a
                 data['dep'] = dePolar
                 data['resolution'] = resolution
+                results.append(data)
+        if(content=='all'):
+            channel = request.values.get('channel', 0)
+            rangeMax = request.values.get('range', 0)
+            task = Task.query.filter_by(id = task_id).first()
+            verStartAng = task.ver_start_angle
+            verEndAng = task.ver_end_angle
+            verAngStep = task.ver_step
+            ln = int((verEndAng-verStartAng)/verAngStep)+1
+            resolution = task.resolution
+            duration = task.duration
+            frequency = task.laser_freq
+            rangeMaxI = math.ceil(float(rangeMax)/resolution)+1
+            dataLength = task.bin_length
+            pie_list = TaskData.query.filter_by(task_id=task_id,ver_angle=verStartAng).order_by(TaskData.timestamp).all()
+            pie_list2 = TaskData.query.filter_by(task_id=task_id,ver_angle=verStartAng+verAngStep).all()
+            ov = np.loadtxt(r'./overlap/19000101000000_15.ov')
+            overlapA = ov[:,0]
+            overlapB = ov[:,1]
+            for i in range(len(pie_list2)):
+                data = {}
+                starttime = pie_list[i].timestamp
+                data['starttime'] = "{}".format(starttime.strftime('%Y-%m-%d %H:%M:%S'))
+                pie_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=starttime,TaskData.ver_angle<=verEndAng).order_by(TaskData.timestamp).limit(ln).all()
+                endtime = pie_dat[len(pie_dat)-1].timestamp
+                data['endtime'] = "{}".format(endtime.strftime('%Y-%m-%d %H:%M:%S'))
+                data['verStartAng'] = verStartAng
+                data['verEndAng'] = verEndAng
+                data['verAngStep'] = verAngStep
+                channeldata = []
+                for j in range(len(pie_dat)):
+                    dt = np.dtype(int)
+                    dt = dt.newbyteorder('<')
+                    chARaw = np.frombuffer(pie_dat[j].raw_A, dtype=dt)
+                    chBRaw = np.frombuffer(pie_dat[j].raw_B, dtype=dt)
+                    chA,chB,chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chARaw, chBRaw, overlapA, overlapB, frequency, duration, resolution, snrT=snrT, rc=rc, sa=sa, pblT=pblT)
+                    if channel=='raw_A':
+                        channeldata.append(chA[:rangeMaxI])
+                    elif channel=='raw_B':
+                        channeldata.append(chB[:rangeMaxI])
+                    elif channel=='prr_A':
+                        channeldata.append(chAPR2[:rangeMaxI])
+                    elif channel=='prr_B':
+                        channeldata.append(chBPR2[:rangeMaxI])
+                    elif channel=='dep':
+                        channeldata.append(dePolar[:rangeMaxI])
+                    elif channel=='ext':
+                        channeldata.append(ext_a[:rangeMaxI])
+                    elif channel=='pm10':
+                        pm10 = 243*np.power(np.where(ext_a>0,ext_a,0),1.13)
+                        channeldata.append(pm10[:rangeMaxI])
+                    elif channel=='pm25':
+                        pm25 = 0.5*243*np.power(np.where(ext_a>0,ext_a,0),1.13)
+                        channeldata.append(pm25[:rangeMaxI])
+                data['channeldata'] = channeldata
                 results.append(data)
         return jsonify(result=results)
 

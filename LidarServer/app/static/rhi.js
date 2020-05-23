@@ -1,7 +1,6 @@
 var vMax = 10000;
 var vMin = 0;
 var map;
-var geocoder;
 var object3Dlayer;
 var animData;
 var animI = 0;
@@ -12,7 +11,7 @@ var rangeMax = 6000;
 var colorOpacity = 0.5;
 var resolution = 15;
 var horAng = 0;
-var verrAngStart=0;
+var verAngStart=0;
 var verAngEnd = 360;
 var verAngStep = 5;
 var longitude = 0;
@@ -21,12 +20,12 @@ var altitude = 0;
 var drawData = [];
 var timeat=[];
 var height = [];
+var verAngles = [];
 var position = new AMap.LngLat(0, 0);
 var hoverAdd = false;
 var lines, points3D;
 var rotationAngle = 0;
-var pie;
-var mouseTool; 
+var pie; 
 var isPlaying = false;
 var channelID = 'prr_A';
 var drawName;
@@ -97,6 +96,7 @@ var sa = 40;
 var snrT = 2;
 var pblT = 0.5;
 var zoomLevel = 13;
+var positionLabel;
 
 function setMapCenter(){
   map.setZoomAndCenter(zoomLevel,position);
@@ -135,7 +135,9 @@ window.onload = function(){
       pitch:60,
       center:[116.396132,39.900444]
   });
-  
+  positionLabel = new AMap.Text({
+    map:map
+  });
   $(function () {
     $('[data-toggle="tooltip"]').tooltip();
   });
@@ -275,14 +277,11 @@ window.onload = function(){
           document.getElementById('angleRange').textContent = "扫描范围"+verAngStart+" - "+verAngEnd;
           document.getElementById('angleStep').textContent = "扫描步长"+verAngStep;
           document.getElementById('angleVer').textContent = "水平角度"+horAng;
-          document.getElementById('timeStamp').textContent = timeat[0]+"至"+timeat[timeat.length-1];
+          document.getElementById('timeStamp').textContent = timeat[0]+"至"+timeat[timeat.length-1]; 
         }
       });
   });
-  mouseTool = new AMap.MouseTool(map);
-  mouseTool.on('draw',function(e){
-    var overlay = e.obj;  
-  });
+
   document.getElementById('playSpeed').oninput = function(){playSpeed=this.value*100;};
 };
 
@@ -317,12 +316,21 @@ function plotHover(data){
 
   layoutLineA.annotations[0].text = timeat[lineIndex];
   Plotly.react('lineADiv',[traceA],layoutLineA);
+
+  let p0 = map.lngLatToGeodeticCoord(position);
+  let pixel =  new AMap.Pixel(p0.x+x,p0.y+y);
+  let ll = map.geodeticCoordToLngLat(pixel);
+  positionLabel.setText((verAngStart+lineIndex*verAngStep).toString());
+  positionLabel.setHeight(z);
+  positionLabel.setPosition(ll);
+  positionLabel.show();
 }
 
 function plotUnHover(data){
   object3Dlayer.remove(lines);
   object3Dlayer.remove(points3D);
   hoverAdd = false;
+  positionLabel.hide();
 }
 
 function createPieIndicator(){
@@ -432,6 +440,7 @@ function prepareData(data){
   rdata.pm10 = [];
   rdata.pm25 = [];
   timeat = [];
+  verAngles = [];
   resolution = data.result[0].resolution;
   height = [];
   res = resolution/1000;
@@ -462,6 +471,7 @@ function prepareData(data){
   position = Gps84ToGcj02(longitude,latitude);
   for(let i=0; i<data.result.length;i++){
     timeat.push(data.result[i].timestamp);
+    verAngles.push(verAngStart + i*verAngStep);
     rdata.prr_A.push(data.result[i].prr_A);
     rdata.prr_B.push(data.result[i].prr_B);
     rdata.raw_A.push(data.result[i].raw_A);
@@ -650,6 +660,7 @@ function SelectChannel(){
 
   PRA_data.x = timeat;
   PRA_data.z = drawData;
+  PRA_data.text = verAngles;
   traceA.x = drawData[lineIndex].slice(layoutLineA.yaxis.range[0]/resolution*1000,layoutLineA.yaxis.range[1]/resolution*1000);
   
   Plotly.react('PRADiv',[PRA_data],layoutA);
