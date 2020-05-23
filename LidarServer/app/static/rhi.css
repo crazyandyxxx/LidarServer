@@ -120,51 +120,11 @@
     border-radius: 3px;
     background-color: white;
   }
-  #addMarker{
-    z-index: 100;
-    position: absolute;
-    right: 31px;
-    top: 107px;
-    border-radius: 3px;
-    background-color: white;
-  }
-  #addRuler{
-    z-index: 100;
-    position: absolute;
-    right: 31px;
-    top: 144px;
-    border-radius: 3px;
-    background-color: white;
-  }
-  #addMeasurer{
-    z-index: 100;
-    position: absolute;
-    right: 31px;
-    top: 181px;
-    border-radius: 3px;
-    background-color: white;
-  }
-  #clearOverlay{
-    z-index: 100;
-    position: absolute;
-    right: 31px;
-    top: 218px;
-    border-radius: 3px;
-    background-color: white;
-  }
-  #createISOCurve{
-    z-index: 100;
-    position: absolute;
-    right: 31px;
-    top: 255px;
-    border-radius: 3px;
-    background-color: white;
-  }
   #curvePlay{
     z-index: 100;
     position: absolute;
     right: 31px;
-    top: 292px;
+    top: 107px;
     border-radius: 3px;
     background-color: white;
   }
@@ -175,7 +135,7 @@
     right: 65px;
     height: 32px;
     width: 64px;
-    top: 292px;
+    top: 107px;
     border-radius: 3px;
     background-color: white;
   }
@@ -183,7 +143,7 @@
     z-index: 100;
     position: absolute;
     right: 31px;
-    top: 329px;
+    top: 144px;
     border-radius: 3px;
     background-color: white;
   }

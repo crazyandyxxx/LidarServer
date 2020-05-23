@@ -86,9 +86,10 @@ var rc = 15000;
 var sa = 40;
 var snrT = 2;
 var pblT = 0.5;
+var polyline;
 
 function setMapCenter(){
-  map.setCenter(locations[0]);
+  map.setFitView([ polyline ]);
 }
 
 function ShowRecalc(){
@@ -122,11 +123,11 @@ function saveMap(){
   html2canvas(document.getElementById('viewDiv')).then(function(canvas) {
     var myImage = canvas.toBlob(function(blob){
       var link = document.createElement("a");
-      if (link.download !== undefined) { // feature detection
+      if (link.download !== undefined) {
         // Browsers that support HTML5 download attribute
         var url = URL.createObjectURL(blob);
         link.setAttribute("href", url);
-        link.setAttribute("download", "走航扫描_"+timeat[0]+"-"+timeat[timeat.length-1]+".png");
+        link.setAttribute("download", "走航扫描截图_"+timeat[0]+"-"+timeat[timeat.length-1]+".png");
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
@@ -136,18 +137,37 @@ function saveMap(){
   });
 }
 
+function addEvents(){
+  document.getElementById('channel').addEventListener("change", SelectChannel);
+  document.getElementById('colorMax').addEventListener("change", ChangeMaxValue);
+  document.getElementById('colorMin').addEventListener("change", ChangeMinValue);
+  document.getElementById('zMax').addEventListener("change", ChangeRangeMax);
+  document.getElementById('zMin').addEventListener("change", ChangeRangeMin);
+  document.getElementById('opacity').addEventListener("change", ChangeColorOpacity);
+  document.getElementById('scale').addEventListener("change", ChangeRangeScale);
+  document.getElementById('realTime').addEventListener("click", getRealTimeData);
+  document.getElementById('reCalc').addEventListener("click", ReCalculation);
+  document.getElementById('saveMap').addEventListener("click", saveMap);
+  document.getElementById('showRecalc').addEventListener("click", ShowRecalc);
+  document.getElementById('closeHeat').addEventListener("click", CloseHeatMap);
+  document.getElementById('showHeat').addEventListener("click", ShowHeatMap);
+  document.getElementById('savePicA').addEventListener("click",SaveHeatA);
+  document.getElementById('saveLineA').addEventListener("click",SaveLineA);
+  document.getElementById('setCenter').addEventListener("click",setMapCenter);
+}
+
 window.onload=function(){
   drawColorbar(11);
   drawTicks();
   drawTickText();
-map = new AMap.Map('viewDiv', {
-    viewMode:'3D',  
-    expandZoomRange:true,
-    zooms:[3,20],
-    zoom:14,
-    pitch:60,
-    center:[116.396132,39.900444]
-});
+  map = new AMap.Map('viewDiv', {
+      viewMode:'3D',  
+      expandZoomRange:true,
+      zooms:[3,20],
+      zoom:14,
+      pitch:60,
+      center:[116.396132,39.900444]
+  });
 
 object3Dlayer = new AMap.Object3DLayer();
 map.add(object3Dlayer);
@@ -252,24 +272,17 @@ $(function () {
   $('[data-toggle="tooltip"]').tooltip();
 });
 
-function addEvents(){
-  document.getElementById('channel').addEventListener("change", SelectChannel);
-  document.getElementById('colorMax').addEventListener("change", ChangeMaxValue);
-  document.getElementById('colorMin').addEventListener("change", ChangeMinValue);
-  document.getElementById('zMax').addEventListener("change", ChangeRangeMax);
-  document.getElementById('zMin').addEventListener("change", ChangeRangeMin);
-  document.getElementById('opacity').addEventListener("change", ChangeColorOpacity);
-  document.getElementById('scale').addEventListener("change", ChangeRangeScale);
-  document.getElementById('realTime').addEventListener("click", getRealTimeData);
-  document.getElementById('reCalc').addEventListener("click", ReCalculation);
-  document.getElementById('saveMap').addEventListener("click", saveMap);
-  document.getElementById('showRecalc').addEventListener("click", ShowRecalc);
-  document.getElementById('closeHeat').addEventListener("click", CloseHeatMap);
-  document.getElementById('showHeat').addEventListener("click", ShowHeatMap);
-  document.getElementById('savePicA').addEventListener("click",SaveHeatA);
-  document.getElementById('saveLineA').addEventListener("click",SaveLineA);
-  document.getElementById('setCenter').addEventListener("click",setMapCenter);
-}
+polyline = new AMap.Polyline({
+  strokeColor: "#3366FF", 
+  strokeOpacity: 1,
+  strokeWeight: 8,
+  // 折线样式还支持 'dashed'
+  strokeStyle: "solid",
+  lineJoin: 'round',
+  lineCap: 'round',
+  zIndex: 50,
+});
+polyline.setMap(map);
 
 $.ajax({
   type: "post",
@@ -285,16 +298,16 @@ $.ajax({
         drawData = rdata.prr_A;
         createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity);
         createBound();
-        map.setCenter(locations[0]);
-        map.setFitView();
         createWallIndicator();
-
+        polyline.setPath(locations);
+        map.setFitView([ polyline ]);
+       
         PRA_data = {
           z: drawData,
           x: timeat,
           y: height,
-          zmin: 0,
-          zmax: 10000,
+          zmin: vMin,
+          zmax: vMax,
           type: 'heatmap',
           transpose: true,
           colorscale:createColorScale(11),
@@ -399,63 +412,6 @@ function createWall(pts,rdata,resl,zMin,zMax,zScale,vmin,vmax,opacity) {
         var rect = createRectangle(pts[i],pts[i+1],resl,zMin,zMax,zScale,i,rdata,vmin,vmax,opacity);
         object3Dlayer.add(rect);
     }         
-}
-
-function getColor(v, vmin, vmax, alpha){
-    var c = {};
-    if (v < vmin){
-      v = vmin;
-    }          
-    if (v > vmax){
-      v = vmax;
-    }
-    var dv = vmax - vmin;
-    c.a = alpha-0.1+0.2*(v - vmin) / dv;
-
-    if (v < (vmin + 0.25 * dv)) {
-        var g = 4 * (v - vmin) / dv;
-        c.r = 0;
-        c.g = g;
-        c.b = 1;
-    } else if (v < (vmin + 0.5 * dv)) {
-        var b = 1 + 4 * (vmin + 0.25 * dv - v) / dv;
-        c.r = 0;
-        c.g = 1;
-        c.b = b;
-    } else if (v < (vmin + 0.75 * dv)) {
-        var r = 4 * (v - vmin - 0.5 * dv) / dv;
-        c.r = r;
-        c.g = 1;
-        c.b = 0;
-    } else {
-        var g = 1 + 4 * (vmin + 0.75 * dv - v) / dv;
-        c.r = 1;
-        c.g = g;
-        c.b = 0;
-    }
-    return c;
-}
-
-function createColorScale(n){
-  var colorScale = [];
-  for(let i=0;i<n;i++){
-    var c = getColor(i/(n-1),0,1,1);
-    var rgbStr = 'rgb('+Math.floor(c.r*255)+','+Math.floor(c.g*255)+','+Math.floor(c.b*255)+')';
-    colorScale.push([i/(n-1),rgbStr]);
-  }
-  return colorScale;
-}
-
-function CloseHeatMap(){
-  $('#heatDiv').fadeOut();
-  $('#show-heat').show();
-  $('#colorbar').show();
-}
-
-function ShowHeatMap(){
-  $('#heatDiv').fadeIn();
-  $('#show-heat').hide();
-  $('#colorbar').hide();
 }
 
 function getRealTimeData(){
@@ -608,7 +564,7 @@ function setPositionLabel(){
           poistionLabel.setLabel({
               offset: new AMap.Pixel(10, 0),  //设置文本标注偏移量
               content: "<div><div>当前位置"+locations[lineIndex].lng + ',' + locations[lineIndex].lat+"</div>"+                          
-                       "<div class='info'>"+address+"</div>"+"<div>距起点"+distance+"km</div>"+
+                       "<div>"+address+"</div>"+"<div>距起点"+distance+"km</div>"+
                        "<div class='close-btn' onclick='hideMarker()'>X</div></div>", //设置文本标注内容
               direction: 'right' //设置文本标注方位
           });
@@ -640,7 +596,6 @@ function createBound(){
   });
 }
 
-
 function initPro(code, dep) {
     dep = typeof dep == 'undefined' ? 2 : dep;
     adCode = code;
@@ -670,7 +625,6 @@ function initPro(code, dep) {
 
     disProvince.setMap(map);
 }
-
 // 颜色辅助方法
 var getColorByAdcode = function (adcode) {
     if (!colors[adcode]) {
@@ -680,49 +634,6 @@ var getColorByAdcode = function (adcode) {
 
     return colors[adcode];
 };
-
-function Gps84ToGcj02(lon,lat){
-  if (outOfChina(lon, lat)) {
-        return new AMap.LngLat(lon, lat);
-  }
-  let a = 6378245.0;
-  let ee = 0.00669342162296594323;
-  let dLat = TransformLat(lon - 105.0, lat - 35.0);
-  let dLon = TransformLon(lon - 105.0, lat - 35.0);
-  let radLat = lat / 180.0 * Math.PI;
-  let magic = Math.sin(radLat);
-  magic = 1 - ee * magic * magic;
-  let sqrtMagic = Math.sqrt(magic);
-  dLat = (dLat * 180.0) / ((a * (1 - ee)) / (magic * sqrtMagic) * Math.PI);
-  dLon = (dLon * 180.0) / (a / sqrtMagic * Math.cos(radLat) * Math.PI);
-  let mgLat = lat + dLat;
-  let mgLon = lon + dLon;
-  return new AMap.LngLat(mgLon, mgLat);
-}
-
-function outOfChina(lon, lat) {
-    if (lon < 72.004 || lon > 137.8347)
-        return true;
-    if (lat < 0.8293 || lat > 55.8271)
-        return true;
-    return false;
-}
-
-function TransformLat(x,y){
-  var ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
-  ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
-  ret += (20.0 * Math.sin(y * Math.PI) + 40.0 * Math.sin(y / 3.0 * Math.PI)) * 2.0 / 3.0;
-  ret += (160.0 * Math.sin(y / 12.0 * Math.PI) + 320 * Math.sin(y * Math.PI / 30.0)) * 2.0 / 3.0;
-  return ret;
-}
-
-function TransformLon(x,y){
-  var ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
-  ret += (20.0 * Math.sin(6.0 * x * Math.PI) + 20.0 * Math.sin(2.0 * x * Math.PI)) * 2.0 / 3.0;
-  ret += (20.0 * Math.sin(x * Math.PI) + 40.0 * Math.sin(x / 3.0 * Math.PI)) * 2.0 / 3.0;
-  ret += (150.0 * Math.sin(x / 12.0 * Math.PI) + 300.0 * Math.sin(x / 30.0 * Math.PI)) * 2.0 / 3.0;
-  return ret;
-}
 
 function SelectChannel(){
     var channel = document.getElementById('channel');
@@ -859,7 +770,7 @@ function SelectChannel(){
   }
 
   function SaveHeatA(){
-    Plotly.downloadImage('PRADiv', {format: 'png', width: 1000, height: 500, filename: drawName+'从'+timeat[0]+'至'+timeat[timeat.length-1]});
+    Plotly.downloadImage('PRADiv', {format: 'png', width: 1000, height: 500, filename: '走航扫描_'+drawName+'从'+timeat[0]+'至'+timeat[timeat.length-1]});
   }
 
   function SaveLineA(){
@@ -869,14 +780,14 @@ function SelectChannel(){
       csvContent += drawData[lineIndex].join(',')+'\r\n';
       var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       if (navigator.msSaveBlob) { // IE 10+
-          navigator.msSaveBlob(blob, drawNameA+timeat[lineIndex]+".csv");
+          navigator.msSaveBlob(blob, '走航扫描_'+drawName+timeat[lineIndex]+".csv");
       } else {
           var link = document.createElement("a");
           if (link.download !== undefined) { // feature detection
               // Browsers that support HTML5 download attribute
               var url = URL.createObjectURL(blob);
               link.setAttribute("href", url);
-              link.setAttribute("download", drawName+"_"+timeat[lineIndex]+".csv");
+              link.setAttribute("download", '走航扫描_'+drawName+"_"+timeat[lineIndex]+".csv");
               link.style.visibility = 'hidden';
               document.body.appendChild(link);
               link.click();

@@ -22,20 +22,27 @@
         <option>PM2.5</option>
       </select>
       <span>
-        &nbsp;&nbsp;从<input type="number" id="zMin" value="0" class="inputNum" max="30000" min="15">
-        至<input type="number" id="zMax" value="6000" class="inputNum" max="30000" min="15">&nbsp;&nbsp;
+        &nbsp;&nbsp;距离<input type="number" id="zMin" value="0" class="inputNum" max="30000" min="15">
+        -<input type="number" id="zMax" value="6000" class="inputNum" max="30000" min="15">&nbsp;&nbsp;
       </span>
       <span>
-        色谱下限<input type="number" id="colorMin" value="0" class="inputNum">
-        色谱上限<input type="number" id="colorMax" value="10000" class="inputNum">&nbsp;&nbsp;
-        透明度<input type="number" id="opacity" value="0.5" class="inputNum">
+        色谱<input type="number" id="colorMin" value="0" class="inputNum">
+        -<input type="number" id="colorMax" value="10000" class="inputNum">&nbsp;&nbsp;
+        透明<input type="number" id="opacity" value="0.5" step="0.1" class="inputNum">
         旋转<input type="number" id="rotation" value="0" class="inputNum">
       </span>
+      <span>
+        <input type="checkbox" id="realTime">
+        <label>实时刷新</label>
+      </span>
+      <button type="button" class="btn btn-default calc"  id="showRecalc" data-toggle="tooltip" data-placement="right" title="重新解算">
+        <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+      </button>
    </div>
     <div id="colorbar">
         <canvas id="canvas" width="50" height="260"></canvas>
     </div>
-    <div class="input-card" id = "info"> 
+    <div class="info"> 
       <div>
         <span id="timeStamp"></span> 
       </div>
@@ -47,16 +54,73 @@
         <span id="angleVer"></span>
       </div>
     </div>
-    <input id="setCenter" type="image" title="居中" src="../static/setCenter.png" />
+    <input id="setCenter" type="image" title="复位" src="../static/setCenter.png" />
     <input id="addMarker" type="image" title="添加标记" src="../static/marker.png" />
     <input id="addRuler" type="image" title="距离测量" src="../static/ruler.png" />
     <input id="addMeasurer" type="image" title="面积测量" src="../static/measurer.png" />
     <input id="clearOverlay" type="image" title="清除" src="../static/clear.png" />
     <input id="createISOCurve" type="image" title="3D热度图" src="../static/3dHeatmap.png"/>
     <input id="curvePlay" type="image" title="播放" src="../static/play.svg"/>
-    <input id="waitingPlay" type="image" src="../static/35.gif"/>
     <input id="playSpeed" type="range" min="0" max="19" value="10">
     <input id="saveMap" type="image" title="保存截图" src="../static/savePic.png" />
+
+    <div id="heatDiv">
+      <div class = 'PRDiv' id="PRADiv">
+        <div id="close-heat">
+          <span class="glyphicon glyphicon-remove-circle" id="closeHeat" aria-hidden="true"></span>
+        </div>
+        <button type="button" id="savePicA" class="btn btn-default savePic" data-toggle="tooltip" data-placement="left" title="保存图片">
+          <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
+        </button>
+      </div>
+      <div class = 'lineDiv' id='lineADiv'>  
+        <button type="button" id="saveLineA" class="btn btn-default saveLine" data-toggle="tooltip" data-placement="left" title="保存廓线">
+          <span class="glyphicon glyphicon-download" aria-hidden="true"></span>
+        </button>  
+      </div>
+    </div>
+    <div id='show-heat'>
+      <span class="glyphicon glyphicon-chevron-left" id="showHeat" aria-hidden="true"></span>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="calcModal" tabindex="-1" role="dialog" data-backdrop="static">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="exampleModalLabel">设置参数</h4>
+      </div>
+      <div class="modal-body">
+        <div class="row text-left">
+          <div class="col-md-7">
+            <form>
+              <div class="form-group">
+                <label for="rz" class="control-label">参考点距离</label>
+                <input type="number" class="form-control" value="15000" max="30000" min="0" step="15" id="rc">
+              </div>
+              <div class="form-group">
+                <label for="sa" class="control-label">雷达比</label>
+                <input type="number" class="form-control" value="40" max="100" min="1" step="1" id="sa">
+              </div>
+              <div class="form-group">
+                <label for="snrT" class="control-label">信噪比阈值</label>
+                <input type="number" class="form-control" value="2" max="10000" min="0" step="1" id="snrT">
+              </div>
+              <div class="form-group">
+                <label for="pblT" class="control-label">边界层阈值</label>
+                <input type="number" class="form-control" value="0.5" max="1" min="0" step="0.05" id="pblT">
+              </div>
+            </form>           
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+        <button type="button" id="reCalc" class="btn btn-primary">确定</button>
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}

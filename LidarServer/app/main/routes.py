@@ -207,23 +207,23 @@ def get_los_data():
         pblT = 0.5
         rc = 15000
         sa = 40
+        calc_param = request.values.get('calc param', 0)
+        if(calc_param):
+            calcParam = json.loads(calc_param)
+            snrT = calcParam['snrT']
+            pblT = calcParam['pblT']
+            rc = calcParam['rc']
+            sa = calcParam['sa']
 
         if(content=='total count'):
             return jsonify(result=[task.data_num])
         if(content=='view'):           
             time_start = request.values.get('time start', 0)
             time_end = request.values.get('time end', 0)
-            calc_param = request.values.get('calc param', 0)
             if(time_start and time_end):
                 task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=time_start,TaskData.timestamp<=time_end).order_by(func.random()).limit(500).from_self().order_by(TaskData.timestamp).all()
             else:
                 task_dat = TaskData.query.filter_by(task_id=task_id).order_by(func.random()).limit(500).from_self().order_by(TaskData.timestamp).all()
-            if(calc_param):
-                calcParam = json.loads(calc_param)
-                snrT = calcParam['snrT']
-                pblT = calcParam['pblT']
-                rc = calcParam['rc']
-                sa = calcParam['sa']
         if(content=='export'):
             data_start = int(request.values.get('data start', 0))
             data_end = int(request.values.get('data end', 0))
@@ -270,19 +270,17 @@ def get_mov_data():
         pblT = 0.5
         rc = 15000
         sa = 40
-
+        calc_param = request.values.get('calc param', 0)
+        if(calc_param):
+            calcParam = json.loads(calc_param)
+            snrT = calcParam['snrT']
+            pblT = calcParam['pblT']
+            rc = calcParam['rc']
+            sa = calcParam['sa']
         if(content=='total count'):
             return jsonify(result=[task.data_num])
         if(content=='view'):
-            calc_param = request.values.get('calc param', 0)
             task_dat = TaskData.query.filter_by(task_id=task_id).all()
-            if(calc_param):
-                calcParam = json.loads(calc_param)
-                snrT = calcParam['snrT']
-                pblT = calcParam['pblT']
-                rc = calcParam['rc']
-                sa = calcParam['sa']
-            # task_dat = TaskData.query.filter_by(task_id=task_id).slice(task.data_num-200 if task.data_num>200 else 0,task.data_num).all()
         if(content=='export'):
             data_start = int(request.values.get('data start', 0))
             data_end = int(request.values.get('data end', 0))
@@ -321,13 +319,30 @@ def get_ppi_data():
     if request.method == 'POST':
         task_id = request.values.get('task id', 0)
         content = request.values.get('content', 0)
+        snrT = 2
+        pblT = 0.5
+        rc = 15000
+        sa = 40
+        calc_param = request.values.get('calc param', 0)
+        if(calc_param):
+            calcParam = json.loads(calc_param)
+            snrT = calcParam['snrT']
+            pblT = calcParam['pblT']
+            rc = calcParam['rc']
+            sa = calcParam['sa']
         if(content=='list'):
             task = Task.query.filter_by(id = task_id).first()
             horStartAng = task.hor_start_angle
+            horStep = task.hor_step
             task_dat = TaskData.query.filter_by(task_id=task_id,hor_angle=horStartAng).order_by(TaskData.timestamp.desc()).all()
-            for i in range(len(task_dat)):
+            task_dat2 = TaskData.query.filter_by(task_id=task_id,hor_angle=horStartAng+horStep).all()
+            lt = len(task_dat)
+            lt2 = len(task_dat2)
+            for i in range(lt2):
                 data = {}
                 ts = task_dat[i].timestamp
+                if(lt2<lt):
+                    ts = task_dat[i+1].timestamp
                 data['timestamp']="{}".format(ts.strftime('%Y-%m-%d %H:%M:%S'))
                 results.append(data)
         if(content=='timedata'):
@@ -358,7 +373,7 @@ def get_ppi_data():
                 dt = dt.newbyteorder('<')
                 chARaw = np.frombuffer(task_dat[i].raw_A, dtype=dt)
                 chBRaw = np.frombuffer(task_dat[i].raw_B, dtype=dt)
-                chA,chB,chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chARaw, chBRaw, overlapA, overlapB, frequency, duration, resolution, snrT=2, rc=15000)
+                chA,chB,chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chARaw, chBRaw, overlapA, overlapB, frequency, duration, resolution, snrT=snrT, rc=rc, sa=sa, pblT=pblT)
                 data['raw_A'] = chA
                 data['raw_B'] = chB
                 data['prr_A'] = chAPR2
@@ -382,10 +397,11 @@ def get_ppi_data():
             rangeMaxI = math.ceil(float(rangeMax)/resolution)+1
             dataLength = task.bin_length
             pie_list = TaskData.query.filter_by(task_id=task_id,hor_angle=horStartAng).order_by(TaskData.timestamp).all()
+            pie_list2 = TaskData.query.filter_by(task_id=task_id,hor_angle=horStartAng+horAngStep).all()
             ov = np.loadtxt(r'./overlap/19000101000000_15.ov')
             overlapA = ov[:,0]
             overlapB = ov[:,1]
-            for i in range(len(pie_list)):
+            for i in range(len(pie_list2)):
                 data = {}
                 starttime = pie_list[i].timestamp
                 data['starttime'] = "{}".format(starttime.strftime('%Y-%m-%d %H:%M:%S'))
@@ -401,7 +417,7 @@ def get_ppi_data():
                     dt = dt.newbyteorder('<')
                     chARaw = np.frombuffer(pie_dat[j].raw_A, dtype=dt)
                     chBRaw = np.frombuffer(pie_dat[j].raw_B, dtype=dt)
-                    chA,chB,chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chARaw, chBRaw, overlapA, overlapB, frequency, duration, resolution, snrT=2, rc=15000)
+                    chA,chB,chAPR2,chBPR2,dePolar,ext_a,pbl = aerosol_calc(chARaw, chBRaw, overlapA, overlapB, frequency, duration, resolution, snrT=snrT, rc=rc, sa=sa, pblT=pblT)
                     if channel=='raw_A':
                         channeldata.append(chA[:rangeMaxI])
                     elif channel=='raw_B':

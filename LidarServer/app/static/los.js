@@ -41,6 +41,7 @@ var layoutB = {
     title: '时间',
     showline: true,
     tickmode:'auto',
+    tickformat: '%H:%M \n %Y/%m/%d',
     range:[],
     showspikes: true,
     spikemode: 'across'
@@ -541,7 +542,7 @@ function ChangeChannelARangeMin(){
 }
 
 function SaveHeatA(){
-  Plotly.downloadImage('PRADiv', {format: 'png', width: 1000, height: 500, filename: drawNameA+'从'
+  Plotly.downloadImage('PRADiv', {format: 'png', width: 1000, height: 500, filename: '定点扫描_'+drawNameA+'从'
                       +timeat[0]+'至'+timeat[timeat.length-1]});
 }
 
@@ -559,7 +560,7 @@ function SaveLineA(){
             // Browsers that support HTML5 download attribute
             var url = URL.createObjectURL(blob);
             link.setAttribute("href", url);
-            link.setAttribute("download", drawNameA+timeat[lineIndex]+".csv");
+            link.setAttribute("download", '定点扫描_'+drawNameA+timeat[lineIndex]+".csv");
             link.style.visibility = 'hidden';
             document.body.appendChild(link);
             link.click();
@@ -662,7 +663,7 @@ function ChangeChannelBRangeMin(){
 }
 
 function SaveHeatB(){
-  Plotly.downloadImage('PRBDiv', {format: 'png', width: 1000, height: 500, filename: drawNameB+'从'+timeat[0]+'至'+timeat[timeat.length-1]});
+  Plotly.downloadImage('PRBDiv', {format: 'png', width: 1000, height: 500, filename: '定点扫描_'+drawNameB+'从'+timeat[0]+'至'+timeat[timeat.length-1]});
 }
 
 function SaveLineB(){
@@ -679,7 +680,7 @@ function SaveLineB(){
             // Browsers that support HTML5 download attribute
             var url = URL.createObjectURL(blob);
             link.setAttribute("href", url);
-            link.setAttribute("download", drawNameB+"_"+timeat[lineIndex]+".csv");
+            link.setAttribute("download", '定点扫描_'+drawNameB+"_"+timeat[lineIndex]+".csv");
             link.style.visibility = 'hidden';
             document.body.appendChild(link);
             link.click();
