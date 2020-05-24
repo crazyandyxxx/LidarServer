@@ -13,7 +13,7 @@ import pickle
 import io, os
 import json
 from sqlalchemy import func
-import app.status
+import app.status, app.sysInfo
 
 # @bp.before_app_request
 # def before_request():
@@ -25,16 +25,7 @@ import app.status
 @bp.route('/index', methods=['GET', 'POST'])
 @login_required
 def index():
-    info = {}
-    try:
-        with open("./config/instrumentInfo.json",'r') as load_f:
-            info = json.load(load_f)
-    except:
-        print('load instrument infomation error')
-    return render_template('system.html', insID=info['instrumentID'], 
-                                          acqCardID=info['acquisitionCardID'], 
-                                          panID=info['panID'],
-                                          softVer=info['softwareVersion'])
+    return render_template('system.html')
 
 @bp.route('/acquire', methods=['GET', 'POST'])
 @login_required
@@ -141,6 +132,31 @@ def browse():
         pass
     return render_template('browse.html', title=('数据浏览'))
 
+@bp.route('/getSysInfo')
+@login_required
+def get_sys_Info():
+    return jsonify([
+        {
+            'name': 'workStatu',
+            'data': app.sysInfo.workStatu
+        },
+        {
+            'name': 'hardDisk',
+            'data': app.sysInfo.hardDisk
+        },
+        {
+            'name': 'memory',
+            'data': app.sysInfo.memory
+        },
+        {
+            'name': 'cpu',
+            'data': app.sysInfo.cpu
+        },
+        {
+            'name': 'softVersion',
+            'data': app.sysInfo.softVersion
+        }])
+
 @bp.route('/getDeviceStatus')
 @login_required
 def get_device_status():
@@ -197,11 +213,12 @@ def get_los_data():
     if request.method == 'POST':
         task_id = request.values.get('task id', 0)
         content = request.values.get('content', 0)
-
         task = Task.query.filter_by(id = task_id).first()
         resolution = task.resolution
         duration = task.duration
         frequency = task.laser_freq
+        startTime = task.start_time
+        endTime = task.end_time
         task_dat = []
         snrT = 2
         pblT = 0.5
@@ -214,20 +231,20 @@ def get_los_data():
             pblT = calcParam['pblT']
             rc = calcParam['rc']
             sa = calcParam['sa']
-
+        time_start = request.values.get('time start', 0)
+        time_end = request.values.get('time end', 0)
+        if(time_start and time_end):
+            startTime = time_start
+            endTime = time_end
         if(content=='total count'):
-            return jsonify(result=[task.data_num])
+            task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=startTime,TaskData.timestamp<=endTime).count()
+            return jsonify(result=[task_dat])
         if(content=='view'):           
-            time_start = request.values.get('time start', 0)
-            time_end = request.values.get('time end', 0)
-            if(time_start and time_end):
-                task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=time_start,TaskData.timestamp<=time_end).order_by(func.random()).limit(500).from_self().order_by(TaskData.timestamp).all()
-            else:
-                task_dat = TaskData.query.filter_by(task_id=task_id).order_by(func.random()).limit(500).from_self().order_by(TaskData.timestamp).all()
+            task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=startTime,TaskData.timestamp<=endTime).order_by(func.random()).limit(500).from_self().order_by(TaskData.timestamp).all()
         if(content=='export'):
             data_start = int(request.values.get('data start', 0))
             data_end = int(request.values.get('data end', 0))
-            task_dat = TaskData.query.filter_by(task_id=task_id).slice(data_start,data_end).all()
+            task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=startTime,TaskData.timestamp<=endTime).order_by(TaskData.timestamp).slice(data_start,data_end).all()
             
         ov = np.loadtxt(r'./overlap/19000101000000_15.ov')
         overlapA = ov[:,0]
@@ -259,17 +276,18 @@ def get_mov_data():
     if request.method == 'POST':
         task_id = request.values.get('task id', 0)
         content = request.values.get('content', 0)
-
         task = Task.query.filter_by(id = task_id).first()
         resolution = task.resolution
         duration = task.duration
         frequency = task.laser_freq
-        rangeMaxI = math.ceil(10000/resolution)+1
+        startTime = task.start_time
+        endTime = task.end_time
         task_dat = []
         snrT = 2
         pblT = 0.5
         rc = 15000
         sa = 40
+        rangeMaxI = math.ceil(10000/resolution)+1
         calc_param = request.values.get('calc param', 0)
         if(calc_param):
             calcParam = json.loads(calc_param)
@@ -277,14 +295,20 @@ def get_mov_data():
             pblT = calcParam['pblT']
             rc = calcParam['rc']
             sa = calcParam['sa']
+        time_start = request.values.get('time start', 0)
+        time_end = request.values.get('time end', 0)
+        if(time_start and time_end):
+            startTime = time_start
+            endTime = time_end
         if(content=='total count'):
-            return jsonify(result=[task.data_num])
-        if(content=='view'):
-            task_dat = TaskData.query.filter_by(task_id=task_id).all()
+            task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=startTime,TaskData.timestamp<=endTime).count()
+            return jsonify(result=[task_dat])
+        if(content=='view'):           
+            task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=startTime,TaskData.timestamp<=endTime).order_by(TaskData.timestamp).all()
         if(content=='export'):
             data_start = int(request.values.get('data start', 0))
             data_end = int(request.values.get('data end', 0))
-            task_dat = TaskData.query.filter_by(task_id=task_id).slice(data_start,data_end).all()
+            task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=startTime,TaskData.timestamp<=endTime).order_by(TaskData.timestamp).slice(data_start,data_end).all()       
             
         ov = np.loadtxt(r'./overlap/19000101000000_15.ov')
         overlapA = ov[:,0]
@@ -319,6 +343,17 @@ def get_ppi_data():
     if request.method == 'POST':
         task_id = request.values.get('task id', 0)
         content = request.values.get('content', 0)
+        task = Task.query.filter_by(id = task_id).first()
+        horStartAng = task.hor_start_angle
+        horEndAng = task.hor_end_angle
+        horAngStep = task.hor_step
+        resolution = task.resolution
+        dataLength = task.bin_length
+        duration = task.duration
+        frequency = task.laser_freq
+        ln = int((horEndAng-horStartAng)/horAngStep)+1
+        startTime = task.start_time
+        endTime = task.end_time
         snrT = 2
         pblT = 0.5
         rc = 15000
@@ -330,32 +365,29 @@ def get_ppi_data():
             pblT = calcParam['pblT']
             rc = calcParam['rc']
             sa = calcParam['sa']
+        time_start = request.values.get('time start', 0)
+        time_end = request.values.get('time end', 0)
+        if(time_start and time_end):
+            startTime = time_start
+            endTime = time_end
         if(content=='list'):
-            task = Task.query.filter_by(id = task_id).first()
-            horStartAng = task.hor_start_angle
-            horStep = task.hor_step
-            task_dat = TaskData.query.filter_by(task_id=task_id,hor_angle=horStartAng).order_by(TaskData.timestamp.desc()).all()
-            task_dat2 = TaskData.query.filter_by(task_id=task_id,hor_angle=horStartAng+horStep).all()
+            task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.hor_angle==horStartAng, TaskData.timestamp>=startTime, TaskData.timestamp<=endTime).order_by(TaskData.timestamp.desc()).all()
+            task_dat2 = TaskData.query.filter(TaskData.task_id==task_id,TaskData.hor_angle==horStartAng+horAngStep).order_by(TaskData.timestamp.desc()).all()
             lt = len(task_dat)
-            lt2 = len(task_dat2)
-            for i in range(lt2):
-                data = {}
-                ts = task_dat[i].timestamp
-                if(lt2<lt):
+            if(task_dat2[0].timestamp>task_dat[0].timestamp):
+                for i in range(lt):
+                    data = {}
+                    ts = task_dat[i].timestamp
+                    data['timestamp']="{}".format(ts.strftime('%Y-%m-%d %H:%M:%S'))
+                    results.append(data)
+            else:
+                for i in range(lt-1):
+                    data = {}
                     ts = task_dat[i+1].timestamp
-                data['timestamp']="{}".format(ts.strftime('%Y-%m-%d %H:%M:%S'))
-                results.append(data)
+                    data['timestamp']="{}".format(ts.strftime('%Y-%m-%d %H:%M:%S'))
+                    results.append(data)
         if(content=='timedata'):
-            task = Task.query.filter_by(id = task_id).first()
-            horStartAng = task.hor_start_angle
-            horEndAng = task.hor_end_angle
-            horAngStep = task.hor_step
-            ln = int((horEndAng-horStartAng)/horAngStep)+1
             timeat = request.values.get('time',0)
-            resolution = task.resolution
-            dataLength = task.bin_length
-            duration = task.duration
-            frequency = task.laser_freq
             task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=timeat,TaskData.hor_angle<=horEndAng).order_by(TaskData.timestamp).limit(ln).all()
             ov = np.loadtxt(r'./overlap/19000101000000_15.ov')
             overlapA = ov[:,0]
@@ -386,16 +418,7 @@ def get_ppi_data():
         if(content=='all'):
             channel = request.values.get('channel', 0)
             rangeMax = request.values.get('range', 0)
-            task = Task.query.filter_by(id = task_id).first()
-            horStartAng = task.hor_start_angle
-            horEndAng = task.hor_end_angle
-            horAngStep = task.hor_step
-            ln = int((horEndAng-horStartAng)/horAngStep)+1
-            resolution = task.resolution
-            duration = task.duration
-            frequency = task.laser_freq
             rangeMaxI = math.ceil(float(rangeMax)/resolution)+1
-            dataLength = task.bin_length
             pie_list = TaskData.query.filter_by(task_id=task_id,hor_angle=horStartAng).order_by(TaskData.timestamp).all()
             pie_list2 = TaskData.query.filter_by(task_id=task_id,hor_angle=horStartAng+horAngStep).all()
             ov = np.loadtxt(r'./overlap/19000101000000_15.ov')
@@ -447,6 +470,17 @@ def get_rhi_data():
     if request.method == 'POST':
         task_id = request.values.get('task id', 0)
         content = request.values.get('content', 0)
+        task = Task.query.filter_by(id = task_id).first()
+        verStartAng = task.ver_start_angle
+        verEndAng = task.ver_end_angle
+        verAngStep = task.ver_step
+        resolution = task.resolution
+        dataLength = task.bin_length
+        duration = task.duration
+        frequency = task.laser_freq
+        ln = int((verEndAng-verStartAng)/verAngStep)+1
+        startTime = task.start_time
+        endTime = task.end_time
         snrT = 2
         pblT = 0.5
         rc = 15000
@@ -458,32 +492,29 @@ def get_rhi_data():
             pblT = calcParam['pblT']
             rc = calcParam['rc']
             sa = calcParam['sa']
+        time_start = request.values.get('time start', 0)
+        time_end = request.values.get('time end', 0)
+        if(time_start and time_end):
+            startTime = time_start
+            endTime = time_end
         if(content=='list'):
-            task = Task.query.filter_by(id = task_id).first()
-            verStartAng = task.ver_start_angle
-            verStep = task.ver_step
-            task_dat = TaskData.query.filter_by(task_id=task_id,ver_angle=verStartAng).order_by(TaskData.timestamp.desc()).all()
-            task_dat2 = TaskData.query.filter_by(task_id=task_id,ver_angle=verStartAng+verStep).all()
+            task_dat = TaskData.query.filter(TaskData.task_id==task_id, TaskData.ver_angle==verStartAng, TaskData.timestamp>=startTime, TaskData.timestamp<=endTime).order_by(TaskData.timestamp.desc()).all()
+            task_dat2 = TaskData.query.filter_by(task_id=task_id,ver_angle=verStartAng+verAngStep).order_by(TaskData.timestamp.desc()).all()
             lt = len(task_dat)
-            lt2 = len(task_dat2)
-            for i in range(lt2):
-                data = {}
-                ts = task_dat[i].timestamp
-                if(lt2<lt):
+            if(task_dat2[0].timestamp>task_dat[0].timestamp):
+                for i in range(lt):
+                    data = {}
+                    ts = task_dat[i].timestamp
+                    data['timestamp']="{}".format(ts.strftime('%Y-%m-%d %H:%M:%S'))
+                    results.append(data)
+            else:
+                for i in range(lt-1):
+                    data = {}
                     ts = task_dat[i+1].timestamp
-                data['timestamp']="{}".format(ts.strftime('%Y-%m-%d %H:%M:%S'))
-                results.append(data)
+                    data['timestamp']="{}".format(ts.strftime('%Y-%m-%d %H:%M:%S'))
+                    results.append(data)
         if(content=='timedata'):
-            task = Task.query.filter_by(id = task_id).first()
-            verStartAng = task.ver_start_angle
-            verEndAng = task.ver_end_angle
-            verAngStep = task.ver_step
-            ln = int((verEndAng-verStartAng)/verAngStep)+1
             timeat = request.values.get('time',0)
-            resolution = task.resolution
-            dataLength = task.bin_length
-            duration = task.duration
-            frequency = task.laser_freq
             task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=timeat,TaskData.ver_angle<=verEndAng).order_by(TaskData.timestamp).limit(ln).all()
             ov = np.loadtxt(r'./overlap/19000101000000_15.ov')
             overlapA = ov[:,0]
@@ -514,16 +545,7 @@ def get_rhi_data():
         if(content=='all'):
             channel = request.values.get('channel', 0)
             rangeMax = request.values.get('range', 0)
-            task = Task.query.filter_by(id = task_id).first()
-            verStartAng = task.ver_start_angle
-            verEndAng = task.ver_end_angle
-            verAngStep = task.ver_step
-            ln = int((verEndAng-verStartAng)/verAngStep)+1
-            resolution = task.resolution
-            duration = task.duration
-            frequency = task.laser_freq
             rangeMaxI = math.ceil(float(rangeMax)/resolution)+1
-            dataLength = task.bin_length
             pie_list = TaskData.query.filter_by(task_id=task_id,ver_angle=verStartAng).order_by(TaskData.timestamp).all()
             pie_list2 = TaskData.query.filter_by(task_id=task_id,ver_angle=verStartAng+verAngStep).all()
             ov = np.loadtxt(r'./overlap/19000101000000_15.ov')

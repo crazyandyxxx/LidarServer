@@ -2,15 +2,60 @@
 
 {% block app_content %}
 <div class="container">
-<div id="menu">
-    <h3 class="item">设备序列号</h3>
-    <p class="description">{{ insID }}</p>
-    <h3 class="item">采集卡序列号</h3>
-  <p class="description">{{ acqCardID }}</p>
-  <h3 class="item">云台序列号</h3>
-  <p class="description">{{ panID }}</p>
-  <h3 class="item">软件版本</h3>
-  <p class="description">{{ softVer }}</p>
+  <div class="row">
+    <div class="col-sm-4">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">运行状态</h3>
+        </div>
+        <div class="panel-body">
+          <span id="workStatu" class="label label-info">unknown</span>
+        </div>
+      </div>
+
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">硬盘用量</h3>
+        </div>
+        <div class="panel-body">
+          <span id="diskUsage" class="label label-info">-- / --</span>
+        </div>
+      </div>
+
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">内存用量</h3>
+        </div>
+        <div class="panel-body">
+          <span id="memoryUsage" class="label label-info">-- / --</span>
+        </div>
+      </div>
+
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">CPU用量</h3>
+        </div>
+        <div class="panel-body">
+          <span id="cpuUsage" class="label label-info">--</span>
+        </div>
+      </div>
+
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">软件版本</h3>
+        </div>
+        <div class="panel-body">
+          <span id="softVer" class="label label-info">--</span>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-</div>
+{% endblock %}
+
+{% block app_scripts %}
+<script type="text/javascript">
+  var urlGetSysInfo = "{{ url_for('main.get_sys_Info') }}";
+</script>
+<script type="text/javascript" src="../static/system.js"></script>
 {% endblock %}

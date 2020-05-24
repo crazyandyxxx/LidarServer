@@ -3,9 +3,10 @@ from datetime import datetime
 from flask_mail import Mail
 from flask_apscheduler import APScheduler
 from app.models import Task, db
-from app import dataAcquisition
+from app import dataAcquisition, sysInfo
 from apscheduler.triggers.interval import IntervalTrigger
 import os, win32api, time
+import psutil
 
 mail = Mail()
 scheduler=APScheduler()
@@ -64,3 +65,24 @@ def CheckDeviceStatus():
     dataAcquisition.check_gps()
     dataAcquisition.check_heading()
     dataAcquisition.check_tempeHumi()
+
+@scheduler.task(IntervalTrigger(seconds=10))
+def CheckSysInfo():
+    sysInfo.cpu['percent'] = psutil.cpu_percent(interval=1)
+    mem = psutil.virtual_memory()
+    unit = 1024*1024*1024
+    sysInfo.memory['total'] = mem.total/unit
+    sysInfo.memory['used'] = mem.used/unit
+    disk = psutil.disk_usage('/')
+    sysInfo.hardDisk['total'] = disk.total/unit
+    sysInfo.hardDisk['used'] = disk.used/unit
+    with db.app.app_context():
+        task = Task.query.filter_by(complete=False).order_by(Task.start_time.desc()).first()
+        if task:
+            dt = (datetime.now()-task.end_time).seconds 
+            if(dt>10*task.duration):
+                sysInfo.workStatu['state'] = 'error'
+            else:
+                sysInfo.workStatu['state'] = 'running'
+        else:
+            sysInfo.workStatu['state'] = 'stop'

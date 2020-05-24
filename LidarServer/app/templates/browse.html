@@ -5,75 +5,39 @@
   {{ super() }}
   <link rel="stylesheet" type="text/css" href="../static/daterangepicker.css" />
   <link rel="stylesheet" type="text/css" href="../static/bootstrap-table.min.css">
-  <style type="text/css">
-    /* The Modal (background) */
-    .modal {
-      display: none; /* Hidden by default */
-      z-index: 1; /* Sit on top */
-      padding-top: 100px; /* Location of the box */
-      left: 0;
-      top: 0;
-      width: 100%; /* Full width */
-      height: 100%; /* Full height */
-      overflow: auto; /* Enable scroll if needed */
-      background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-    }
-    
-    /* Modal Content */
-    .modal-content {
-      background-color: #fefefe;
-      margin: auto;
-      padding: 20px;
-      border: 1px solid #888;
-      width: 45%;
-    }
-    .modal-btn {
-      position: relative;
-    }
-    
-    /* The Close Button */
-    .close {
-      color: #aaaaaa;
-      float:right;
-      font-size: 28px;
-      font-weight: bold;
-    }
-    #confirm {
-      /* position: absolute;
-      bottom: 0;
-      right: 0; */
-      float: right;
-    }
-    #dataKind {
-      display: none;
-    }
-    .close:hover,
-    .close:focus {
-      color: #000;
-      text-decoration: none;
-      cursor: pointer;
-    }
-  </style>
+  <link rel="stylesheet" type="text/css" href="../static/bootstrap-multiselect.css">
 {% endblock %}
 
 {% block app_content %}
   <div class="container">
-    <input type="text" name="datetimes" size="40"/>
-    <select  id="type" onchange="selectScanType()"> 
-      <option>全部</option>
-      <option>水平切面</option>
-      <option>垂直切面</option>
-      <option>定点扫描</option>
-      <option>走航扫描</option>
-    </select>
-    <input type="button" value="   检索   " size="30" onclick="checkTask()">
-    <input type="button" value="   导入   " size="30" onclick="ImportTask()">
-    <input id = "importWaiting" type="image" src="../static/loading1.gif" style="visibility: hidden">
+    <form class="form-inline">
+      <div class="form-group">
+        <input type="text" class="form-control" name="datetimes" size="35"/>
+      </div>
+
+      <div class="form-group">
+        <select  class="form-control" id="type">
+          <option>全部</option>
+          <option>水平切面</option>
+          <option>垂直切面</option>
+          <option>定点扫描</option>
+          <option>走航扫描</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <!-- <input type="button" class="form-control" id="checkTask" value="检索" style="width: 8rem;"> -->
+        <!-- <input type="button" class="form-control" id="importTask" value="导入" style="width: 8rem;"> -->
+        <button type="button" class="btn btn-default" aria-label="Left Align" id="checkTask" style="width: 8rem;">
+          检索
+        </button>
+        <button type="button" class="btn btn-default" aria-label="Left Align" id="importTask" style="width: 8rem;">
+          导入
+        </button>
+      </div>
+    </form>
     <div class="panel panel-default">
-      <!-- Default panel contents -->
       <div class="panel-heading">检索结果</div>
-    
-      <!-- Table -->
       <table class="table table-hover table-striped" id="task-table">
           <thead>
             <tr>
@@ -89,62 +53,70 @@
       </table>
     </div>
   </div>
-    <!-- The Modal -->
-    <div id="myModal" class="modal">
-      <!-- Modal content -->
-      <div class="modal-content">
-        <span class="close">&times;</span>
-        <p>选择数据格式</p>
-        <input type="radio" name="exportType" id="txt"> 文本文件
-        <span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
-        <input type="radio" name="exportType" id="db" > 数据库文件
-        <div class="data" id="dataKind">    
-          <span>
-          <input name = "rkind" type="checkbox" value="ChAB"/>
-          <label>原始信号</label>
-          </span>   
-      
-          <span>
-          <input name = "rkind" type="checkbox" value="ChABPR2"/>
-          <label>距离校正信号</label>
-          </span>
 
-          <span>
-            <input name = "rkind" type="checkbox" value="Ext"/>
-            <label>消光系数</label>
-            </span> 
-        
-            <span>
-            <input name = "rkind" type="checkbox" value="Dep"/>
-            <label>退偏比</label>
-            </span>    
-        
-            <span>
-            <input name = "rkind" type="checkbox" value="PBL"/>
-            <label>污染边界层</label>
-            </span>
-  
-            <span>
-              <input name = "rkind" type="checkbox" value="PM10"/>
-              <label>PM10</label>
-            </span>
-
-            <span>
-              <input name = "rkind" type="checkbox" value="PM25"/>
-              <label>PM2.5</label>
-              </span>
-    
-              <span>
-                <input name = "rkind" type="checkbox" value="AOD"/>
-                <label>气溶胶光学厚度</label>
-              </span>
-        </div>
-        <div class="modal-btn">
-          <input type="button" value="确定"  id="confirm"/>
-          <span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
+    <div class="modal fade" id="exportModal" tabindex="-1" role="dialog" data-backdrop="static">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="exampleModalLabel">导出设置</h4>
+          </div>
+          <div class="modal-body">
+            <div class="row text-left">
+              <div class="col-md-7">
+                <form>
+                  <div class="form-group">
+                    <label for="dataType" class="control-label">数据格式</label>
+                    <select  class="form-control" id="dataType">
+                      <option selected>文本文件</option>
+                      <option>数据库文件</option>
+                    </select>
+                  </div>
+                  <div class="collapse" id="collapseExample">
+                  <div class="form-group">
+                    <label for="dataChannel" class="control-label">数据内容</label>
+                    <select  class="form-control" multiple="multiple" id="dataChannel">
+                      <option value="ChAB">原始信号</option>
+                      <option value="ChABPR2">距离校正信号</option>
+                      <option value="Ext">消光系数</option>
+                      <option value="Dep">退偏比</option>
+                      <option value="PBL">污染边界层</option>
+                      <option value="PM10">PM10</option>
+                      <option value="PM25">PM2.5</option>
+                      <option value="AOD">气溶胶光学厚度</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="dateRange" class="control-label">时间范围</label>
+                    <input type="text" class="form-control" id="dateRange">
+                  </div>
+                  <div class="form-group">
+                    <label for="rc" class="control-label">参考点距离</label>
+                    <input type="number" class="form-control" value="15000" max="30000" min="0" step="15" id="rc">
+                  </div>
+                  <div class="form-group">
+                    <label for="sa" class="control-label">雷达比</label>
+                    <input type="number" class="form-control" value="40" max="100" min="1" step="1" id="sa">
+                  </div>
+                  <div class="form-group">
+                    <label for="snrT" class="control-label">信噪比阈值</label>
+                    <input type="number" class="form-control" value="2" max="10000" min="0" step="1" id="snrT">
+                  </div>
+                  <div class="form-group">
+                    <label for="pblT" class="control-label">边界层阈值</label>
+                    <input type="number" class="form-control" value="0.5" max="1" min="0" step="0.05" id="pblT">
+                  </div>
+                  </div>
+                </form>           
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            <button type="button" id="confirmExport" class="btn btn-primary">确定</button>
+          </div>
         </div>
       </div>
-      
     </div>
 {% endblock %}
 
@@ -164,5 +136,6 @@
 <script type="text/javascript" src="../static/daterangepicker.min.js"></script>
 <script type="text/javascript" src="../static/bootstrap-table.min.js"></script>
 <script type="text/javascript" src="../static/bootstrap-table-zh-CN.min.js"></script>
-<script type="text/javascript" src="../static/browse.min.js"></script>
+<script type="text/javascript" src="../static/bootstrap-multiselect.js"></script>
+<script type="text/javascript" src="../static/browse.js"></script>
 {% endblock %}

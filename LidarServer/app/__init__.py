@@ -12,7 +12,7 @@ from flask_cors import CORS
 import numpy
 import sys
 from app.checkLicense import verifyLicense
-from app import status
+from app import status, sysInfo
 from app.models import db, User
 from app.schedule import mail, scheduler
 
@@ -22,7 +22,6 @@ login.login_view = 'auth.login'
 login.login_message = 'Please log in to access this page.'
 bootstrap = Bootstrap()
 moment = Moment()
-status.init()
 
 @login.user_loader
 def load_user(id):
