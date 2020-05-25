@@ -7,6 +7,7 @@ from app import dataAcquisition, sysInfo
 from apscheduler.triggers.interval import IntervalTrigger
 import os, win32api, time
 import psutil
+from configparser import ConfigParser
 
 mail = Mail()
 scheduler=APScheduler()
@@ -18,35 +19,26 @@ def CheckExceptionStop():
         if task:
             dt = (datetime.now()-task.end_time).seconds 
             if(dt>10*task.duration):
-                acquisitionPath = ''
+                config = ConfigParser()
                 try:
-                    with open("./config/acquisitionParameters.json",'r') as load_f:
-                        acqParas = json.load(load_f)
-                        acquisitionPath = acqParas['acquisitionPath']
-                        (filepath,acquisitionExe) = os.path.split(acquisitionPath)
+                    config.read("./config/acquisition.ini")
+                    acquisitionPath = config['PATH']['acquisitionPath']
+                    (filepath,acquisitionExe) = os.path.split(acquisitionPath)
                     os.system("taskkill /F /IM "+acquisitionExe)    
                     time.sleep(10)     
                     win32api.ShellExecute(0, 'open', acquisitionPath, '','',1)
                 except Exception as e:
-                    print('restart error')
+                    print('restart error', e)
 
                 mailAddresses = ''
-                instrumentID = ''
                 try:
-                    with open("./config/acquisitionParameters.json",'r') as load_f:
-                        acqParas = json.load(load_f)
-                        mailAddresses = acqParas['mailAddress']
+                    config.read("./config/acquisition.ini")
+                    mailAddresses = config['DEFAULT']['mailAddress']
                 except:
                     print('load acquistion config error - send mail')
-                try:
-                    with open("./config/instrumentInfo.json",'r') as load_f:
-                        info = json.load(load_f)
-                        instrumentID = info['instrumentID']
-                except:
-                    print('load instrument infomation error - send mail')
                     
                 addresses = mailAddresses.split(',')
-                message = '检测到设备%s异常停机，尝试重启。' % instrumentID
+                message = '检测到设备异常停机，尝试重启。'
                 subject = "设备异常"
                 try:
                     with mail.connect() as conn:

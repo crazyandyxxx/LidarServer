@@ -13,7 +13,9 @@ import pickle
 import io, os
 import json
 from sqlalchemy import func
-import app.status, app.sysInfo
+import app.status
+from app import sysInfo
+from configparser import ConfigParser
 
 # @bp.before_app_request
 # def before_request():
@@ -30,6 +32,7 @@ def index():
 @bp.route('/acquire', methods=['GET', 'POST'])
 @login_required
 def acquire():
+    config = ConfigParser()
     form = AcquireForm()   
     if form.validate_on_submit():
         acqParas = {}
@@ -53,10 +56,10 @@ def acquire():
             db.session.commit()
         else: 
             task_id = str(uuid.uuid4())
-            if not os.path.exists('./config'):
-                os.mkdir('./config')
-            with open("./config/acquisitionParameters.json","w") as f:
-                json.dump(acqParas,f)
+            config.read("./config/acquisition.ini")
+            config['DEFAULT'] = acqParas
+            with open("./config/acquisition.ini","w") as f:
+                config.write(f)
 
             start_acquisition(task_id, mode, freq, dura, binN, resolution, verSt, verEd, verStep, horSt, horEd, horStep)              
             task = Task(id=task_id, mode=mode, laser_freq=freq, duration=dura, resolution=resolution, bin_length=binN, 
@@ -92,21 +95,22 @@ def acquire():
             form.HorEndAngle.data = 360
             form.HorAngleStep.data = 5
         try:
-            with open("./config/acquisitionParameters.json",'r') as load_f:
-                acqParas = json.load(load_f)
-                form.Mode.data = acqParas['mode']
-                form.Frequency.data = acqParas['frequency']
-                form.Duration.data = acqParas['duration']
-                form.BinLen.data = acqParas['binLength']
-                form.VerStartAngle.data = acqParas['verStartAngle']
-                form.VerEndAngle.data = acqParas['verEndAngle']
-                form.VerAngleStep.data = acqParas['verAngleStep']
-                form.HorStartAngle.data = acqParas['horStartAngle']
-                form.HorEndAngle.data = acqParas['horEndAngle']
-                form.HorAngleStep.data = acqParas['horAngleStep']
-                form.MailAddress.data = acqParas['mailAddress']
-        except:
-            print('load acquistion config error')
+            config.read("./config/acquisition.ini")
+            acqParas = config['DEFAULT']
+            form.Mode.data = acqParas['mode']
+            form.Frequency.data = acqParas['frequency']
+            form.Duration.data = acqParas['duration']
+            form.BinLen.data = acqParas['binLength']
+            form.Resolution.data = acqParas['resolution']
+            form.VerStartAngle.data = acqParas['verStartAngle']
+            form.VerEndAngle.data = acqParas['verEndAngle']
+            form.VerAngleStep.data = acqParas['verAngleStep']
+            form.HorStartAngle.data = acqParas['horStartAngle']
+            form.HorEndAngle.data = acqParas['horEndAngle']
+            form.HorAngleStep.data = acqParas['horAngleStep']
+            form.MailAddress.data = acqParas['mailAddress']
+        except Exception as e:
+            print('load acquistion config error', e)
         return render_template('acquire.html', title=('数据采集'), form=form)
 
 @bp.route('/browse', methods=['GET', 'POST'])
@@ -138,23 +142,23 @@ def get_sys_Info():
     return jsonify([
         {
             'name': 'workStatu',
-            'data': app.sysInfo.workStatu
+            'data': sysInfo.workStatu
         },
         {
             'name': 'hardDisk',
-            'data': app.sysInfo.hardDisk
+            'data': sysInfo.hardDisk
         },
         {
             'name': 'memory',
-            'data': app.sysInfo.memory
+            'data': sysInfo.memory
         },
         {
             'name': 'cpu',
-            'data': app.sysInfo.cpu
+            'data': sysInfo.cpu
         },
         {
             'name': 'softVersion',
-            'data': app.sysInfo.softVersion
+            'data': sysInfo.softVersion
         }])
 
 @bp.route('/getDeviceStatus')
