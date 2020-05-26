@@ -544,8 +544,8 @@ function getRealTimeData(){
         setTimeout(getRealTimeData,10*1000);
         return;
       }   
-      $('timeSeries').empty();
       var sel1 = document.getElementById('timeSeries');
+      sel1.options.length = 0;
       for(let i=0; i<data.result.length;i++){
           sel1.options.add(new Option(data.result[i].timestamp+""));
       }
