@@ -1,3 +1,4 @@
+var showHeat = true;
 function drawColorbar(n) {
   var canvas = document.getElementById("canvas");
   width = canvas.width;
@@ -92,12 +93,14 @@ function CloseHeatMap(){
   $('#heatDiv').fadeOut();
   $('#show-heat').show();
   $('#colorbar').show();
+  showHeat = false;
 }
 
 function ShowHeatMap(){
   $('#heatDiv').fadeIn();
   $('#show-heat').hide();
   $('#colorbar').hide();
+  showHeat = true;
 }
 
 function Gps84ToGcj02(lon,lat){

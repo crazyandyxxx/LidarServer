@@ -77,4 +77,4 @@ def CheckSysInfo():
             else:
                 sysInfo.workStatu['state'] = 'running'
         else:
-            sysInfo.workStatu['state'] = 'stop'
+            sysInfo.workStatu['state'] = 'stopped'

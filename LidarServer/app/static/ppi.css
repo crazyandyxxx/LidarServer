@@ -160,11 +160,19 @@
     border-radius: 3px;
     background-color: white;
   }
-  #curvePlay{
+  #createISOLine{
     z-index: 100;
     position: absolute;
     right: 31px;
     top: 292px;
+    border-radius: 3px;
+    background-color: white;
+  }
+  #curvePlay{
+    z-index: 100;
+    position: absolute;
+    right: 31px;
+    top: 329px;
     border-radius: 3px;
     background-color: white;
   }
@@ -175,7 +183,7 @@
     right: 65px;
     height: 32px;
     width: 64px;
-    top: 292px;
+    top: 329px;
     border-radius: 3px;
     background-color: white;
   }
@@ -183,7 +191,7 @@
     z-index: 100;
     position: absolute;
     right: 31px;
-    top: 329px;
+    top: 366px;
     border-radius: 3px;
     background-color: white;
   }

@@ -29,8 +29,12 @@ namespace AcquisitionSocketServer
         static string mode;
         static float currentVerAng = -9999, currentHorAng=-9999;
         static double altitude = -9999, latitude = -9999, longitude = -9999;
-        static float temperature = -9999, humidity = -9999;
-        static int tempeNormal = 1, humiNormal = 1;
+        static float inerTemperature = -9999, inerHumidity = -9999;
+        static int inerTempeNormal = 1, inerHumiNormal = 1;
+        static float envTemperature = -9999, envHumidity = -9999, envPressure = -9999;
+        static int realFrequency = -9999, laserRunnedTime = -9999;
+        static float laserEnergy = -9999, azimuth = -9999, zenith = -9999;
+
 
         private static void SetAcquistionParams(dynamic cmd)
         {

@@ -179,10 +179,6 @@ namespace AcquisitionSocketServer
                 {
                     try
                     {
-                        //port.Close();
-                        //Thread.Sleep(100);
-                        //port.Open();
-                        //Thread.Sleep(100);
                         port.DiscardInBuffer();
                         port.DiscardOutBuffer();
                         port.Write(wrData, 0, wrData.Length);

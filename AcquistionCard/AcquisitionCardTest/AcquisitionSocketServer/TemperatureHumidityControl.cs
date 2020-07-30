@@ -12,7 +12,9 @@ namespace AcquisitionSocketServer
     {
         private static string CheckTempeHumi()
         {
-            return "{\"temperature\":" + temperature + ",\"humidity\":" + humidity + ",\"tempeNormal\":" + tempeNormal + ",\"humiNormal\":" + humiNormal + "}";
+            return "{\"temperature\":" + inerTemperature + ",\"humidity\":" + inerHumidity +
+                   ",\"tempeNormal\":" + inerTempeNormal + ",\"humiNormal\":" + inerHumiNormal +
+                   ",\"laserEnergy\":" + laserEnergy + ",\"realFrequency\":" + realFrequency + "}";
         }
 
         private static void SetTempeHumiThreshold()
@@ -22,7 +24,7 @@ namespace AcquisitionSocketServer
             byte[] humiOnByte = new byte[8];
 
             tempeOnByte = new byte[] { 0x01, 0x06, 0x00, 0x0B, 0x00, 0x00, 0x00, 0x00 };//设置温度报警阈值
-            var bt = BitConverter.GetBytes((ushort)(Properties.AcquisitionServerSetting.Default.TemperatureThreshold*100));
+            var bt = BitConverter.GetBytes((ushort)(Properties.AcquisitionServerSetting.Default.TemperatureThreshold * 10));
             tempeOnByte[4] = bt[1];
             tempeOnByte[5] = bt[0];
             bt = CRC16_Modbus(new byte[] { tempeOnByte[0], tempeOnByte[1], tempeOnByte[2], tempeOnByte[3], tempeOnByte[4], tempeOnByte[5] });
@@ -32,7 +34,7 @@ namespace AcquisitionSocketServer
 
 
             humiOnByte = new byte[] { 0x01, 0x06, 0x00, 0x0C, 0x00, 0x00, 0x00, 0x00 };//设置湿度报警阈值
-            bt = BitConverter.GetBytes((ushort)(Properties.AcquisitionServerSetting.Default.HumidityThreshold * 100));
+            bt = BitConverter.GetBytes((ushort)(Properties.AcquisitionServerSetting.Default.HumidityThreshold * 10));
             humiOnByte[4] = bt[1];
             humiOnByte[5] = bt[0];
             bt = CRC16_Modbus(new byte[] { humiOnByte[0], humiOnByte[1], humiOnByte[2], humiOnByte[3], humiOnByte[4], humiOnByte[5] });
@@ -45,16 +47,22 @@ namespace AcquisitionSocketServer
 
         private static void GetTempeHumi()
         {
-            byte[] tempeHumiOnByte = new byte[8] { 0x01, 0x03, 0x00, 0x09, 0x00, 0x02, 0x14, 0x09 };
-            byte[] tempeHumiByteRv = new byte[9];
+            byte[] tempeHumiOnByte = new byte[8] { 0x01, 0x03, 0x00, 0x09, 0x00, 0x0C, 0x14, 0x09 };
+            byte[] tempeHumiByteRv = new byte[30];
             while (true)
             {
                 SerialPortCommunicate(tempeHumiOnByte, tempeHumiByteRv, panPort);
-                humidity = (BitConverter.ToUInt16(new byte[2] { tempeHumiByteRv[6], tempeHumiByteRv[5] }, 0) + 50) / 100;
-                temperature = BitConverter.ToUInt16(new byte[2] { tempeHumiByteRv[4], tempeHumiByteRv[3] }, 0) / 100;
-                if (temperature > 100) temperature -= 200;
-                tempeNormal = temperature < Properties.AcquisitionServerSetting.Default.TemperatureThreshold ? 1 : 0;
-                humiNormal = humidity < Properties.AcquisitionServerSetting.Default.HumidityThreshold ? 1 : 0;
+                inerTemperature = BitConverter.ToUInt16(new byte[2] { tempeHumiByteRv[7], tempeHumiByteRv[6] }, 0) / 10;
+                inerHumidity = (BitConverter.ToUInt16(new byte[2] { tempeHumiByteRv[9], tempeHumiByteRv[8] }, 0) + 5) / 10;
+                if (inerTemperature > 100) inerTemperature -= 200;
+                inerTempeNormal = inerTemperature < Properties.AcquisitionServerSetting.Default.TemperatureThreshold ? 1 : 0;
+                inerHumiNormal = inerHumidity < Properties.AcquisitionServerSetting.Default.HumidityThreshold ? 1 : 0;
+                realFrequency = BitConverter.ToUInt16(new byte[2] { tempeHumiByteRv[23], tempeHumiByteRv[22] }, 0);
+                laserEnergy = BitConverter.ToUInt16(new byte[2] { tempeHumiByteRv[25], tempeHumiByteRv[24] }, 0) / 10;
+                Thread.Sleep(50);
+                SetScreenContent(tempeHumiByteRv);
+                Thread.Sleep(50);
+                SetScreenGPS();
                 Thread.Sleep(2000);
             }
         }

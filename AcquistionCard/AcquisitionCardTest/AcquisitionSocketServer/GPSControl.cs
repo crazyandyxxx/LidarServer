@@ -31,7 +31,16 @@ namespace AcquisitionSocketServer
                 Console.WriteLine("GPS串口打开失败!");
                 return;
             }
-            gpsPort.DataReceived += GPSDataReceived;
+            if (Properties.AcquisitionServerSetting.Default.UseDefaultGPS)
+            {
+                longitude = Properties.AcquisitionServerSetting.Default.DefaultLongitude;
+                latitude = Properties.AcquisitionServerSetting.Default.DefaultLatitude;
+                altitude = Properties.AcquisitionServerSetting.Default.DefaultAltitude;
+            }
+            else
+            {
+                gpsPort.DataReceived += GPSDataReceived;
+            }
         }
 
         private static void GPSDataReceived(object sender, SerialDataReceivedEventArgs e)

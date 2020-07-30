@@ -276,7 +276,6 @@ polyline = new AMap.Polyline({
   strokeColor: "#3366FF", 
   strokeOpacity: 1,
   strokeWeight: 8,
-  // 折线样式还支持 'dashed'
   strokeStyle: "solid",
   lineJoin: 'round',
   lineCap: 'round',
@@ -422,19 +421,24 @@ function getRealTimeData(){
     function(data,status){
       if(status == "success"){
         prepareData(data);
-        lineIndex = timeat.length-1;
-        layoutLineA.annotations[0].text = timeat[lineIndex];
-
-        plotA.removeListener('plotly_hover',plotHover);
-        var update = {
-          'xaxis.range[0]':timeat[0],
-          'xaxis.range[1]':timeat[timeat.length-1]
-        };
-        Plotly.relayout('PRADiv',update);
-        tracePbl.x = timeat;
+        if(showHeat){
+          lineIndex = timeat.length-1;
+          layoutLineA.annotations[0].text = timeat[lineIndex];
+          plotA.removeListener('plotly_hover',plotHover);
+          var update = {
+            'xaxis.range[0]':timeat[0],
+            'xaxis.range[1]':timeat[timeat.length-1]
+          };
+          Plotly.relayout('PRADiv',update);
+          tracePbl.x = timeat;
+        }
         SelectChannel();
         setPositionLabel();
-        plotA.on('plotly_hover',plotHover);
+        polyline.setPath(locations);
+        map.setFitView([ polyline ]);
+        if(showHeat){
+          plotA.on('plotly_hover',plotHover);
+        }     
         setTimeout(getRealTimeData,10*1000);
       }
     });

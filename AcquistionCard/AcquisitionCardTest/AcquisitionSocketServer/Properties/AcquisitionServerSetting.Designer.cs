@@ -106,5 +106,77 @@ namespace AcquisitionSocketServer.Properties {
                 this["HumidityThreshold"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool UseDefaultGPS {
+            get {
+                return ((bool)(this["UseDefaultGPS"]));
+            }
+            set {
+                this["UseDefaultGPS"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("116.397392")]
+        public float DefaultLongitude {
+            get {
+                return ((float)(this["DefaultLongitude"]));
+            }
+            set {
+                this["DefaultLongitude"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("39.9034767")]
+        public float DefaultLatitude {
+            get {
+                return ((float)(this["DefaultLatitude"]));
+            }
+            set {
+                this["DefaultLatitude"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public float DefaultAltitude {
+            get {
+                return ((float)(this["DefaultAltitude"]));
+            }
+            set {
+                this["DefaultAltitude"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("COM3")]
+        public string ScreenPort {
+            get {
+                return ((string)(this["ScreenPort"]));
+            }
+            set {
+                this["ScreenPort"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("115200")]
+        public int ScreenPortRate {
+            get {
+                return ((int)(this["ScreenPortRate"]));
+            }
+            set {
+                this["ScreenPortRate"] = value;
+            }
+        }
     }
 }

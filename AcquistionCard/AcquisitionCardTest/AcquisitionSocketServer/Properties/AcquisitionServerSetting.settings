@@ -23,5 +23,23 @@
     <Setting Name="HumidityThreshold" Type="System.Single" Scope="User">
       <Value Profile="(Default)">80</Value>
     </Setting>
+    <Setting Name="UseDefaultGPS" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="DefaultLongitude" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">116.397392</Value>
+    </Setting>
+    <Setting Name="DefaultLatitude" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">39.9034767</Value>
+    </Setting>
+    <Setting Name="DefaultAltitude" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="ScreenPort" Type="System.String" Scope="User">
+      <Value Profile="(Default)">COM3</Value>
+    </Setting>
+    <Setting Name="ScreenPortRate" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">115200</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

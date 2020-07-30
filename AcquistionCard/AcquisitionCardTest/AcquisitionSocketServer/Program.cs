@@ -24,6 +24,7 @@ namespace AcquisitionSocketServer
         {
             SetGPSPort();
             SetPanPort();
+            SetScreenPort();
             LoadOngoingTask();
             SocketServie();        
         }

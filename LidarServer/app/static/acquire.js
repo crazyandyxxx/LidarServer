@@ -11,7 +11,8 @@ function set_require_heading(data) {
 }
 
 function set_require_tempe(data) {  
-    $('#tempehumi').text("    温度"+data.temperature.toFixed(0)+"    湿度"+data.humidity.toFixed(0));
+    $('#tempehumi').text("    温度"+data.temperature.toFixed(0)+"    湿度"+data.humidity.toFixed(0)+    
+                         "    能量"+data.laserEnergy.toFixed(0)+"    频率"+data.realFrequency.toFixed(0));
     if(data.tempeNormal){
         $('#tempemessage').text('');
     }else{

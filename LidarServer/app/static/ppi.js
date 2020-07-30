@@ -29,6 +29,7 @@ var rotationAngle = 0;
 var pie;
 var mouseTool; 
 var isPlaying = false;
+var isReal = false;
 var channelID = 'prr_A';
 var drawName;
 var layoutA = {
@@ -397,7 +398,8 @@ function generateTriangle(geometry, lnglat, r, resl, idata, rdata, verAng, horAn
       for(let i = 0; i<nmax+1; i++){
         x1.push(x0+i*resl*Math.cos(verAng/180*Math.PI)*Math.sin(horAngStart/180*Math.PI));
         y1.push(y0-i*resl*Math.cos(verAng/180*Math.PI)*Math.cos(horAngStart/180*Math.PI));
-        var h1 = z0-i*resl*Math.sin(verAng/180*Math.PI);
+        // var h1 = z0-i*resl*Math.sin(verAng/180*Math.PI);
+        var h1 = z0;
         if(is3D){
           h1 = 0;
           if(idata<rdata.length){
@@ -409,7 +411,8 @@ function generateTriangle(geometry, lnglat, r, resl, idata, rdata, verAng, horAn
         z1.push(h1);
         x2.push(x0+i*resl*Math.cos(verAng/180*Math.PI)*Math.sin(horAngEnd/180*Math.PI));
         y2.push(y0-i*resl*Math.cos(verAng/180*Math.PI)*Math.cos(horAngEnd/180*Math.PI));
-        var h2 = z0-i*resl*Math.sin(verAng/180*Math.PI);
+        // var h2 = z0-i*resl*Math.sin(verAng/180*Math.PI);
+        var h2 = z0;
         if(is3D){
           h2 = 0;
           if(idata<rdata.length-1){
@@ -469,6 +472,7 @@ function prepareData(data){
       height.push((i+1)*res);
   }
   verAng = data.result[0].verAngle;
+  rangeMax /= Math.cos(verAng/180*Math.PI);
   horAngStart = data.result[0].horAngle;
   horAngEnd = data.result[data.result.length-1].horAngle;
   horAngStep = data.result.length-1 > 0 ? data.result[1].horAngle-data.result[0].horAngle : 0;
@@ -512,6 +516,7 @@ function addMapEvents(){
   document.getElementById('opacity').addEventListener("change", ChangeColorOpacity);
   document.getElementById('rotation').addEventListener("change", ChangeRotationAngle);
   document.getElementById('createISOCurve').addEventListener("click",createISOHeatmap);
+  document.getElementById('createISOLine').addEventListener("click",createISOLine);
   document.getElementById('curvePlay').addEventListener("click",playHeatmap);
   document.getElementById('setCenter').addEventListener("click",setMapCenter);
   document.getElementById('addMarker').addEventListener("click",addMapMarker);
@@ -587,16 +592,21 @@ function getRealTimeData(){
         url: urlGetPpiData,
         success:function(data){
           prepareData(data);
-          lineIndex = 0;
-          plotA.removeListener('plotly_hover',plotHover);
-          var update = {
-            'xaxis.range[0]':timeat[0],
-            'xaxis.range[1]':timeat[timeat.length-1]
-          };
-          Plotly.relayout('PRADiv',update);
+          if(showHeat){
+            lineIndex = data.result.length-1;
+            layoutLineA.annotations[0].text = timeat[lineIndex];
+            plotA.removeListener('plotly_hover',plotHover);
+            var update = {
+              'xaxis.range[0]':timeat[0],
+              'xaxis.range[1]':timeat[timeat.length-1]
+            };
+            Plotly.relayout('PRADiv',update);
+          }
           SelectChannel();
-          plotA.on('plotly_hover',plotHover);
-          
+          if(showHeat){
+            plotA.on('plotly_hover',plotHover);
+          }
+                  
           document.getElementById('angleRange').textContent = "扫描范围"+horAngStart+" - "+horAngEnd;
           document.getElementById('angleStep').textContent = "扫描步长"+horAngStep;
           document.getElementById('angleVer').textContent = "垂直角度"+verAng;
@@ -790,7 +800,7 @@ function ChangeMinValue(e){
 function ChangeRangeMax(e){
   if(isPlaying){return;}
   var zMax = e.target;
-  rangeMax = Number(zMax.value);  
+  rangeMax = Number(zMax.value)/Math.cos(verAng/180*Math.PI);  
   object3Dlayer.clear();
   createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity); 
   createPieIndicator();
@@ -853,6 +863,51 @@ function createISOHeatmap(e){
   object3Dlayer.clear();
   createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity); 
   createPieIndicator();
+}
+
+function createISOLine(e){
+  var districtData = [];
+  let nmax = rangeMax/resolution;
+  let rM = 1 / map.getResolution(position, 20);
+  
+  for(let i=0;i<drawData.length;i=i+2){
+    for(let j=0;j<nmax;j=j+2){
+      let x = rM*resolution*(j+1)*Math.cos(verAng/180*Math.PI)*Math.sin((horAngStart+i*horAngStep)/180*Math.PI);
+      let y = -rM*resolution*(j+1)*Math.cos(verAng/180*Math.PI)*Math.cos((horAngStart+i*horAngStep)/180*Math.PI);
+      let p0 = map.lngLatToGeodeticCoord(position);
+      let pixel =  new AMap.Pixel(p0.x+x,p0.y+y);
+      let ll = map.geodeticCoordToLngLat(pixel);
+      districtData.push({
+        'lnglat': `${ll.lng},${ll.lat}`,
+        'value': `${drawData[i][j]}`
+      });
+    }
+  }
+
+  var contourLayer = new Loca.ContourLayer({
+      shape: 'isoline',
+      map: map
+  });
+
+  contourLayer.setData(districtData, {
+      lnglat: 'lnglat',
+      value: 'value'
+  });
+
+  contourLayer.setOptions({
+      smoothNumber: 1,
+      threshold: 20,
+      interpolation: {
+          step: 40,
+          effectRadius: 50,
+      },
+      style: {
+          height: 5 * 1E0,
+          color: ["#0c2c84", "#225ea8", "#1d91c0", "#41b6c4", "#7fcdbb", "#c7e9b4", "#ffffcc"]
+      }
+  });
+
+  contourLayer.render();
 }
 
 function playHeatmap(e){

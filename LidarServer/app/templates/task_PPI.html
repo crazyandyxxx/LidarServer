@@ -60,6 +60,7 @@
     <input id="addMeasurer" type="image" title="面积测量" src="../static/measurer.png" />
     <input id="clearOverlay" type="image" title="清除" src="../static/clear.png" />
     <input id="createISOCurve" type="image" title="3D热度图" src="../static/3dHeatmap.png"/>
+    <input id="createISOLine" type="image" title="等值线" src="../static/isoLine.png"/>
     <input id="curvePlay" type="image" title="播放" src="../static/play.svg"/>
     <input id="playSpeed" type="range" min="0" max="19" value="10">
     <input id="saveMap" type="image" title="保存截图" src="../static/savePic.png" />
@@ -130,10 +131,11 @@
   var task_id = '{{task_id}}';
   var urlGetPpiData = "{{ url_for('main.get_ppi_data') }}";
 </script>
-<script src="https://webapi.amap.com/maps?v=1.4.15&key=deccd88e5fc1ec27d19c67f6790c1c88&plugin=AMap.Geocoder,AMap.MouseTool"></script>
+<script src="https://webapi.amap.com/maps?v=1.4.15&key=deccd88e5fc1ec27d19c67f6790c1c88&plugin=AMap.Geocoder,AMap.MouseTool,Map3D"></script>
 <script src="//webapi.amap.com/ui/1.0/main.js?v=1.0.11"></script>
+<script src="//webapi.amap.com/loca?v=1.3.0&key=deccd88e5fc1ec27d19c67f6790c1c88"></script>
 <script src="../static/plotly-latest.min.js"></script>
 <script src="../static/html2canvas.min.js"></script>
 <script src="../static/colorbar.min.js"></script>
-<script defer src="../static/ppi.js"></script>
+<script defer src="../static/ppi.min.js"></script>
 {% endblock %}

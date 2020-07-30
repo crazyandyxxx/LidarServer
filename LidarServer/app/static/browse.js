@@ -161,7 +161,9 @@ function ExportTask(task_id,task_mode,timespan){
 }
 
 function ExportTaskData(){
-    checkChannels = $('#dataChannel').val();
+  let type = $( "#dataType option:selected" ).text();
+  checkChannels = $('#dataChannel').val();
+  if(type=="文本文件"){
     if(checkChannels==null){
       alert("数据内容不能为空！");
       return;
@@ -171,31 +173,32 @@ function ExportTaskData(){
         return;
       }
     }
-    rc = $('#rc').val();
-    sa = $('#sa').val();
-    snrT = $('#snrT').val();
-    pblT = $('#pblT').val();
-    $('#exportModal').modal('hide');
-    $('#myLoading').modal('show');
-    let type = $( "#dataType option:selected" ).text();
-    if(type=="文本文件"){
-      switch(curMode){
-        case '水平切面':
-          ExportPPI(curTaskId);
-          break;
-        case '垂直切面':
-          ExportRHI(curTaskId);
-          break;
-        case '定点扫描':
-          ExportLOS(curTaskId);
-          break;
-        case '走航扫描':
-          ExportMOV(curTaskId);
-          break;
-      }
-    }else if(type=="数据库文件"){
-      ExportDB(curTaskId);
-    }    
+  }
+  rc = $('#rc').val();
+  sa = $('#sa').val();
+  snrT = $('#snrT').val();
+  pblT = $('#pblT').val();
+  $('#exportModal').modal('hide');
+  $('#myLoading').modal('show');
+  
+  if(type=="文本文件"){
+    switch(curMode){
+      case '水平切面':
+        ExportPPI(curTaskId);
+        break;
+      case '垂直切面':
+        ExportRHI(curTaskId);
+        break;
+      case '定点扫描':
+        ExportLOS(curTaskId);
+        break;
+      case '走航扫描':
+        ExportMOV(curTaskId);
+        break;
+    }
+  }else if(type=="数据库文件"){
+    ExportDB(curTaskId);
+  }    
 }
 
 function DeleteTask(task_id){

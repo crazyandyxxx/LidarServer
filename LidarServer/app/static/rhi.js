@@ -559,16 +559,21 @@ function getRealTimeData(){
         url: urlGetRhiData,
         success:function(data){
           prepareData(data);
-          lineIndex = 0;
-          plotA.removeListener('plotly_hover',plotHover);
-          var update = {
-            'xaxis.range[0]':timeat[0],
-            'xaxis.range[1]':timeat[timeat.length-1]
-          };
-          Plotly.relayout('PRADiv',update);
+          if(showHeat){
+            lineIndex = data.result.length-1;
+            layoutLineA.annotations[0].text = timeat[lineIndex];
+            plotA.removeListener('plotly_hover',plotHover);
+            var update = {
+              'xaxis.range[0]':timeat[0],
+              'xaxis.range[1]':timeat[timeat.length-1]
+            };
+            Plotly.relayout('PRADiv',update);
+          }      
           SelectChannel();
-          plotA.on('plotly_hover',plotHover);
-          
+          if(showHeat){
+            plotA.on('plotly_hover',plotHover);
+          }
+                
           document.getElementById('angleRange').textContent = "扫描范围"+verAngStart+" - "+verAngEnd;
           document.getElementById('angleStep').textContent = "扫描步长"+verAngStep;
           document.getElementById('angleVer').textContent = "水平角度"+horAng;
