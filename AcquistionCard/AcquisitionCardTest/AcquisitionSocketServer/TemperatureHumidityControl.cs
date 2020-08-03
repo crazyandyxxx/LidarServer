@@ -47,18 +47,18 @@ namespace AcquisitionSocketServer
 
         private static void GetTempeHumi()
         {
-            byte[] tempeHumiOnByte = new byte[8] { 0x01, 0x03, 0x00, 0x09, 0x00, 0x0C, 0x14, 0x09 };
+            byte[] tempeHumiOnByte = new byte[8] { 0x01, 0x03, 0x00, 0x09, 0x00, 0x0C, 0x95, 0xCD };
             byte[] tempeHumiByteRv = new byte[30];
             while (true)
             {
                 SerialPortCommunicate(tempeHumiOnByte, tempeHumiByteRv, panPort);
-                inerTemperature = BitConverter.ToUInt16(new byte[2] { tempeHumiByteRv[7], tempeHumiByteRv[6] }, 0) / 10;
-                inerHumidity = (BitConverter.ToUInt16(new byte[2] { tempeHumiByteRv[9], tempeHumiByteRv[8] }, 0) + 5) / 10;
+                inerTemperature = BitConverter.ToUInt16(new byte[2] { tempeHumiByteRv[4], tempeHumiByteRv[3] }, 0) / 10;
+                inerHumidity = (BitConverter.ToUInt16(new byte[2] { tempeHumiByteRv[6], tempeHumiByteRv[5] }, 0) + 5) / 10;
                 if (inerTemperature > 100) inerTemperature -= 200;
                 inerTempeNormal = inerTemperature < Properties.AcquisitionServerSetting.Default.TemperatureThreshold ? 1 : 0;
                 inerHumiNormal = inerHumidity < Properties.AcquisitionServerSetting.Default.HumidityThreshold ? 1 : 0;
-                realFrequency = BitConverter.ToUInt16(new byte[2] { tempeHumiByteRv[23], tempeHumiByteRv[22] }, 0);
-                laserEnergy = BitConverter.ToUInt16(new byte[2] { tempeHumiByteRv[25], tempeHumiByteRv[24] }, 0) / 10;
+                realFrequency = BitConverter.ToUInt16(new byte[2] { tempeHumiByteRv[20], tempeHumiByteRv[19] }, 0);
+                laserEnergy = BitConverter.ToUInt16(new byte[2] { tempeHumiByteRv[22], tempeHumiByteRv[21] }, 0) / 10;
                 Thread.Sleep(50);
                 SetScreenContent(tempeHumiByteRv);
                 Thread.Sleep(50);

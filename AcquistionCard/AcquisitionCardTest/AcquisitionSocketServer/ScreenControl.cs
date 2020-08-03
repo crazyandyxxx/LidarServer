@@ -45,36 +45,37 @@ namespace AcquisitionSocketServer
             var bt = BitConverter.GetBytes((ushort)(currentAccumNum * 100.0 / accumTimes));
             screenByte[6] = bt[1];
             screenByte[7] = bt[0];
-            screenByte[8] = tempeHumiByteRv[6];
-            screenByte[9] = tempeHumiByteRv[7];
-            screenByte[10] = tempeHumiByteRv[8];
-            screenByte[11] = tempeHumiByteRv[9];
-            screenByte[12] = tempeHumiByteRv[14];
-            screenByte[13] = tempeHumiByteRv[15];
-            screenByte[14] = tempeHumiByteRv[16];
-            screenByte[15] = tempeHumiByteRv[17];
-            screenByte[16] = tempeHumiByteRv[18];
-            screenByte[17] = tempeHumiByteRv[19];
-            screenByte[18] = tempeHumiByteRv[20];
-            screenByte[19] = tempeHumiByteRv[21];
-            screenByte[20] = tempeHumiByteRv[22];
-            screenByte[21] = tempeHumiByteRv[23];
-            screenByte[22] = tempeHumiByteRv[24];
-            screenByte[23] = tempeHumiByteRv[25];
-            screenByte[24] = tempeHumiByteRv[26];
-            screenByte[25] = tempeHumiByteRv[27];
-            screenByte[26] = tempeHumiByteRv[28];
-            screenByte[27] = tempeHumiByteRv[29];
+            screenByte[8] = tempeHumiByteRv[3];
+            screenByte[9] = tempeHumiByteRv[4];
+            screenByte[10] = tempeHumiByteRv[5];
+            screenByte[11] = tempeHumiByteRv[6];
+            screenByte[12] = tempeHumiByteRv[11];
+            screenByte[13] = tempeHumiByteRv[12];
+            screenByte[14] = tempeHumiByteRv[13];
+            screenByte[15] = tempeHumiByteRv[14];
+            screenByte[16] = tempeHumiByteRv[15];
+            screenByte[17] = tempeHumiByteRv[16];
+            screenByte[18] = tempeHumiByteRv[17];
+            screenByte[19] = tempeHumiByteRv[18];
+            screenByte[20] = tempeHumiByteRv[19];
+            screenByte[21] = tempeHumiByteRv[20];
+            screenByte[22] = tempeHumiByteRv[21];
+            screenByte[23] = tempeHumiByteRv[22];
+            screenByte[24] = tempeHumiByteRv[23];
+            screenByte[25] = tempeHumiByteRv[24];
+            screenByte[26] = tempeHumiByteRv[25];
+            screenByte[27] = tempeHumiByteRv[26];
             screenByte[28] = powerByteRv[3];
             screenByte[29] = powerByteRv[4];
+            //Console.WriteLine("{0}", string.Join(", ", screenByte));
             SerialPortCommunicate(screenByte, null, screenPort);
         }
 
         private static void SetScreenGPS()
         {
-            byte[] gpsChar = new byte[22] { 0x5A, 0xA5, 0x13, 0x82, 0x50, 0x20, 0x30, 0x2C, 0x30, 0x20,
+            byte[] gpsChar = new byte[23] { 0x5A, 0xA5, 0x14, 0x82, 0x10, 0x0F, 0x20, 0x20, 0x20, 0x20,
                                             0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
-                                            0x20, 0x20, 0x20, 0x20,};
+                                            0x20, 0x20, 0x20, 0x20, 0x20};
             var lonChar = (int)(longitude * 10000);
             var latChar = (int)(latitude * 10000);
             List<byte> lonList = new List<byte>();
@@ -92,6 +93,7 @@ namespace AcquisitionSocketServer
             lonList.Insert(4, 0x2E);
             latList.Insert(4, 0x2E);
             lonList.Reverse();
+            lonList.Add(0x2c);
             latList.Reverse();
             lonList.AddRange(latList);
             for (int i = 0; i < lonList.Count; i++)
