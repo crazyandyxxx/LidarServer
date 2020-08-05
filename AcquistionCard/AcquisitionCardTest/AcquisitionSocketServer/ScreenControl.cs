@@ -32,12 +32,8 @@ namespace AcquisitionSocketServer
             Thread.Sleep(80);
         }
 
-        private static void SetScreenContent(byte[] tempeHumiByteRv)
+        private static void SetScreenContent(byte[] tempeHumiByteRv, byte[] powerByteRv)
         {
-            byte[] powerByte = new byte[8] { 0x02, 0x03, 0x00, 0x09, 0x00, 0x01, 0x54, 0x3B };
-            byte[] powerByteRv = new byte[7];
-            SerialPortCommunicate(powerByte, powerByteRv, panPort);
-
             byte[] screenByte = new byte[30] { 0x5A, 0xA5, 0x1B, 0x82, 0x10, 0x00, 0x00, 0x63,
                                                0x01, 0x45, 0x01, 0x4B, 0x01, 0x11, 0x01, 0xDB,
                                                0x26, 0xCF, 0x00, 0x05, 0x00, 0x00, 0x00, 0x00,

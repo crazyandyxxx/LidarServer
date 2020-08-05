@@ -49,6 +49,8 @@ namespace AcquisitionSocketServer
         {
             byte[] tempeHumiOnByte = new byte[8] { 0x01, 0x03, 0x00, 0x09, 0x00, 0x0C, 0x95, 0xCD };
             byte[] tempeHumiByteRv = new byte[30];
+            byte[] powerByte = new byte[8] { 0x02, 0x03, 0x00, 0x09, 0x00, 0x01, 0x54, 0x3B };
+            byte[] powerByteRv = new byte[7];
             while (true)
             {
                 SerialPortCommunicate(tempeHumiOnByte, tempeHumiByteRv, panPort);
@@ -59,11 +61,12 @@ namespace AcquisitionSocketServer
                 inerHumiNormal = inerHumidity < Properties.AcquisitionServerSetting.Default.HumidityThreshold ? 1 : 0;
                 realFrequency = BitConverter.ToUInt16(new byte[2] { tempeHumiByteRv[20], tempeHumiByteRv[19] }, 0);
                 laserEnergy = BitConverter.ToUInt16(new byte[2] { tempeHumiByteRv[22], tempeHumiByteRv[21] }, 0) / 10;
-                Thread.Sleep(50);
-                SetScreenContent(tempeHumiByteRv);
+                Thread.Sleep(1000);      
+                SerialPortCommunicate(powerByte, powerByteRv, panPort);
+                SetScreenContent(tempeHumiByteRv, powerByteRv);
                 Thread.Sleep(50);
                 SetScreenGPS();
-                Thread.Sleep(2000);
+                Thread.Sleep(1000);
             }
         }
     }

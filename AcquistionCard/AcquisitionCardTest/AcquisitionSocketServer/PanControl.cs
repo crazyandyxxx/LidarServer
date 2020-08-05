@@ -29,7 +29,7 @@ namespace AcquisitionSocketServer
             panPort.DataBits = 8;
             panPort.Parity = Parity.None;
             panPort.StopBits = StopBits.One;
-            panPort.ReadTimeout = 1000;
+            panPort.ReadTimeout = 1500;
             panPort.WriteTimeout = 1000;
             try
             {
@@ -188,6 +188,7 @@ namespace AcquisitionSocketServer
                             port.Read(rdData, 0, rdData.Length);
                             Thread.Sleep(80);
                         }
+                        Thread.Sleep(1000);
                     }
                     catch (System.Exception ex)
                     {
