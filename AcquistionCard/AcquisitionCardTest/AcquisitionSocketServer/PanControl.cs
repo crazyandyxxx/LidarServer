@@ -58,22 +58,6 @@ namespace AcquisitionSocketServer
                 var horRealEnd = horStartAng + horN * horAngStep;
                 var horTargetAng = horAng;
                 var verAng = verStartAng;
-                //if (horAng == horStartAng)
-                //{
-                //    var backAngStep = (horRealEnd - horStartAng) / 3;
-                //    for (int i = 1; i < 3; i++)
-                //    {
-                //        horTargetAng = horRealEnd - i * backAngStep;
-                //        if (verAng > 90)
-                //        {
-                //            horTargetAng += 180;
-                //        }
-                //        horTargetAng = (horTargetAng + 360) % 360;
-                //        ToAngle(horTargetAng, AngleType.Hor, 3, 200);
-                //    }
-                //}
-
-                //horTargetAng = horAng;
                 var verTargetAng = verAng;
                 if (verAng > 90)
                 {
@@ -182,13 +166,12 @@ namespace AcquisitionSocketServer
                         port.DiscardInBuffer();
                         port.DiscardOutBuffer();
                         port.Write(wrData, 0, wrData.Length);
-                        Thread.Sleep(80);
+                        Thread.Sleep(200);
                         if (rdData != null && port.BytesToRead != 0)
                         {
                             port.Read(rdData, 0, rdData.Length);
-                            Thread.Sleep(80);
+                            Thread.Sleep(200);
                         }
-                        Thread.Sleep(1000);
                     }
                     catch (System.Exception ex)
                     {
