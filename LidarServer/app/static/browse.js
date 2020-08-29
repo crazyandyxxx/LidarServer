@@ -12,6 +12,9 @@ var rc = 15000;
 var sa = 40;
 var snrT = 2;
 var pblT = 0.5;
+var pa = 243;
+var pb = 1.13;
+var pc = 0.5;
 
 $(function() {
   $('input[name="datetimes"]').daterangepicker({
@@ -178,6 +181,9 @@ function ExportTaskData(){
   sa = $('#sa').val();
   snrT = $('#snrT').val();
   pblT = $('#pblT').val();
+  pa = $('#pa').val();
+  pb = $('#pb').val();
+  pc = $('#pc').val();
   $('#exportModal').modal('hide');
   $('#myLoading').modal('show');
   
@@ -314,7 +320,7 @@ function WrtieTypeContent(taskMode, datatype, data, csvContent){
       csvContent.str += '********************'+'\r\n';
       for(let i=0; i<data.result.length;i++){
         WriteTypeTitle(taskMode,i,data,csvContent);
-        csvContent.str += data.result[i].ext.map(x => x>0? 243*Math.pow(x,1.13) : 0).join(',')+'\r\n';
+        csvContent.str += data.result[i].ext.map(x => x>0? pa*Math.pow(x,pb) : 0).join(',')+'\r\n';
       }
       break;
     case 'PM25':
@@ -323,7 +329,7 @@ function WrtieTypeContent(taskMode, datatype, data, csvContent){
       csvContent.str += '********************'+'\r\n';
       for(let i=0; i<data.result.length;i++){
         WriteTypeTitle(taskMode,i,data,csvContent);
-        csvContent.str += data.result[i].ext.map(x => x>0? 121.5*Math.pow(x,1.13) : 0).join(',')+'\r\n';
+        csvContent.str += data.result[i].ext.map(x => x>0? pc*pa*Math.pow(x,pb) : 0).join(',')+'\r\n';
       }
       break;
     case 'AOD':

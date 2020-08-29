@@ -8,7 +8,8 @@ var animI = 0;
 var playSpeed = 1000;
 var canBeStop = false;
 var rdata = {};
-var rangeMax = 6000;
+var rangeMax;
+var realMax = 6000;
 var colorOpacity = 0.5;
 var resolution = 15;
 var verAng = 0;
@@ -30,8 +31,11 @@ var pie;
 var mouseTool; 
 var isPlaying = false;
 var isReal = false;
+var isISOLine = false;
+var contourLayer;
 var channelID = 'prr_A';
-var drawName;
+var drawName = document.getElementById('channel').options[0].text;
+var currentDate;
 var layoutA = {
   xaxis: {
     title: '时间',
@@ -44,7 +48,7 @@ var layoutA = {
   yaxis: {
     title: '距离(km)',
     showline: true,
-    range:[0,rangeMax/1000]
+    range:[0,realMax/1000]
   },
   paper_bgcolor: 'transparent',
   plot_bgcolor: 'transparent',
@@ -64,7 +68,7 @@ xaxis: {
 },
 yaxis: {
   showline: true,
-  range:[0,rangeMax/1000],
+  range:[0,realMax/1000],
   ticks:'outside',
 },
 annotations: [{
@@ -98,6 +102,9 @@ var rc = 15000;
 var sa = 40;
 var snrT = 2;
 var pblT = 0.5;
+var pa = 243;
+var pb = 1.13;
+var pc = 0.5;
 var zoomLevel = 13;
 var positionLabel;
 
@@ -141,9 +148,8 @@ window.onload = function(){
   positionLabel = new AMap.Text({
     map:map
   });
-  $(function () {
-    $('[data-toggle="tooltip"]').tooltip();
-  });
+
+  $('[data-toggle="tooltip"]').tooltip();
   
   object3Dlayer = new AMap.Object3DLayer();
   map.add(object3Dlayer);
@@ -219,16 +225,23 @@ window.onload = function(){
       }));
       map.addControl(new AMap.Scale());
   });
-
-  $.post(urlGetPpiData, { 'task id': task_id, 'content':'list' },
+  $.post(urlGetPpiData, {'task id': task_id, 'content':'dates' },
+    function(data, status){
+      currentDate = data.result[0].dateEnd;
+      setDateRange(data.result[0].dateStart, data.result[0].dateEnd);
+  $.post(urlGetPpiData, { 'task id': task_id, 'content':'list', 
+                          'time start': data.result[0].dateEnd+' 00:00:00', 
+                          'time end': data.result[0].dateEnd+' 24:00:00'},
     function(data,status){    
       var sel1 = document.getElementById('timeSeries');
+      sel1.options.length = 0;
       for(let i=0; i<data.result.length;i++){
           sel1.options.add(new Option(data.result[i].timestamp+""));
       }
       $.ajax({
         type: "post",
-        data: { 'task id': task_id, 'content':'timedata', 'time': sel1.options[0].text},
+        data: { 'task id': task_id, 'content':'timedata', 
+                'time': currentDate+' '+sel1.options[0].text},
         url: urlGetPpiData,
         beforeSend:function(){
           $('#myLoading').modal('show');
@@ -258,7 +271,11 @@ window.onload = function(){
               exponentformat:"power"
             }
           };
-  
+
+          layoutA.xaxis.range = [timeat[0],timeat[timeat.length-1]];
+          layoutA.yaxis.range = [0,rangeMax/1000];
+          layoutLineA.yaxis.range = [0,rangeMax/1000];
+
           traceA = {
             x: drawData[0].slice(layoutLineA.yaxis.range[0]/resolution*1000,layoutLineA.yaxis.range[1]/resolution*1000),
             y: height,
@@ -269,10 +286,10 @@ window.onload = function(){
             }
           };
   
-          layoutA.xaxis.range = [timeat[0],timeat[timeat.length-1]];
+          
           layoutLineA.annotations[0].text = timeat[lineIndex];
-          Plotly.newPlot('PRADiv', [PRA_data], layoutA,layoutConfig);
-          Plotly.newPlot('lineADiv',[traceA],layoutLineA,layoutConfig);
+          Plotly.newPlot('PRADiv', [PRA_data], layoutA, layoutConfig);
+          Plotly.newPlot('lineADiv', [traceA], layoutLineA, layoutConfig);
   
           plotA.on('plotly_hover',plotHover);
           plotA.on('plotly_unhover',plotUnHover);
@@ -284,12 +301,50 @@ window.onload = function(){
         }
       });
   });
+});
   mouseTool = new AMap.MouseTool(map);
   mouseTool.on('draw',function(e){
     var overlay = e.obj;  
-});
+  });
   document.getElementById('playSpeed').oninput = function(){playSpeed=this.value*100;};
 };
+
+function setDateRange(startT, endT){
+  $('input[name="dates"]').daterangepicker({
+    singleDatePicker: true,
+    startDate: endT,
+    endDate: endT,
+    minDate: startT,
+    maxDate: endT,
+    locale: {
+        format: 'YYYY/MM/DD',
+        applyLabel: '确定',
+        cancelLabel: '取消',
+        fromLabel: '从',
+        toLabel: '至',
+        customRangeLabel: 'Custom',
+        weekLabel: '周',
+        daysOfWeek: ['日', '一', '二', '三', '四', '五','六'],
+        monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+        firstDay: 1
+    }
+  },
+  function(start, end) {
+    $.post(urlGetPpiData, { 'task id': task_id, 'content':'list', 
+                            'time start': start.format('YYYY-MM-DD')+' 00:00:00', 
+                            'time end': start.format('YYYY-MM-DD')+' 24:00:00'},
+      function(data,status){  
+        currentDate = start.format('YYYY-MM-DD');  
+        var sel1 = document.getElementById('timeSeries');
+        sel1.options.length = 0;
+        for(let i=0; i<data.result.length;i++){
+          sel1.options.add(new Option(data.result[i].timestamp+""));
+        }
+        SelectTime();
+    });
+  }
+  );
+}
 
 function plotHover(data){
   var pn='';
@@ -300,7 +355,7 @@ function plotHover(data){
   }
   lineIndex = pn[1];
   let rM = rangeMax / map.getResolution(position, 20);
-  let z = rM*Math.sin(verAng/180*Math.PI);
+  let z = 0;//rM*Math.sin(verAng/180*Math.PI);
   let x = rM*Math.cos(verAng/180*Math.PI)*Math.sin((horAngStart+lineIndex*horAngStep)/180*Math.PI);
   let y = -rM*Math.cos(verAng/180*Math.PI)*Math.cos((horAngStart+lineIndex*horAngStep)/180*Math.PI);
 
@@ -347,7 +402,7 @@ function createPieIndicator(){
   points3D.transparent = true;
   var pointsGeo = points3D.geometry;
   let rM = rangeMax / map.getResolution(position, 20);
-  let height = rM*Math.sin(verAng/180*Math.PI);
+  let height = 0;//rM*Math.sin(verAng/180*Math.PI);
   let x = rM*Math.cos(verAng/180*Math.PI)*Math.sin((horAngStart+lineIndex*horAngStep)/180*Math.PI);
   let y = -rM*Math.cos(verAng/180*Math.PI)*Math.cos((horAngStart+lineIndex*horAngStep)/180*Math.PI);
   // 连线
@@ -472,7 +527,7 @@ function prepareData(data){
       height.push((i+1)*res);
   }
   verAng = data.result[0].verAngle;
-  rangeMax /= Math.cos(verAng/180*Math.PI);
+  rangeMax = realMax/Math.cos(verAng/180*Math.PI);
   horAngStart = data.result[0].horAngle;
   horAngEnd = data.result[data.result.length-1].horAngle;
   horAngStep = data.result.length-1 > 0 ? data.result[1].horAngle-data.result[0].horAngle : 0;
@@ -501,8 +556,8 @@ function prepareData(data){
     rdata.raw_B.push(data.result[i].raw_B);
     rdata.ext.push(data.result[i].ext);
     rdata.dep.push(data.result[i].dep);
-    rdata.pm10.push(data.result[i].ext.map(x => x>0? 243*Math.pow(x,1.13) : 0));
-    rdata.pm25.push(data.result[i].ext.map(x => x>0? 121.5*Math.pow(x,1.13) : 0));
+    rdata.pm10.push(data.result[i].ext.map(x => x>0? pa*Math.pow(x,pb) : 0));
+    rdata.pm25.push(data.result[i].ext.map(x => x>0? pc*pa*Math.pow(x,pb) : 0));
   }
 }
   
@@ -549,6 +604,9 @@ function ReCalculation(){
   sa = $('#sa').val();
   snrT = $('#snrT').val();
   pblT = $('#pblT').val();
+  pa = $('#pa').val();
+  pb = $('#pb').val();
+  pc = $('#pc').val();
   var sel1 = document.getElementById('timeSeries');
   var index = sel1.selectedIndex;
   $.ajax({
@@ -571,7 +629,13 @@ function ReCalculation(){
 
 function getRealTimeData(){
   if(document.getElementById('realTime').checked){
-    $.post(urlGetPpiData, { 'task id': task_id, 'content':'list' },
+    $.post(urlGetPpiData, {'task id': task_id, 'content':'dates' },
+    function(data, status){
+      currentDate = data.result[0].dateEnd;
+      setDateRange(data.result[0].dateStart, data.result[0].dateEnd);
+    $.post(urlGetPpiData, { 'task id': task_id, 'content':'list',
+                            'time start': data.result[0].dateEnd+' 00:00:00', 
+                            'time end': data.result[0].dateEnd+' 24:00:00' },
     function(data,status){ 
       if(isPlaying){
         setTimeout(getRealTimeData,10*1000);
@@ -587,7 +651,7 @@ function getRealTimeData(){
         type: "post",
         data: { 'task id': task_id, 
                 'content':'timedata', 
-                'time': sel1.options[0].text,
+                'time': currentDate+' '+sel1.options[0].text,
                 'calc param': `{"rc": ${rc}, "sa": ${sa}, "snrT": ${snrT}, "pblT": ${pblT} }` },
         url: urlGetPpiData,
         success:function(data){
@@ -615,6 +679,7 @@ function getRealTimeData(){
         }
       });
   });
+});
   }  
 }
 
@@ -683,15 +748,15 @@ function deleteMarker(e){
   map.remove(e.target);
 }
 
-function SelectTime(e){
+function SelectTime(){
   if(isPlaying){return;}
-  var sel1 = e.target;
+  var sel1 = document.getElementById('timeSeries');
   var index = sel1.selectedIndex;
   $.ajax({
     type: "post",
     data: { 'task id': task_id, 
             'content':'timedata', 
-            'time': sel1.options[index].text,
+            'time': currentDate+' '+sel1.options[index].text,
             'calc param': `{"rc": ${rc}, "sa": ${sa}, "snrT": ${snrT}, "pblT": ${pblT} }` },
     url: urlGetPpiData,
     beforeSend:function(){
@@ -713,7 +778,7 @@ function SelectTime(e){
       document.getElementById('angleRange').textContent = "扫描范围"+horAngStart+" - "+horAngEnd;
       document.getElementById('angleStep').textContent = "扫描步长"+horAngStep;
       document.getElementById('angleVer').textContent = "垂直角度"+verAng;
-      document.getElementById('timeStamp').textContent = sel1.options[index].text+"至"+data.result[data.result.length-1].timestamp;
+      document.getElementById('timeStamp').textContent = data.result[0].timestamp+"至"+data.result[data.result.length-1].timestamp;
     }
   });     
 }
@@ -722,39 +787,32 @@ function SelectChannel(){
   if(isPlaying){return;}
   var channel = document.getElementById('channel');
   drawData = rdata.prr_A;
+  channelID = channel.options[channel.selectedIndex].value;
   drawName = channel.options[channel.selectedIndex].text;
-  switch(drawName){
-    case '平行通道距离校正信号':
+  switch(channelID){
+    case 'prr_A':
       drawData = rdata.prr_A;
-      channelID = 'prr_A';
       break;
-    case '垂直通道距离校正信号':
+    case 'prr_B':
       drawData = rdata.prr_B;
-      channelID = 'prr_B';
       break;
-    case '消光系数':
+    case 'ext':
       drawData = rdata.ext;
-      channelID = 'ext';
       break;
-    case '退偏比':
+    case 'dep':
       drawData = rdata.dep;
-      channelID = 'dep';
       break;
-    case '平行通道原始信号':
+    case 'raw_A':
       drawData = rdata.raw_A;
-      channelID = 'raw_A';
       break;
-    case '垂直通道原始信号':
+    case 'raw_B':
       drawData = rdata.raw_B;
-      channelID = 'raw_B';
       break;
-    case 'PM10':
+    case 'pm10':
       drawData = rdata.pm10;
-      channelID = 'pm10';
       break;
-    case 'PM2.5':
+    case 'pm25':
       drawData = rdata.pm25;
-      channelID = 'pm25';
       break;
   }
   object3Dlayer.clear();
@@ -800,7 +858,8 @@ function ChangeMinValue(e){
 function ChangeRangeMax(e){
   if(isPlaying){return;}
   var zMax = e.target;
-  rangeMax = Number(zMax.value)/Math.cos(verAng/180*Math.PI);  
+  realMax = Number(zMax.value);
+  rangeMax = realMax/Math.cos(verAng/180*Math.PI);  
   object3Dlayer.clear();
   createPie(position,drawData,resolution,rangeMax,verAng,horAngStart,horAngEnd,horAngStep,vMin,vMax,colorOpacity); 
   createPieIndicator();
@@ -813,12 +872,11 @@ function ChangeRangeMax(e){
   traceA.x = drawData[lineIndex].slice(layoutLineA.yaxis.range[0]/resolution*1000,layoutLineA.yaxis.range[1]/resolution*1000);
   traceA.y = height.slice(layoutLineA.yaxis.range[0]/resolution*1000,layoutLineA.yaxis.range[1]/resolution*1000);
   Plotly.react('lineADiv',[traceA],layoutLineA);  
-  circle.setRadius(rangeMax*Math.cos(verAng/180*Math.PI));
 }
 
 function ChangeRangeMin(){
   var zMin = document.getElementById('zMin'); 
-  rangeMin = Number(zMin.value); 
+  rangeMin = Number(zMin.value)/Math.cos(verAng/180*Math.PI);
   layoutA.yaxis.range[0] = rangeMin/1000;
   layoutLineA.yaxis.range[0] = rangeMin/1000;
   var update = {
@@ -866,6 +924,11 @@ function createISOHeatmap(e){
 }
 
 function createISOLine(e){
+  if(isISOLine){
+    contourLayer.setMap(null);
+    isISOLine = false;
+    return;
+  }
   var districtData = [];
   let nmax = rangeMax/resolution;
   let rM = 1 / map.getResolution(position, 20);
@@ -884,7 +947,7 @@ function createISOLine(e){
     }
   }
 
-  var contourLayer = new Loca.ContourLayer({
+  contourLayer = new Loca.ContourLayer({
       shape: 'isoline',
       map: map
   });
@@ -908,6 +971,7 @@ function createISOLine(e){
   });
 
   contourLayer.render();
+  isISOLine = true;
 }
 
 function playHeatmap(e){

@@ -244,7 +244,7 @@ def get_los_data():
             task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=startTime,TaskData.timestamp<=endTime).count()
             return jsonify(result=[task_dat])
         if(content=='view'):           
-            task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=startTime,TaskData.timestamp<=endTime).order_by(func.random()).limit(500).from_self().order_by(TaskData.timestamp).all()
+            task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=startTime,TaskData.timestamp<=endTime).order_by(func.random()).limit(800).from_self().order_by(TaskData.timestamp).all()
         if(content=='export'):
             data_start = int(request.values.get('data start', 0))
             data_end = int(request.values.get('data end', 0))
@@ -308,7 +308,7 @@ def get_mov_data():
             task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=startTime,TaskData.timestamp<=endTime).count()
             return jsonify(result=[task_dat])
         if(content=='view'):           
-            task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=startTime,TaskData.timestamp<=endTime).order_by(TaskData.timestamp).all()
+            task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.timestamp>=startTime,TaskData.timestamp<=endTime).order_by(func.random()).limit(800).from_self().order_by(TaskData.timestamp).all()
         if(content=='export'):
             data_start = int(request.values.get('data start', 0))
             data_end = int(request.values.get('data end', 0))
@@ -374,6 +374,11 @@ def get_ppi_data():
         if(time_start and time_end):
             startTime = time_start
             endTime = time_end
+        if(content == 'dates'):
+            data = {}
+            data['dateStart'] = "{}".format(startTime.strftime('%Y-%m-%d'))
+            data['dateEnd'] = "{}".format(endTime.strftime('%Y-%m-%d'))
+            results.append(data)
         if(content=='list'):
             task_dat = TaskData.query.filter(TaskData.task_id==task_id,TaskData.hor_angle==horStartAng, TaskData.timestamp>=startTime, TaskData.timestamp<=endTime).order_by(TaskData.timestamp.desc()).all()
             task_dat2 = TaskData.query.filter(TaskData.task_id==task_id,TaskData.hor_angle==horStartAng+horAngStep).order_by(TaskData.timestamp.desc()).all()
@@ -382,13 +387,13 @@ def get_ppi_data():
                 for i in range(lt):
                     data = {}
                     ts = task_dat[i].timestamp
-                    data['timestamp']="{}".format(ts.strftime('%Y-%m-%d %H:%M:%S'))
+                    data['timestamp']="{}".format(ts.strftime('%H:%M:%S'))
                     results.append(data)
             else:
                 for i in range(lt-1):
                     data = {}
                     ts = task_dat[i+1].timestamp
-                    data['timestamp']="{}".format(ts.strftime('%Y-%m-%d %H:%M:%S'))
+                    data['timestamp']="{}".format(ts.strftime('%H:%M:%S'))
                     results.append(data)
         if(content=='timedata'):
             timeat = request.values.get('time',0)
@@ -501,6 +506,11 @@ def get_rhi_data():
         if(time_start and time_end):
             startTime = time_start
             endTime = time_end
+        if(content == 'dates'):
+            data = {}
+            data['dateStart'] = "{}".format(startTime.strftime('%Y-%m-%d'))
+            data['dateEnd'] = "{}".format(endTime.strftime('%Y-%m-%d'))
+            results.append(data)
         if(content=='list'):
             task_dat = TaskData.query.filter(TaskData.task_id==task_id, TaskData.ver_angle==verStartAng, TaskData.timestamp>=startTime, TaskData.timestamp<=endTime).order_by(TaskData.timestamp.desc()).all()
             task_dat2 = TaskData.query.filter_by(task_id=task_id,ver_angle=verStartAng+verAngStep).order_by(TaskData.timestamp.desc()).all()
@@ -509,13 +519,13 @@ def get_rhi_data():
                 for i in range(lt):
                     data = {}
                     ts = task_dat[i].timestamp
-                    data['timestamp']="{}".format(ts.strftime('%Y-%m-%d %H:%M:%S'))
+                    data['timestamp']="{}".format(ts.strftime('%H:%M:%S'))
                     results.append(data)
             else:
                 for i in range(lt-1):
                     data = {}
                     ts = task_dat[i+1].timestamp
-                    data['timestamp']="{}".format(ts.strftime('%Y-%m-%d %H:%M:%S'))
+                    data['timestamp']="{}".format(ts.strftime('%H:%M:%S'))
                     results.append(data)
         if(content=='timedata'):
             timeat = request.values.get('time',0)

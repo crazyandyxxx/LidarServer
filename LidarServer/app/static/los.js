@@ -16,7 +16,9 @@ var BMin = 0;
 var BMax = 10000;
 var lineIndex = 0;
 var drawDataA={}, drawDataB={};
-var drawNameA = '平行通道距离校正信号',drawNameB='垂直通道距离校正信号';
+var drawNameA = document.getElementById('channelA').options[0].text;
+var drawNameB = document.getElementById('channelB').options[1].text;
+var channelIDA = 'prr_A', channelIDB = 'prr_B';
 var res = 15;
 var layoutA = {
   xaxis: {
@@ -124,6 +126,9 @@ var rc = 15000;
 var sa = 40;
 var snrT = 2;
 var pblT = 0.5;
+var pa = 243;
+var pb = 1.13;
+var pc = 0.5;
 
 function ReCalculation(){
   $('#calcModal').modal('hide');
@@ -131,6 +136,9 @@ function ReCalculation(){
   sa = $('#sa').val();
   snrT = $('#snrT').val();
   pblT = $('#pblT').val();
+  pa = $('#pa').val();
+  pb = $('#pb').val();
+  pc = $('#pc').val();
   $.ajax({
     type: "post",
     data: { 'task id': task_id, 
@@ -191,8 +199,8 @@ function prepareData(data){
     linePbl.push(data.result[i].pbl/1000);
     let aod = data.result[i].ext.slice(0,Math.round(3/res)).reduce(( acc, cur ) => acc + cur)*res;
     lineAOD.push(aod>15?15:aod);
-    linePM10.push(data.result[i].ext.map(x => x>0? 243*Math.pow(x,1.13) : 0));
-    linePM25.push(data.result[i].ext.map(x => x>0? 121.5*Math.pow(x,1.13) : 0));
+    linePM10.push(data.result[i].ext.map(x => x>0? pa*Math.pow(x,pb) : 0));
+    linePM25.push(data.result[i].ext.map(x => x>0? pc*pa*Math.pow(x,pb) : 0));
   }
 }
 
@@ -451,38 +459,39 @@ function getColor(v, vmin, vmax, alpha){
 function SelectChannelA(){
     var channel = document.getElementById('channelA');
     tracePblA.visible = false;
+    channelIDA = channel.options[channel.selectedIndex].value;
     drawNameA = channel.options[channel.selectedIndex].text;
-    switch(drawNameA){
-      case '平行通道距离校正信号':
+    switch(channelIDA){
+      case 'prr_A':
         drawDataA = linePRA;
         break;
-      case '垂直通道距离校正信号':
+      case 'prr_B':
         drawDataA = linePRB;
         break;
-      case '消光系数':
+      case 'ext':
         drawDataA = lineExt;
         break;
-      case '退偏比':
+      case 'dep':
         drawDataA = lineDep;
         break;
-      case '平行通道原始信号':
+      case 'raw_A':
         drawDataA = lineA;
         break;
-      case '垂直通道原始信号':
+      case 'raw_B':
         drawDataA = lineB;
         break;
-      case 'PM10':
+      case 'pm10':
         drawDataA = linePM10;
         break;
-      case 'PM2.5':
+      case 'pm25':
         drawDataA = linePM25;
         break;
-      case '污染边界层':
+      case 'pbl':
         drawDataA = lineExt;
         tracePblA.y = linePbl;
         tracePblA.visible = true;
         break;
-      case '气溶胶光学厚度':
+      case 'aod':
         drawDataA = lineExt;
         tracePblA.y = lineAOD;
         tracePblA.visible = true;
@@ -572,38 +581,39 @@ function SaveLineA(){
 function SelectChannelB(){
     var channel = document.getElementById('channelB');
     tracePblB.visible=false;
+    channelIDB = channel.options[channel.selectedIndex].value;
     drawNameB = channel.options[channel.selectedIndex].text;
-    switch(drawNameB){
-      case '平行通道距离校正信号':
+    switch(channelIDB){
+      case 'prr_A':
         drawDataB = linePRA;
         break;
-      case '垂直通道距离校正信号':
+      case 'prr_B':
         drawDataB = linePRB;
         break;
-      case '消光系数':
+      case 'ext':
         drawDataB = lineExt;
         break;
-      case '退偏比':
+      case 'dep':
         drawDataB = lineDep;
         break;
-      case '平行通道原始信号':
+      case 'raw_A':
         drawDataB = lineA;
         break;
-      case '垂直通道原始信号':
+      case 'raw_B':
         drawDataB = lineB;
         break;
-      case 'PM10':
+      case 'pm10':
         drawDataB = linePM10;
         break;
-      case 'PM2.5':
+      case 'pm25':
         drawDataB = linePM25;
         break;
-      case '污染边界层':
+      case 'pbl':
         drawDataB = lineExt;
         tracePblB.y = linePbl;
         tracePblB.visible = true;
         break;
-      case '气溶胶光学厚度':
+      case 'aod':
         drawDataB = lineExt;
         tracePblB.y = lineAOD;
         tracePblB.visible = true;

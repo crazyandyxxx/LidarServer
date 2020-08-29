@@ -15,7 +15,8 @@ var drawData = [];
 var timeat=[];
 var height = [];
 var lines, points3D;
-var drawName = '平行通道距离校正信号';
+var channelID;
+var drawName = document.getElementById('channel').options[0].text;
 var poistionLabel;
 var layoutA = {
       xaxis: {
@@ -86,6 +87,9 @@ var rc = 15000;
 var sa = 40;
 var snrT = 2;
 var pblT = 0.5;
+var pa = 243;
+var pb = 1.13;
+var pc = 0.5;
 var polyline;
 
 function setMapCenter(){
@@ -102,6 +106,9 @@ function ReCalculation(){
   sa = $('#sa').val();
   snrT = $('#snrT').val();
   pblT = $('#pblT').val();
+  pa = $('#pa').val();
+  pb = $('#pb').val();
+  pc = $('#pc').val();
   $.ajax({
     type: "post",
     data: { 'task id': task_id, 
@@ -127,7 +134,7 @@ function saveMap(){
         // Browsers that support HTML5 download attribute
         var url = URL.createObjectURL(blob);
         link.setAttribute("href", url);
-        link.setAttribute("download", "走航扫描截图_"+timeat[0]+"-"+timeat[timeat.length-1]+".png");
+        link.setAttribute("download", "走航扫描截图_"+drawName+timeat[0]+"-"+timeat[timeat.length-1]+".png");
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
@@ -478,8 +485,8 @@ function prepareData(data){
           rdata.pbl.push(data.result[i].pbl/1000);
           let aod = data.result[i].ext.slice(0,Math.round(3/res)).reduce(( acc, cur ) => acc + cur)*res;
           rdata.aod.push(aod>15?15:aod);
-          rdata.pm10.push(data.result[i].ext.map(x => x>0? 243*Math.pow(x,1.13) : 0));
-          rdata.pm25.push(data.result[i].ext.map(x => x>0? 121.5*Math.pow(x,1.13) : 0));
+          rdata.pm10.push(data.result[i].ext.map(x => x>0? pa*Math.pow(x,pb) : 0));
+          rdata.pm25.push(data.result[i].ext.map(x => x>0? pc*pa*Math.pow(x,pb) : 0));
           var longitude = data.result[i].longitude;
           var latitude = data.result[i].latitude;
           var altitude = data.result[i].altitude;
@@ -641,39 +648,40 @@ var getColorByAdcode = function (adcode) {
 
 function SelectChannel(){
     var channel = document.getElementById('channel');
+    channelID = channel.options[channel.selectedIndex].value;
     drawName = channel.options[channel.selectedIndex].text;
     tracePbl.visible = false;
-    switch(drawName){
-      case '平行通道距离校正信号':
+    switch(channelID){
+      case 'prr_A':
         drawData = rdata.prr_A;
         break;
-      case '垂直通道距离校正信号':
+      case 'prr_B':
         drawData = rdata.prr_B;
         break;
-      case '消光系数':
+      case 'ext':
         drawData = rdata.ext;
         break;
-      case '退偏比':
+      case 'dep':
         drawData = rdata.dep;
         break;
-      case '平行通道原始信号':
+      case 'raw_A':
         drawData = rdata.raw_A;
         break;
-      case '垂直通道原始信号':
+      case 'raw_B':
         drawData = rdata.raw_B;
         break;
-      case 'PM10':
+      case 'pm10':
         drawData = rdata.pm10;
         break;
-      case 'PM2.5':
+      case 'pm25':
         drawData = rdata.pm25;
         break;
-      case '污染边界层':
+      case 'pbl':
         drawData = rdata.ext;
         tracePbl.y = rdata.pbl;
         tracePbl.visible = true;
         break;
-      case '气溶胶光学厚度':
+      case 'aod':
           drawData = rdata.ext;
           tracePbl.y = rdata.aod;
           tracePbl.visible = true;
