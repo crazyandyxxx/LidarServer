@@ -16,7 +16,7 @@ def aerosol_calc(chARaw,chBRaw,overlapA,overlapB,frequency,duration,resolution=1
     noise = np.std(chA[bn:]+chB[bn:])
     chACutBg = chA-bgA
     chBCutBg = chB-bgB
-    snr = (chACutBg+chBCutBg)/noise
+    snr = (chACutBg+chBCutBg)/noise if noise>0 else 999
     chACutBg = chACutBg/overlapA
     chBCutBg = chBCutBg/overlapB
     dePolar = np.where(chACutBg!=0,chBCutBg/chACutBg,0)

@@ -15,7 +15,7 @@ function set_require_cpu(data) {
 }
 
 function set_require_version(data) {  
-    $('#softVer').text('1.13.0');
+    $('#softVer').text('data.version');
 }
 
 $(function() {
