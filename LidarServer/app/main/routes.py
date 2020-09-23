@@ -61,12 +61,13 @@ def acquire():
             with open("./config/acquisition.ini","w") as f:
                 config.write(f)
 
-            start_acquisition(task_id, mode, freq, dura, binN, resolution, verSt, verEd, verStep, horSt, horEd, horStep)              
-            task = Task(id=task_id, mode=mode, laser_freq=freq, duration=dura, resolution=resolution, bin_length=binN, 
-                        data_num = 0, ver_start_angle=verSt, ver_end_angle=verEd, ver_step=verStep, 
-                        hor_start_angle=horSt, hor_end_angle=horEd,hor_step=horStep)
-            db.session.add(task)
-            db.session.commit()                    
+            r = start_acquisition(task_id, mode, freq, dura, binN, resolution, verSt, verEd, verStep, horSt, horEd, horStep)     
+            if r:         
+                task = Task(id=task_id, mode=mode, laser_freq=freq, duration=dura, resolution=resolution, bin_length=binN, 
+                            data_num = 0, ver_start_angle=verSt, ver_end_angle=verEd, ver_step=verStep, 
+                            hor_start_angle=horSt, hor_end_angle=horEd,hor_step=horStep)
+                db.session.add(task)
+                db.session.commit()                    
         return redirect(url_for('main.acquire'))
         
     elif request.method == 'GET':

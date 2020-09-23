@@ -5,10 +5,10 @@ from app import status
         
 host = '127.0.0.1' # 获取本地主机名
 port = 6016                # 设置端口号
+socket.setdefaulttimeout(0.31)
 
 def start_acquisition(taskId, mode, frequency, duration, binNum, resolution, verStartAng, verEndAng, verAngStep, horStartAng, horEndAng, horAngStep):   
     s = socket.socket() # 创建 socket 对象
-    s.connect((host, port))
     acq_params = {}
     acq_params['taskId'] = taskId
     acq_params['mode'] = mode
@@ -23,90 +23,93 @@ def start_acquisition(taskId, mode, frequency, duration, binNum, resolution, ver
     acq_params['horEndAng'] = horEndAng
     acq_params['horAngStep'] = horAngStep
     start_cmd={'cmdType':'acqStart', 'cmdParams':acq_params}
-
-    s.sendall(json.dumps(start_cmd).encode())
-    r = (json.loads(s.recv(1024).decode()))
-    s.close()
-
-    return r['result']
+    res = 0
+    try:
+        s.connect((host, port))
+        s.sendall(json.dumps(start_cmd).encode())
+        s.settimeout(2)
+        r = (json.loads(s.recv(1024).decode()))
+        res = r['result']
+        s.close()
+    except  socket.timeout as e:
+        print(e)
+    return res
 
 def stop_acquisition():
     s = socket.socket()
-    s.connect((host, port))
     acq_params = {}
     start_cmd={'cmdType':'acqStop', 'cmdParams':acq_params}
-
-    s.sendall(json.dumps(start_cmd).encode())
-    r = (json.loads(s.recv(1024).decode()))
-    s.close()
+    try:
+        s.connect((host, port))
+        s.sendall(json.dumps(start_cmd).encode())
+        r = (json.loads(s.recv(1024).decode()))
+        s.close()
+    except  socket.timeout as e:
+        print(e) 
 
 def restart_acquisition():
     s = socket.socket()
-    s.connect((host, port))
     acq_params = {}
     start_cmd={'cmdType':'acqRestart', 'cmdParams':acq_params}
-
-    s.sendall(json.dumps(start_cmd).encode())
-    r = (json.loads(s.recv(1024).decode()))
-    s.close()
+    try:
+        s.connect((host, port))
+        s.sendall(json.dumps(start_cmd).encode())
+        r = (json.loads(s.recv(1024).decode()))
+        s.close()
+    except  socket.timeout as e:
+        print(e) 
 
 def check_acquisition_progress():
     s = socket.socket()
-    s.connect((host, port))
     acq_params = {}
     start_cmd={'cmdType':'acqProgress', 'cmdParams':acq_params}
-
-    s.sendall(json.dumps(start_cmd).encode())
-    r = (json.loads(s.recv(1024).decode()))
-    s.close()
-    status.progress = r['result']
-    return r['result']
-
-def check_acquisition_running():
-    s = socket.socket()
-    s.connect((host, port))
-    acq_params = {}
-    start_cmd={'cmdType':'acqRunning', 'cmdParams':acq_params}
-
-    s.sendall(json.dumps(start_cmd).encode())
-    r = (json.loads(s.recv(1024).decode()))
-    s.close()
-    return r['result']    
+    try:
+        s.connect((host, port))
+        s.sendall(json.dumps(start_cmd).encode())
+        r = (json.loads(s.recv(1024).decode()))
+        s.close()
+        status.progress = r['result']
+    except  socket.timeout as e:
+        print(e)   
 
 def check_gps():
     s = socket.socket()
-    s.connect((host, port))
     acq_params = {}
     start_cmd={'cmdType':'acqGPS', 'cmdParams':acq_params}
+    try:
+        s.connect((host, port))
+        s.sendall(json.dumps(start_cmd).encode())
+        r = (json.loads(s.recv(1024).decode()))
+        s.close()
+        status.gps = r['result'] 
+    except  socket.timeout as e:
+        print(e)
 
-    s.sendall(json.dumps(start_cmd).encode())
-    r = (json.loads(s.recv(1024).decode()))
-    s.close()
-    status.gps = r['result']
-    return r['result'] 
 
 def check_heading():
     s = socket.socket()
-    s.connect((host, port))
     acq_params = {}
     start_cmd={'cmdType':'headingpitch', 'cmdParams':acq_params}
-
-    s.sendall(json.dumps(start_cmd).encode())
-    r = (json.loads(s.recv(1024).decode()))
-    s.close()
-    status.heading = r['result']
-    return r['result'] 
+    try:
+        s.connect((host, port))
+        s.sendall(json.dumps(start_cmd).encode())
+        r = (json.loads(s.recv(1024).decode()))
+        s.close()
+        status.heading = r['result']
+    except  socket.timeout as e:
+        print(e)
 
 def check_tempeHumi():
     s = socket.socket()
-    s.connect((host, port))
     acq_params = {}
     start_cmd={'cmdType':'temperatureHumidtity', 'cmdParams':acq_params}
-
-    s.sendall(json.dumps(start_cmd).encode())
-    r = (json.loads(s.recv(1024).decode()))
-    s.close()
-    status.tempe = r['result'] 
-    return r['result'] 
+    try:
+        s.connect((host, port))
+        s.sendall(json.dumps(start_cmd).encode())
+        r = (json.loads(s.recv(1024).decode()))
+        s.close()
+        status.tempe = r['result'] 
+    except  socket.timeout as e:
+        print(e)
 
 

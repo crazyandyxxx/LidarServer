@@ -51,7 +51,7 @@ def CheckExceptionStop():
                 except Exception as e:
                     print('send mail error', e)      
 
-@scheduler.task(IntervalTrigger(seconds=1))
+@scheduler.task(IntervalTrigger(seconds=1.5))
 def CheckDeviceStatus():
     dataAcquisition.check_acquisition_progress()
     dataAcquisition.check_gps()
