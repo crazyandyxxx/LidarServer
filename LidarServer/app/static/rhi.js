@@ -21,7 +21,10 @@ var drawData = [];
 var timeat=[];
 var height = [];
 var verAngles = [];
+var isGps84 = false;
 var position = new AMap.LngLat(0, 0);
+var positionGps84;
+var positionGcj02;
 var hoverAdd = false;
 var lines, points3D;
 var rotationAngle = 0;
@@ -164,16 +167,16 @@ window.onload = function(){
             layer: new AMap.TileLayer.Satellite()
           },{
               id: 'Gtile',
-              name: '谷歌矢量图',
+              name: '天地图矢量图',
               layer: new AMap.TileLayer({
-                getTileUrl: 'http://mt{1,2,3,0}.google.cn/vt/lyrs=m@126&hl=zh-CN&gl=cn&src=app&s=G&x=[x]&y=[y]&z=[z]',
+                getTileUrl: 'http://t{7,6,5,4,3,2,1,0}.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=vec&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX=[z]&TILEROW=[y]&TILECOL=[x]&tk=86bdd6c7bea9206c9539a3ae2cb7a3cf',
                 zIndex:2
               })
           },{
               id: 'Gsatellite',
-              name: '谷歌卫星图',
+              name: '天地图卫星图',
               layer: new AMap.TileLayer({
-                getTileUrl: 'http://mt{1,2,3,0}.google.cn/vt/lyrs=y@126&hl=zh-CN&gl=cn&src=app&s=G&x=[x]&y=[y]&z=[z]',
+                getTileUrl: 'http://t{7,6,5,4,3,2,1,0}.tianditu.gov.cn/img_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX=[z]&TILEROW=[y]&TILECOL=[x]&tk=86bdd6c7bea9206c9539a3ae2cb7a3cf',
                 zIndex:2
               })
           }],
@@ -182,7 +185,16 @@ window.onload = function(){
               id: 'roadNet',
               name: '高德路网图',
               layer: new AMap.TileLayer.RoadNet()
-          },{
+          },
+          {
+            id: 'tRoadNet',
+            name: '天地图路网图',
+            layer: new AMap.TileLayer({
+              getTileUrl: 'http://t{7,6,5,4,3,2,1,0}.tianditu.gov.cn/cia_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=cia&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX=[z]&TILEROW=[y]&TILECOL=[x]&tk=86bdd6c7bea9206c9539a3ae2cb7a3cf',
+              zIndex:100
+            })
+          },
+          {
               enable: true,
               id: 'object3D',
               name: '雷达扫描图',
@@ -204,6 +216,19 @@ window.onload = function(){
           textColor = '#000';
           drawTicks();
           drawTickText();
+        }
+        if(e.layer.id.includes('G')){
+          isGps84 = true;
+          position = positionGps84;
+          pie.position(position);
+          lines.position(position);
+          points3D.position(position);
+        }else if(e.layer.id.includes('A')){
+          isGps84 = false;
+          position = positionGcj02;
+          pie.position(position);
+          lines.position(position);
+          points3D.position(position);
         }
       }
     });
@@ -230,7 +255,7 @@ window.onload = function(){
     function(data,status){    
       var sel1 = document.getElementById('timeSeries');
       for(let i=0; i<data.result.length;i++){
-          sel1.options.add(new Option(data.result[i].timestamp+""));
+          sel1.options.add(new Option(data.result[i].timestamp.split(" ")[1]));
       }
       $.ajax({
         type: "post",
@@ -325,7 +350,7 @@ function setDateRange(startT, endT){
         var sel1 = document.getElementById('timeSeries');
         sel1.options.length = 0;
         for(let i=0; i<data.result.length;i++){
-          sel1.options.add(new Option(data.result[i].timestamp+""));
+          sel1.options.add(new Option(data.result[i].timestamp.split(" ")[1]));
         }
         SelectTime();
     });
@@ -516,7 +541,14 @@ function prepareData(data){
   longitude = lonArr[Math.floor(lonArr.length/2)];
   latitude = latArr[Math.floor(lonArr.length/2)];
   altitude = altArr[Math.floor(lonArr.length/2)];
-  position = Gps84ToGcj02(longitude,latitude);
+  positionGps84 = new AMap.LngLat(longitude, latitude);
+  positionGcj02 = Gps84ToGcj02(longitude,latitude);
+  if(isGps84){
+    position = positionGps84;
+  }else{
+    position = positionGcj02;
+  }
+
   for(let i=0; i<data.result.length;i++){
     timeat.push(data.result[i].timestamp);
     verAngles.push(verAngStart + i*verAngStep);
@@ -573,7 +605,7 @@ function ReCalculation(){
     type: "post",
     data: { 'task id': task_id, 
             'content': 'timedata', 
-            'time': sel1.options[index].text,
+            'time': currentDate+' '+sel1.options[index].text,
             'calc param': `{"rc": ${rc}, "sa": ${sa}, "snrT": ${snrT}, "pblT": ${pblT} }` },
     url: urlGetRhiData,
     beforeSend:function(){
@@ -821,7 +853,7 @@ function getAnimationData(){
   $.ajax({
     type: "post",
     data: { 'task id': task_id, 'content':'all', 'channel': channelID, 'range': rangeMax,
-            'calc param': `{"rc": ${rc}, "sa": ${sa}, "snrT": ${snrT}, "pblT": ${pblT} }` },
+            'calc param': `{"rc": ${rc}, "sa": ${sa}, "snrT": ${snrT}, "pblT": ${pblT}, "pa": ${pa},  "pb": ${pb}, "pc": ${pc} }` },
     url: urlGetRhiData,
     beforeSend:function(){
       isPlaying = true;
@@ -834,6 +866,22 @@ function getAnimationData(){
       playBtn.src = '../static/stop.svg';
       playBtn.title = '停止';
       canBeStop = true;
+      if(channelID == 'pm10'){
+        for(let i=0; i<data.result.length; i++){
+          for(let j=0; j<data.result[i].channeldata.length; j++){
+            let jData = data.result[i].channeldata[j];
+            data.result[i].channeldata[j] = jData.map(x => x>0? pa*Math.pow(x,pb) : 0);
+          }      
+        }
+      }
+      if(channelID == 'pm25'){
+        for(let i=0; i<data.result.length; i++){
+          for(let j=0; j<data.result[i].channeldata.length; j++){
+            let jData = data.result[i].channeldata[j];
+            data.result[i].channeldata[j] = jData.map(x => x>0? pc*pa*Math.pow(x,pb) : 0);
+          }      
+        }
+      }
       animData = data;
       Scan();      
     }

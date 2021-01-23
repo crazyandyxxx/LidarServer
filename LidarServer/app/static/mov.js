@@ -9,15 +9,19 @@ var colorOpacity = 0.5;
 var rangeScale = 1;
 var scal = 1;
 var resolution = 15;
+var isGps84 = false;
 var locations = [];
+var locationsGps84 = [];
 var locCenter;
+var locCenterGps84;
+var locCenterGcj02;
 var drawData = [];
 var timeat=[];
 var height = [];
 var lines, points3D;
 var channelID;
 var drawName = document.getElementById('channel').options[0].text;
-var poistionLabel;
+var poisitionLabel;
 var layoutA = {
       xaxis: {
         title: '时间',
@@ -91,9 +95,20 @@ var pa = 243;
 var pb = 1.13;
 var pc = 0.5;
 var polyline;
+var wall;
+var isPolyLineShow = true;
 
 function setMapCenter(){
   map.setFitView([ polyline ]);
+}
+
+function showhideTace(){
+  if(isPolyLineShow){
+    polyline.hide();
+  }else{
+    polyline.show();
+  }
+  isPolyLineShow = !isPolyLineShow;
 }
 
 function ShowRecalc(){
@@ -161,6 +176,7 @@ function addEvents(){
   document.getElementById('savePicA').addEventListener("click",SaveHeatA);
   document.getElementById('saveLineA').addEventListener("click",SaveLineA);
   document.getElementById('setCenter').addEventListener("click",setMapCenter);
+  document.getElementById('showTrace').addEventListener("click",showhideTace);
 }
 
 window.onload=function(){
@@ -195,16 +211,16 @@ AMapUI.loadUI(['control/BasicControl'], function(BasicControl) {
           layer: new AMap.TileLayer.Satellite()
        },{         
             id: 'Gtile',
-            name: '谷歌矢量图',
+            name: '天地图矢量图',
             layer: new AMap.TileLayer({
-              getTileUrl: 'http://mt{1,2,3,0}.google.cn/vt/lyrs=m@126&hl=zh-CN&gl=cn&src=app&s=G&x=[x]&y=[y]&z=[z]',
+              getTileUrl: 'http://t{7,6,5,4,3,2,1,0}.tianditu.gov.cn/vec_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=vec&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX=[z]&TILEROW=[y]&TILECOL=[x]&tk=86bdd6c7bea9206c9539a3ae2cb7a3cf',
               zIndex:2
             })
         },{
             id: 'Gsatellite',
-            name: '谷歌卫星图',
+            name: '天地图卫星图',
             layer: new AMap.TileLayer({
-              getTileUrl: 'http://mt{1,2,3,0}.google.cn/vt/lyrs=y@126&hl=zh-CN&gl=cn&src=app&s=G&x=[x]&y=[y]&z=[z]',
+              getTileUrl: 'http://t{7,6,5,4,3,2,1,0}.tianditu.gov.cn/img_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX=[z]&TILEROW=[y]&TILECOL=[x]&tk=86bdd6c7bea9206c9539a3ae2cb7a3cf',
               zIndex:2
             })
         }],
@@ -213,7 +229,16 @@ AMapUI.loadUI(['control/BasicControl'], function(BasicControl) {
             id: 'roadNet',
             name: '高德路网图',
             layer: new AMap.TileLayer.RoadNet()
-        },{
+        },
+        {
+          id: 'tRoadNet',
+          name: '天地图路网图',
+          layer: new AMap.TileLayer({
+            getTileUrl: 'http://t{7,6,5,4,3,2,1,0}.tianditu.gov.cn/cia_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=cia&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX=[z]&TILEROW=[y]&TILECOL=[x]&tk=86bdd6c7bea9206c9539a3ae2cb7a3cf',
+            zIndex:100
+          })
+        },
+        {
             enable: true,
             id: 'object3D',
             name: '雷达扫描图',
@@ -235,6 +260,23 @@ AMapUI.loadUI(['control/BasicControl'], function(BasicControl) {
         textColor = '#000';
         drawTicks();
         drawTickText();
+      }
+      if(e.layer.id.includes('G')){
+        isGps84 = true;
+        locCenter = locCenterGps84;
+        wall.position(locCenter);
+        lines.position(locCenter);
+        points3D.position(locCenter);
+        polyline.setPath(locationsGps84);
+        poisitionLabel.setPosition(locationsGps84[lineIndex]);
+      }else if(e.layer.id.includes('A')){
+        isGps84 = false;
+        locCenter = locCenterGcj02;
+        wall.position(locCenter);
+        lines.position(locCenter);
+        points3D.position(locCenter);
+        polyline.setPath(locations);
+        poisitionLabel.setPosition(locations[lineIndex]);
       }
     }
   });
@@ -271,7 +313,7 @@ map.on('click', function (ev) {
   var obj = map.getObject3DByContainerPos(px, [object3Dlayer], false) || {};
 
   if(obj.object==points3D){
-    poistionLabel.show();
+    poisitionLabel.show();
   }
 });
 
@@ -352,7 +394,7 @@ $.ajax({
 
         plotA.on('plotly_hover',plotHover);
 
-        poistionLabel = new AMap.Text({
+        poisitionLabel = new AMap.Text({
                               position:locations[lineIndex],
                               height:rangeMax*scal*rangeScale,
                               map:map
@@ -363,7 +405,8 @@ $.ajax({
     });
 };
 
-function createRectangle(pt1, pt2, resl, zMin, zMax, zScale, idata, rdata, vmin, vmax, alpha) {
+function createRectangle(geometry, pt1, pt2, resl, zMin, zMax, zScale, idata, rdata, vmin, vmax, alpha) {
+    var vCxy = map.lngLatToGeodeticCoord(locCenterGcj02);
     var v1xy = map.lngLatToGeodeticCoord(pt1);
     var v2xy = map.lngLatToGeodeticCoord(pt2);
     var v1z = 0;
@@ -373,19 +416,14 @@ function createRectangle(pt1, pt2, resl, zMin, zMax, zScale, idata, rdata, vmin,
     var nmin = Math.floor(zMin/resl);
     resl *= zScale;
     for(let i = nmin; i<nmax+1; i++){
-      x1.push(v1xy.x);
-      y1.push(v1xy.y);
+      x1.push(v1xy.x - vCxy.x);
+      y1.push(v1xy.y - vCxy.y);
       z1.push(v1z-i*resl);
-      x2.push(v2xy.x);
-      y2.push(v2xy.y);
+      x2.push(v2xy.x - vCxy.x);
+      y2.push(v2xy.y - vCxy.y);
       z2.push(v2z-i*resl);
     }
 
-    var rectangle = new AMap.Object3D.Mesh();
-    rectangle.transparent = true;
-    rectangle.backOrFront = 'both';
-
-    var geometry = rectangle.geometry;
     for(let i = 0; i<nmax-nmin; i++){
       geometry.vertices.push(x1[i], y1[i], z1[i]);
       geometry.vertices.push(x1[i+1], y1[i+1], z1[i+1]);
@@ -404,8 +442,6 @@ function createRectangle(pt1, pt2, resl, zMin, zMax, zScale, idata, rdata, vmin,
       geometry.vertexColors.push(xc3.r, xc3.g, xc3.b, xc3.a);
       geometry.vertexColors.push(xc4.r, xc4.g, xc4.b, xc4.a);
     }
-      
-    return rectangle;
 }
 
 function createWall(pts,rdata,resl,zMin,zMax,zScale,vmin,vmax,opacity) {
@@ -414,10 +450,15 @@ function createWall(pts,rdata,resl,zMin,zMax,zScale,vmin,vmax,opacity) {
     resl *= scal;
     zMax *= scal;
     zMin *= scal;
+    wall = new AMap.Object3D.Mesh();
+    wall.transparent = true;
+    wall.backOrFront = 'both';
+    var geometry = wall.geometry;
     for(let i=0;i<n;i++){
-        var rect = createRectangle(pts[i],pts[i+1],resl,zMin,zMax,zScale,i,rdata,vmin,vmax,opacity);
-        object3Dlayer.add(rect);
-    }         
+        createRectangle(geometry,pts[i],pts[i+1],resl,zMin,zMax,zScale,i,rdata,vmin,vmax,opacity);
+    }  
+    wall.position(locCenter);
+    object3Dlayer.add(wall);       
 }
 
 function getRealTimeData(){
@@ -465,6 +506,7 @@ function prepareData(data){
   rdata.pm25 = [];
   timeat = [];
   locations = [];
+  locationsGps84 = [];
   height = [];
   res = data.result[0].resolution/1000;
   var leng = data.result[0].raw_A.length;        
@@ -489,19 +531,26 @@ function prepareData(data){
           rdata.pm25.push(data.result[i].ext.map(x => x>0? pc*pa*Math.pow(x,pb) : 0));
           var longitude = data.result[i].longitude;
           var latitude = data.result[i].latitude;
-          var altitude = data.result[i].altitude;
           lonAver += longitude;
           latAver += latitude;
           locations.push(Gps84ToGcj02(longitude,latitude));
+          locationsGps84.push(new AMap.LngLat(longitude,latitude));
       }             
   }
   lonAver /= data.result.length;
   latAver /= data.result.length;
-  locCenter = Gps84ToGcj02(lonAver,latAver);
+  locCenterGcj02 = Gps84ToGcj02(lonAver,latAver);
+  locCenterGps84 = new AMap.LngLat(lonAver,latAver);
+  if(isGps84){
+    locCenter = locCenterGps84;
+  }else{
+    locCenter = locCenterGcj02;
+  }
 }
 
 function createWallIndicator(){
   var center = map.lngLatToGeodeticCoord(locations[lineIndex]);
+  var CenterGcj02 = map.lngLatToGeodeticCoord(locCenterGcj02);
   lines = new AMap.Object3D.Line();
   var lineGeo = lines.geometry;
   points3D = new AMap.Object3D.RoundPoints();
@@ -509,21 +558,23 @@ function createWallIndicator(){
   var pointsGeo = points3D.geometry;
   var height = scal*rangeMax*rangeScale;
   // 连线
-  lineGeo.vertices.push(center.x, center.y, 0);
+  lineGeo.vertices.push(center.x-CenterGcj02.x, center.y-CenterGcj02.y, 0);
   lineGeo.vertexColors.push(0, 1, 1, 1);
-  lineGeo.vertices.push(center.x, center.y, -height);
+  lineGeo.vertices.push(center.x-CenterGcj02.x, center.y-CenterGcj02.y, -height);
   lineGeo.vertexColors.push(0, 1, 1, 1);
 
-  pointsGeo.vertices.push(center.x, center.y, 0); // 尾部小点
+  pointsGeo.vertices.push(center.x-CenterGcj02.x, center.y-CenterGcj02.y, 0); // 尾部小点
   pointsGeo.pointSizes.push(8);
   pointsGeo.vertexColors.push(0, 0, 1, 1);
 
-  pointsGeo.vertices.push(center.x, center.y, -height); // 空中点
+  pointsGeo.vertices.push(center.x-CenterGcj02.x, center.y-CenterGcj02.y, -height); // 空中点
   pointsGeo.pointSizes.push(20);
   pointsGeo.vertexColors.push(2 * 0.029, 2 * 0.015, 2 * 0.01, 1);
 
   points3D.borderColor = [0.4, 0.8, 1, 1];
   points3D.borderWeight = 3;
+  lines.position(locCenter);
+  points3D.position(locCenter);
   object3Dlayer.add(lines);
   object3Dlayer.add(points3D);
 }
@@ -537,12 +588,13 @@ function plotHover(data){
   }
   lineIndex = pn[1];
   var center = map.lngLatToGeodeticCoord(locations[lineIndex]);
+  var CenterGcj02 = map.lngLatToGeodeticCoord(locCenterGcj02);
   var z = scal*rangeMax*rangeScale;
 
-  lines.geometry.vertices.splice(0,6,center.x, center.y, 0,center.x, center.y, -z);
+  lines.geometry.vertices.splice(0,6,center.x-CenterGcj02.x, center.y-CenterGcj02.y, 0,center.x-CenterGcj02.x, center.y-CenterGcj02.y, -z);
   lines.needUpdate = true;
 
-  points3D.geometry.vertices.splice(0,6,center.x, center.y, 0,center.x, center.y, -z);
+  points3D.geometry.vertices.splice(0,6,center.x-CenterGcj02.x, center.y-CenterGcj02.y, 0,center.x-CenterGcj02.x, center.y-CenterGcj02.y, -z);
   points3D.needUpdate = true;
   lines.reDraw();
   points3D.reDraw();
@@ -559,8 +611,6 @@ function plotHover(data){
 
 function setPositionLabel(){
   var distance = (AMap.GeometryUtil.distanceOfLine(locations.slice(0,lineIndex))/1000).toFixed(1);
-
-  // document.getElementById("lnglat").textContent = locations[lineIndex].lng + ',' + locations[lineIndex].lat;
   if(!geocoder){
       geocoder = new AMap.Geocoder({
           city: "010", //城市设为北京，默认：“全国”
@@ -570,9 +620,8 @@ function setPositionLabel(){
   geocoder.getAddress(locations[lineIndex], function(status, result) {
       if (status === 'complete'&&result.regeocode) {
           var address = result.regeocode.formattedAddress;
-          // document.getElementById('address').textContent = address;
-          poistionLabel.setPosition(locations[lineIndex]);
-          poistionLabel.setLabel({
+          poisitionLabel.setPosition(isGps84?locationsGps84[lineIndex]:locations[lineIndex]);
+          poisitionLabel.setLabel({
               offset: new AMap.Pixel(10, 0),  //设置文本标注偏移量
               content: "<div><div>当前位置"+locations[lineIndex].lng + ',' + locations[lineIndex].lat+"</div>"+                          
                        "<div>"+address+"</div>"+"<div>距起点"+distance+"km</div>"+
@@ -586,7 +635,7 @@ function setPositionLabel(){
 }
 
 function hideMarker(){
-  poistionLabel.hide();
+  poisitionLabel.hide();
 }
 
 function createBound(){
@@ -733,7 +782,7 @@ function SelectChannel(){
     object3Dlayer.clear();
     createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity); 
     createWallIndicator();
-    poistionLabel.setHeight(rangeMax*scal*rangeScale);
+    poisitionLabel.setHeight(rangeMax*scal*rangeScale);
     
     layoutA.yaxis.range[1] = rangeMax/1000;
     layoutLineA.yaxis.range[1] = rangeMax/1000;
@@ -778,7 +827,7 @@ function SelectChannel(){
     object3Dlayer.clear();
     createWall(locations,drawData,resolution,rangeMin,rangeMax,rangeScale,vMin,vMax,colorOpacity);   
     createWallIndicator();
-    poistionLabel.setHeight(rangeMax*scal*rangeScale);
+    poisitionLabel.setHeight(rangeMax*scal*rangeScale);
   }
 
   function SaveHeatA(){

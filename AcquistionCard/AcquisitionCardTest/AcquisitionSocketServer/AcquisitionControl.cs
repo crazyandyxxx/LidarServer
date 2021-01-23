@@ -23,7 +23,7 @@ namespace AcquisitionSocketServer
                 }
             }
             LaserOn();
-            Thread.Sleep(2000);
+            Thread.Sleep(500);
             var hc = GetAcqCard();//连接采集卡
             if (hc)
             {

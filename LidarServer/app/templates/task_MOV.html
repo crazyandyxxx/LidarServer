@@ -2,7 +2,7 @@
 
 {% block styles %}
 {{ super() }}
-<link rel="stylesheet" type="text/css" href="../static/mov.min.css"/>
+<link rel="stylesheet" type="text/css" href="../static/mov.css"/>
 {% endblock %}
 
 {% block app_content %}
@@ -12,6 +12,7 @@
     <canvas id="canvas" width="50" height="260"></canvas>
   </div>
   <input id="setCenter" type="image" data-toggle="tooltip" data-placement="left" title="复位" src="../static/setCenter.png" />
+  <input id="showTrace" type="image" data-toggle="tooltip" data-placement="left" title="轨迹" src="../static/path.png" />
   <input id="saveMap" type="image" data-toggle="tooltip" data-placement="left" title="保存截图" src="../static/savePic.png"/>
   <div id="setPara">
     <select  id="channel">
@@ -128,5 +129,5 @@
 <script src="../static/plotly-latest.min.js"></script>
 <script src="../static/html2canvas.min.js"></script>
 <script src="../static/colorbar.min.js"></script>
-<script src="../static/mov.min.js"></script>
+<script src="../static/mov.js"></script>
 {% endblock %}

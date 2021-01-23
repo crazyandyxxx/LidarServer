@@ -388,13 +388,13 @@ def get_ppi_data():
                 for i in range(lt):
                     data = {}
                     ts = task_dat[i].timestamp
-                    data['timestamp']="{}".format(ts.strftime('%H:%M:%S'))
+                    data['timestamp']="{}".format(ts.strftime('%Y-%m-%d %H:%M:%S'))
                     results.append(data)
             else:
                 for i in range(lt-1):
                     data = {}
                     ts = task_dat[i+1].timestamp
-                    data['timestamp']="{}".format(ts.strftime('%H:%M:%S'))
+                    data['timestamp']="{}".format(ts.strftime('%Y-%m-%d %H:%M:%S'))
                     results.append(data)
         if(content=='timedata'):
             timeat = request.values.get('time',0)
@@ -461,14 +461,8 @@ def get_ppi_data():
                         channeldata.append(chBPR2[:rangeMaxI])
                     elif channel=='dep':
                         channeldata.append(dePolar[:rangeMaxI])
-                    elif channel=='ext':
+                    elif channel=='ext' or channel=='pm10' or channel=='pm25':
                         channeldata.append(ext_a[:rangeMaxI])
-                    elif channel=='pm10':
-                        pm10 = 243*np.power(np.where(ext_a>0,ext_a,0),1.13)
-                        channeldata.append(pm10[:rangeMaxI])
-                    elif channel=='pm25':
-                        pm25 = 0.5*243*np.power(np.where(ext_a>0,ext_a,0),1.13)
-                        channeldata.append(pm25[:rangeMaxI])
                 data['channeldata'] = channeldata
                 results.append(data)
         return jsonify(result=results)
@@ -593,14 +587,8 @@ def get_rhi_data():
                         channeldata.append(chBPR2[:rangeMaxI])
                     elif channel=='dep':
                         channeldata.append(dePolar[:rangeMaxI])
-                    elif channel=='ext':
+                    elif channel=='ext' or channel=='pm10' or channel=='pm25':
                         channeldata.append(ext_a[:rangeMaxI])
-                    elif channel=='pm10':
-                        pm10 = 243*np.power(np.where(ext_a>0,ext_a,0),1.13)
-                        channeldata.append(pm10[:rangeMaxI])
-                    elif channel=='pm25':
-                        pm25 = 0.5*243*np.power(np.where(ext_a>0,ext_a,0),1.13)
-                        channeldata.append(pm25[:rangeMaxI])
                 data['channeldata'] = channeldata
                 results.append(data)
         return jsonify(result=results)

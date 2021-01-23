@@ -102,11 +102,19 @@
     border-radius: 3px;
     background-color: white;
   }
-  #saveMap{
+  #showTrace{
     z-index: 100;
     position: absolute;
     right: 31px;
     top: 107px;
+    border-radius: 3px;
+    background-color: white;
+  }
+  #saveMap{
+    z-index: 100;
+    position: absolute;
+    right: 31px;
+    top: 144px;
     border-radius: 3px;
     background-color: white;
   }
