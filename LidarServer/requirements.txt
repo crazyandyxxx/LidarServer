@@ -18,7 +18,7 @@ Flask-WTF==0.14.2
 future==0.17.1
 itsdangerous==1.1.0
 Jinja2==2.10
-Mako==1.0.7
+Mako==1.2.2
 MarkupSafe==1.1.1
 numpy==1.16.2
 pefile==2019.4.18
